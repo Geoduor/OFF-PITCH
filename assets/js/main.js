@@ -75,37 +75,84 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  /* ---------- Hero slideshow (live social feed) ---------- */
+  /* ---------- Live social feed (hero slideshow + featured cards) ---------- */
   const heroLayers = document.getElementById('heroLayers');
-  if (heroLayers) {
+  const featuredGrid = document.getElementById('featuredCoverageGrid');
+
+  if (heroLayers || featuredGrid) {
     fetch('/api/social-feed')
       .then(res => res.ok ? res.json() : Promise.reject(new Error('bad response')))
       .then(data => {
         const images = Array.isArray(data.images) ? data.images.filter(i => i && i.src) : [];
-        if (!images.length) return; // keep static fallback photo, do nothing further
+        if (!images.length) return; // keep static fallbacks, do nothing further
 
-        images.forEach((img, i) => {
-          const div = document.createElement('div');
-          div.className = 'hero-slide' + (i === 0 ? ' active' : '');
-          div.style.backgroundImage = `url('${img.src}')`;
-          div.setAttribute('role', 'img');
-          div.setAttribute('aria-label', img.alt || 'Off Pitch Africa');
-          heroLayers.appendChild(div);
-        });
+        // --- Hero slideshow ---
+        if (heroLayers) {
+          images.forEach((img, i) => {
+            const div = document.createElement('div');
+            div.className = 'hero-slide' + (i === 0 ? ' active' : '');
+            div.style.backgroundImage = `url('${img.src}')`;
+            div.setAttribute('role', 'img');
+            div.setAttribute('aria-label', img.alt || 'Off Pitch Africa');
+            heroLayers.appendChild(div);
+          });
 
-        if (images.length > 1) {
-          let current = 0;
-          setInterval(() => {
-            const slides = heroLayers.querySelectorAll('.hero-slide');
-            slides[current].classList.remove('active');
-            current = (current + 1) % slides.length;
-            slides[current].classList.add('active');
-          }, 6000);
+          if (images.length > 1) {
+            let current = 0;
+            setInterval(() => {
+              const slides = heroLayers.querySelectorAll('.hero-slide');
+              slides[current].classList.remove('active');
+              current = (current + 1) % slides.length;
+              slides[current].classList.add('active');
+            }, 6000);
+          }
+        }
+
+        // --- Featured Coverage cards: swap in real recent posts ---
+        if (featuredGrid && images.length >= 3) {
+          const platformLabel = { instagram: 'Instagram', facebook: 'Facebook', youtube: 'YouTube' };
+          const platformLink = {
+            instagram: 'VIEW ON INSTAGRAM →',
+            facebook: 'VIEW ON FACEBOOK →',
+            youtube: 'WATCH ON YOUTUBE →'
+          };
+
+          for (let i = 0; i < 3; i++) {
+            const card = document.getElementById('featCard' + i);
+            const post = images[i];
+            if (!card || !post) continue;
+
+            const img = card.querySelector('img');
+            const tag = card.querySelector('.story-tag');
+            const h3 = card.querySelector('h3');
+            const p = card.querySelector('p');
+            const link = card.querySelector('.story-link');
+
+            if (img) { img.src = post.src; img.alt = post.alt || 'Off Pitch Africa'; }
+            if (tag) tag.textContent = platformLabel[post.source] || 'Off Pitch Africa';
+            if (link) link.textContent = platformLink[post.source] || 'VIEW POST →';
+            if (post.link) card.href = post.link;
+
+            // Real caption becomes the card's text. If it's short, show it as
+            // the heading; if longer, use the first sentence as heading and
+            // the rest as the description — all real, nothing invented.
+            const caption = (post.alt || '').trim();
+            if (caption) {
+              const sentenceEnd = caption.search(/[.!?\n]/);
+              if (sentenceEnd > 0 && sentenceEnd < caption.length - 1) {
+                if (h3) h3.textContent = caption.slice(0, sentenceEnd + 1).trim();
+                if (p) p.textContent = caption.slice(sentenceEnd + 1).trim().slice(0, 140);
+              } else {
+                if (h3) h3.textContent = caption.slice(0, 90);
+                if (p) p.textContent = '';
+              }
+            }
+          }
         }
       })
       .catch(() => {
-        // Social feed not configured yet or failed — the static hero photo
-        // underneath (.hero-bg-static) stays visible. No action needed.
+        // Social feed not configured yet or failed — static fallback content
+        // (real facts from the company profile) stays as-is. No action needed.
       });
   }
 

@@ -120,17 +120,23 @@ The only setup items still on you:
 
 ---
 
-## 6. Live social slideshow (Home page hero)
+## 6. Live social feed (Home page hero + Featured Coverage cards)
 
-The Home page hero background is now a slideshow that cross-fades between
-your **actual recent photos from YouTube, Instagram, and Facebook** —
-pulled live via each platform's official API (not scraping). It's powered
-by `api/social-feed.js`, called by the browser every time someone loads the
-Home page.
+The Home page hero background **and** the three "Featured Coverage" cards
+now pull your **actual recent photos and captions from YouTube, Instagram,
+and Facebook** — via each platform's official API (not scraping). Both are
+powered by the same call to `api/social-feed.js`.
 
-**Nothing breaks if you skip this setup** — the hero just shows your
-existing static photo until you add credentials. Each platform is
-independent: configure just YouTube, or just Instagram, or all three.
+- **Hero background**: cross-fades between real recent photos every 6 seconds.
+- **Featured Coverage cards**: once at least 3 real posts are available, the
+  image, platform tag ("Instagram" / "Facebook" / "YouTube"), and text on
+  each card are replaced with the real photo and real caption from that
+  post — no invented headlines or categories, since a caption's actual
+  wording is the only real data a post gives us.
+
+**Nothing breaks if you skip this setup** — both sections just show their
+existing static content (the same real facts pulled from your company
+profile) until real posts are available. Each platform is independent.
 
 ### YouTube (easiest — ~5 minutes, free)
 
