@@ -7,565 +7,54 @@
 <meta name="description" content="OFF PITCH AFRICA is a Kenyan sports media and storytelling platform amplifying the untold narratives of African athletes to the world.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --pitch-red:#C8102E;
-    --pitch-red-deep:#7A0C1E;
-    --ink:#0B0B0D;
-    --navy:#12172B;
-    --studio-blue:#0E6BA8;
-    --signal-teal:#4FD1D9;
-    --chalk:#F4F1EC;
-    --paper:#FBFAF7;
-    --line: rgba(244,241,236,0.14);
-  }
-  *{margin:0;padding:0;box-sizing:border-box;}
-  html{scroll-behavior:smooth;}
-  body{
-    background:var(--ink);
-    color:var(--chalk);
-    font-family:'Inter',sans-serif;
-    overflow-x:hidden;
-  }
-  ::selection{background:var(--pitch-red);color:#fff;}
-
-  h1,h2,h3,.display{
-    font-family:'Anton',sans-serif;
-    font-weight:400;
-    letter-spacing:0.01em;
-    text-transform:uppercase;
-    line-height:0.95;
-  }
-  .eyebrow{
-    font-family:'Space Mono',monospace;
-    text-transform:uppercase;
-    letter-spacing:0.18em;
-    font-size:0.72rem;
-    color:var(--signal-teal);
-    display:flex;
-    align-items:center;
-    gap:10px;
-  }
-  .eyebrow::before{
-    content:'';
-    width:22px;height:2px;
-    background:var(--pitch-red);
-    display:inline-block;
-  }
-  a{color:inherit;text-decoration:none;}
-  img{max-width:100%;display:block;}
-  .wrap{
-    max-width:1180px;
-    margin:0 auto;
-    padding:0 32px;
-  }
-  section{position:relative;}
-
-  /* ---------- NAV ---------- */
-  header{
-    position:fixed;top:0;left:0;right:0;z-index:100;
-    background:rgba(11,11,13,0.82);
-    backdrop-filter:blur(10px);
-    border-bottom:1px solid var(--line);
-  }
-  nav{
-    max-width:1180px;margin:0 auto;padding:14px 32px;
-    display:flex;align-items:center;justify-content:space-between;
-  }
-  .brand{display:flex;align-items:center;gap:12px;}
-  .brand img{height:44px;width:auto;}
-  .brand-word{font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.15em;color:#9aa0ad;}
-  .navlinks{display:flex;gap:34px;align-items:center;}
-  .navlinks a{
-    font-size:0.82rem;font-weight:600;letter-spacing:0.03em;
-    color:var(--chalk);opacity:0.8;transition:opacity .2s, color .2s;
-    position:relative;
-  }
-  .navlinks a:hover{opacity:1;color:var(--signal-teal);}
-  .nav-cta{
-    background:var(--pitch-red);
-    color:#fff !important;
-    padding:11px 22px;
-    border-radius:2px;
-    font-weight:700;
-    font-size:0.8rem;
-    opacity:1 !important;
-    letter-spacing:0.03em;
-    transition:background .2s, transform .2s;
-  }
-  .nav-cta:hover{background:#e4122f;transform:translateY(-1px);}
-  .burger{display:none;}
-
-  /* ---------- HERO ---------- */
-  .hero{
-    min-height:100vh;
-    display:flex;
-    align-items:center;
-    padding:150px 0 90px;
-    background:
-      radial-gradient(ellipse 900px 500px at 85% 10%, rgba(200,16,46,0.25), transparent 60%),
-      linear-gradient(180deg, #0B0B0D 0%, #0B0B0D 100%);
-    position:relative;
-    overflow:hidden;
-  }
-  .hero::before{
-    content:'';
-    position:absolute;
-    top:-10%;right:-16%;
-    width:70%;height:140%;
-    background:linear-gradient(115deg, transparent 42%, var(--pitch-red-deep) 42.5%, var(--pitch-red) 46%, transparent 46.5%,
-                transparent 56%, var(--pitch-red-deep) 56.5%, var(--pitch-red) 60%, transparent 60.5%);
-    opacity:0.9;
-    pointer-events:none;
-  }
-  .hero-grid{
-    display:grid;
-    grid-template-columns:1.05fr 0.95fr;
-    gap:50px;
-    align-items:center;
-    position:relative;
-    z-index:2;
-  }
-  .hero h1{
-    font-size:clamp(2.6rem, 5.6vw, 4.6rem);
-    color:var(--chalk);
-    margin:18px 0 22px;
-  }
-  .hero h1 span{color:var(--pitch-red);}
-  .hero p.lede{
-    font-size:1.05rem;
-    line-height:1.6;
-    color:#c7cad3;
-    max-width:480px;
-    margin-bottom:34px;
-  }
-  .hero-ctas{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:40px;}
-  .btn{
-    display:inline-flex;align-items:center;gap:10px;
-    padding:15px 26px;
-    font-weight:700;
-    font-size:0.86rem;
-    letter-spacing:0.03em;
-    border-radius:2px;
-    transition:all .2s ease;
-    border:1px solid transparent;
-  }
-  .btn-primary{background:var(--pitch-red);color:#fff;}
-  .btn-primary:hover{background:#e4122f;transform:translateY(-2px);box-shadow:0 10px 24px rgba(200,16,46,0.35);}
-  .btn-ghost{border-color:rgba(244,241,236,0.35);color:var(--chalk);}
-  .btn-ghost:hover{border-color:var(--signal-teal);color:var(--signal-teal);}
-
-  .hero-contact{
-    display:flex;gap:28px;
-    font-family:'Space Mono',monospace;
-    font-size:0.76rem;
-    color:#9aa0ad;
-    flex-wrap:wrap;
-  }
-  .hero-contact strong{color:var(--chalk);display:block;font-size:0.9rem;font-family:'Inter',sans-serif;font-weight:700;}
-
-  /* hex mosaic */
-  .hex-mosaic{
-    position:relative;
-    height:520px;
-  }
-  .hex{
-    position:absolute;
-    width:230px;height:265px;
-    clip-path:polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-    overflow:hidden;
-    box-shadow:0 20px 50px rgba(0,0,0,0.5);
-  }
-  .hex img{width:100%;height:100%;object-fit:cover;}
-  .hex-a{top:0;left:22%;width:270px;height:312px;z-index:3;}
-  .hex-b{bottom:6%;left:0;width:180px;height:208px;z-index:2;}
-  .hex-c{bottom:2%;right:2%;width:190px;height:220px;z-index:2;}
-  .hex-ring{
-    position:absolute;
-    border:2px solid var(--pitch-red);
-    clip-path:polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-    opacity:0.5;
-  }
-
-  /* ---------- TICKER ---------- */
-  .ticker{
-    background:var(--pitch-red);
-    border-top:1px solid rgba(255,255,255,0.2);
-    border-bottom:1px solid rgba(255,255,255,0.2);
-    overflow:hidden;
-    white-space:nowrap;
-    position:relative;
-  }
-  .ticker-track{
-    display:inline-flex;
-    animation:scroll 32s linear infinite;
-  }
-  .ticker span{
-    font-family:'Space Mono',monospace;
-    font-weight:700;
-    font-size:0.82rem;
-    letter-spacing:0.08em;
-    color:#fff;
-    padding:14px 0;
-    display:inline-flex;
-    align-items:center;
-  }
-  .ticker span::after{content:'●';margin:0 26px;color:rgba(255,255,255,0.55);font-size:0.5rem;}
-  @keyframes scroll{
-    0%{transform:translateX(0);}
-    100%{transform:translateX(-50%);}
-  }
-  @media (prefers-reduced-motion: reduce){
-    .ticker-track{animation:none;}
-  }
-
-  /* ---------- SECTION HEADERS ---------- */
-  .sec-head{max-width:640px;margin-bottom:56px;}
-  .sec-head h2{font-size:clamp(2rem,4vw,3rem);color:var(--chalk);margin-top:14px;}
-  .sec-head p{color:#9aa0ad;margin-top:16px;font-size:1rem;line-height:1.6;}
-
-  /* ---------- ABOUT ---------- */
-  .about{background:var(--ink);padding:130px 0 110px;}
-  .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start;}
-  .about-copy p{color:#c7cad3;line-height:1.75;font-size:1.03rem;margin-bottom:20px;}
-  .founder-tag{
-    margin-top:26px;
-    display:flex;gap:14px;align-items:center;
-    padding-top:22px;border-top:1px solid var(--line);
-  }
-  .founder-tag .dot{width:10px;height:10px;background:var(--signal-teal);border-radius:50%;flex-shrink:0;}
-  .founder-tag span{font-family:'Space Mono',monospace;font-size:0.78rem;color:#9aa0ad;line-height:1.5;}
-  .founder-tag strong{color:var(--chalk);}
-
-  .mv-stack{display:flex;flex-direction:column;gap:22px;}
-  .mv-card{
-    background:var(--navy);
-    border:1px solid var(--line);
-    border-left:3px solid var(--pitch-red);
-    padding:30px 32px;
-    border-radius:2px;
-  }
-  .mv-card h3{font-size:1.3rem;color:var(--chalk);margin-bottom:12px;letter-spacing:0.02em;}
-  .mv-card p{color:#aeb2bd;line-height:1.65;font-size:0.96rem;}
-  .mv-card.vision{border-left-color:var(--studio-blue);}
-
-  .about-photo{
-    margin-top:34px;
-    border-radius:2px;
-    overflow:hidden;
-    filter:grayscale(1) contrast(1.05);
-    border:1px solid var(--line);
-  }
-
-  /* ---------- VALUES ---------- */
-  .values{
-    background:linear-gradient(160deg, var(--pitch-red-deep) 0%, #2a0611 45%, var(--ink) 100%);
-    padding:120px 0;
-  }
-  .values .eyebrow{color:#ffb3bf;}
-  .values .eyebrow::before{background:var(--signal-teal);}
-  .values .sec-head h2{color:#fff;}
-  .values-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
-  .value-card{
-    background:rgba(11,11,13,0.55);
-    border:1px solid rgba(244,241,236,0.15);
-    padding:30px 24px;
-    border-radius:4px;
-    backdrop-filter:blur(4px);
-  }
-  .value-card .bar{width:38px;height:4px;background:var(--pitch-red);margin-bottom:20px;}
-  .value-card h3{font-size:1.15rem;color:#fff;margin-bottom:14px;letter-spacing:0.02em;}
-  .value-card p{color:#d6d2c9;font-size:0.9rem;line-height:1.6;}
-
-  /* ---------- SERVICES ---------- */
-  .services{background:var(--paper);color:var(--ink);padding:130px 0;}
-  .services .eyebrow{color:var(--pitch-red);}
-  .services .eyebrow::before{background:var(--studio-blue);}
-  .services .sec-head h2{color:var(--ink);}
-  .services .sec-head p{color:#54565f;}
-  .svc-grid{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:2px;
-    background:#dedad0;
-    border:1px solid #dedad0;
-  }
-  .svc-card{
-    background:var(--paper);
-    padding:38px 32px;
-    min-height:280px;
-    display:flex;flex-direction:column;
-  }
-  .svc-num{font-family:'Space Mono',monospace;font-size:0.75rem;color:var(--pitch-red);margin-bottom:18px;}
-  .svc-card h3{font-size:1.28rem;color:var(--ink);margin-bottom:14px;letter-spacing:0.01em;line-height:1.15;}
-  .svc-card p{color:#54565f;font-size:0.92rem;line-height:1.6;flex-grow:1;}
-  .svc-card ul{margin-top:14px;padding-left:0;list-style:none;}
-  .svc-card ul li{
-    font-size:0.86rem;color:#3c3e46;padding:6px 0 6px 16px;position:relative;border-top:1px solid #eae7de;
-  }
-  .svc-card ul li:first-child{border-top:none;}
-  .svc-card ul li::before{content:'—';position:absolute;left:0;color:var(--pitch-red);}
-
-  /* featured coverage badges */
-  .featured{padding:70px 0 0;}
-  .featured-inner{
-    background:var(--ink);
-    padding:44px 40px;
-    border-radius:4px;
-  }
-  .featured-inner .eyebrow{color:var(--signal-teal);margin-bottom:18px;}
-  .featured-inner .eyebrow::before{background:var(--pitch-red);}
-  .badge-row{display:flex;flex-wrap:wrap;gap:12px;}
-
-  .follow-strip{padding:56px 32px 10px;text-align:center;}
-  .follow-title{font-size:1.4rem;color:var(--ink);margin:10px 0 22px;}
-  .social-row{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;}
-  .social-pill{
-    border:1.5px solid #dedad0;
-    color:var(--ink);
-    font-family:'Space Mono',monospace;
-    font-size:0.8rem;
-    font-weight:700;
-    letter-spacing:0.03em;
-    padding:11px 22px;
-    border-radius:30px;
-    transition:all .2s ease;
-  }
-  .social-pill:hover{border-color:var(--pitch-red);color:var(--pitch-red);transform:translateY(-2px);}
-  .social-pill-accent{background:#25D366;border-color:#25D366;color:#fff;}
-  .social-pill-accent:hover{background:#1ebe57;border-color:#1ebe57;color:#fff;}
-  .badge{
-    border:1px solid rgba(244,241,236,0.25);
-    color:var(--chalk);
-    font-family:'Space Mono',monospace;
-    font-size:0.75rem;
-    letter-spacing:0.04em;
-    padding:10px 16px;
-    border-radius:2px;
-  }
-
-  /* ---------- GALLERY ---------- */
-  .gallery{background:var(--ink);padding:130px 0;}
-  .gallery .eyebrow{color:var(--signal-teal);}
-  .gallery .sec-head h2{color:var(--chalk);}
-  .gallery .sec-head p{color:#9aa0ad;}
-  .hex-grid{
-    display:flex;flex-wrap:wrap;gap:14px;justify-content:center;
-  }
-  .hex-grid .hexcell{
-    width:230px;height:265px;
-    clip-path:polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-    overflow:hidden;
-    position:relative;
-  }
-  .hex-grid .hexcell img{width:100%;height:100%;object-fit:cover;transition:transform .5s ease;}
-  .hex-grid .hexcell:hover img{transform:scale(1.12);}
-  .hex-grid .hexcell.offset{margin-top:70px;}
-
-  /* ---------- PARTNER CTA ---------- */
-  .partner{
-    background:var(--navy);
-    padding:110px 0;
-    border-top:1px solid var(--line);
-    border-bottom:1px solid var(--line);
-  }
-  .partner-grid{display:grid;grid-template-columns:1.2fr 0.8fr;gap:50px;align-items:center;}
-  .partner h2{font-size:clamp(1.9rem,3.6vw,2.7rem);color:#fff;margin-bottom:20px;}
-  .partner p{color:#b7bac4;line-height:1.7;font-size:1rem;}
-  .partner-box{
-    background:var(--ink);
-    border:1px solid var(--line);
-    border-top:3px solid var(--pitch-red);
-    padding:34px;
-    border-radius:2px;
-  }
-  .partner-box h3{font-family:'Inter',sans-serif;font-weight:700;text-transform:none;font-size:1.1rem;color:#fff;margin-bottom:10px;}
-  .partner-box p{color:#9aa0ad;font-size:0.9rem;margin-bottom:22px;line-height:1.6;}
-
-  /* ---------- CONTACT / FOOTER ---------- */
-  footer{background:var(--ink);padding:100px 0 0;}
-  .contact-grid{
-    display:grid;grid-template-columns:1.1fr 0.9fr;gap:60px;
-    padding-bottom:80px;border-bottom:1px solid var(--line);
-  }
-  footer h2{font-size:clamp(2.2rem,5vw,3.6rem);color:var(--chalk);margin-bottom:22px;}
-  footer .lede{color:#9aa0ad;max-width:440px;line-height:1.6;margin-bottom:36px;}
-  .contact-list{display:flex;flex-direction:column;gap:22px;}
-  .contact-item{display:flex;gap:16px;align-items:flex-start;border-top:1px solid var(--line);padding-top:18px;}
-  .contact-item .label{font-family:'Space Mono',monospace;font-size:0.7rem;color:#7c8091;letter-spacing:0.1em;width:110px;flex-shrink:0;padding-top:2px;}
-  .contact-item a, .contact-item span.val{font-size:1.05rem;font-weight:600;color:var(--chalk);}
-  .contact-item a:hover{color:var(--signal-teal);}
-  .foot-cta{display:flex;flex-direction:column;gap:16px;align-items:flex-start;}
-
-  .foot-bottom{
-    display:flex;justify-content:space-between;align-items:center;
-    padding:26px 0;flex-wrap:wrap;gap:12px;
-  }
-  .foot-bottom span{font-family:'Space Mono',monospace;font-size:0.72rem;color:#6c707d;}
-  .foot-brand{display:flex;align-items:center;gap:10px;}
-  .foot-brand img{height:28px;width:auto;opacity:0.85;}
-
-  /* ---------- CONTACT FORM ---------- */
-  .form-row{display:flex;gap:14px;}
-  .form-row .field{flex:1;}
-  .field{margin-bottom:16px;display:flex;flex-direction:column;gap:6px;}
-  .field label{font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.08em;color:#7c8091;text-transform:uppercase;}
-  .field input, .field textarea{
-    background:var(--ink);
-    border:1px solid var(--line);
-    color:var(--chalk);
-    padding:12px 14px;
-    font-family:'Inter',sans-serif;
-    font-size:0.92rem;
-    border-radius:2px;
-    resize:vertical;
-  }
-  .field input:focus, .field textarea:focus{outline:none;border-color:var(--signal-teal);}
-  #contactForm .btn{width:100%;justify-content:center;border:none;cursor:pointer;font-family:'Inter',sans-serif;margin-top:4px;}
-  #formStatus{font-size:0.82rem;margin-top:12px;min-height:1.2em;font-family:'Space Mono',monospace;}
-  .form-divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:#5c606b;font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.1em;}
-  .form-divider::before,.form-divider::after{content:'';flex:1;height:1px;background:var(--line);}
-
-  /* ---------- CHAT WIDGET ---------- */
-  #chatToggle{
-    position:fixed;bottom:26px;right:26px;z-index:200;
-    width:60px;height:60px;border-radius:50%;
-    background:var(--pitch-red);
-    border:none;cursor:pointer;
-    display:flex;align-items:center;justify-content:center;
-    box-shadow:0 12px 30px rgba(200,16,46,0.45);
-    transition:transform .2s ease, background .2s ease;
-  }
-  #chatToggle:hover{transform:translateY(-2px);background:#e4122f;}
-  #chatToggle svg{width:26px;height:26px;}
-  #chatToggle .close-icon{display:none;}
-  #chatToggle.open .chat-icon{display:none;}
-  #chatToggle.open .close-icon{display:block;}
-
-  #chatPanel{
-    position:fixed;bottom:98px;right:26px;z-index:200;
-    width:360px;max-width:calc(100vw - 40px);
-    height:480px;max-height:calc(100vh - 150px);
-    background:var(--navy);
-    border:1px solid var(--line);
-    border-radius:6px;
-    display:none;
-    flex-direction:column;
-    overflow:hidden;
-    box-shadow:0 24px 60px rgba(0,0,0,0.5);
-  }
-  #chatPanel.open{display:flex;}
-  .chat-head{
-    background:var(--ink);
-    padding:16px 18px;
-    display:flex;align-items:center;gap:12px;
-    border-bottom:1px solid var(--line);
-  }
-  .chat-head img{height:26px;width:auto;}
-  .chat-head div{display:flex;flex-direction:column;}
-  .chat-head strong{font-size:0.86rem;color:#fff;}
-  .chat-head span{font-family:'Space Mono',monospace;font-size:0.65rem;color:var(--signal-teal);}
-  .chat-body{
-    flex:1;overflow-y:auto;
-    padding:16px;
-    display:flex;flex-direction:column;gap:12px;
-  }
-  .chat-msg{
-    max-width:85%;
-    padding:10px 14px;
-    border-radius:10px;
-    font-size:0.86rem;
-    line-height:1.5;
-  }
-  .chat-msg.bot{background:rgba(255,255,255,0.06);color:var(--chalk);align-self:flex-start;border-bottom-left-radius:2px;}
-  .chat-msg.user{background:var(--pitch-red);color:#fff;align-self:flex-end;border-bottom-right-radius:2px;}
-  .chat-msg.typing{color:#9aa0ad;font-style:italic;}
-  .chat-input-row{
-    display:flex;gap:8px;
-    padding:12px;
-    border-top:1px solid var(--line);
-    background:var(--ink);
-  }
-  .chat-input-row input{
-    flex:1;background:var(--navy);border:1px solid var(--line);
-    color:var(--chalk);padding:10px 12px;border-radius:20px;font-size:0.86rem;
-  }
-  .chat-input-row input:focus{outline:none;border-color:var(--signal-teal);}
-  .chat-input-row button{
-    background:var(--pitch-red);border:none;color:#fff;
-    width:38px;height:38px;border-radius:50%;cursor:pointer;
-    display:flex;align-items:center;justify-content:center;flex-shrink:0;
-  }
-  .chat-input-row button:disabled{opacity:0.5;cursor:not-allowed;}
-  @media (max-width:520px){
-    #chatPanel{right:14px;bottom:90px;width:calc(100vw - 28px);}
-    #chatToggle{right:16px;bottom:16px;}
-  }
-
-  /* ---------- RESPONSIVE ---------- */
-  @media (max-width:900px){
-    .navlinks{display:none;}
-    .hero-grid{grid-template-columns:1fr;}
-    .hex-mosaic{height:420px;margin-top:20px;}
-    .about-grid, .partner-grid, .contact-grid{grid-template-columns:1fr;}
-    .values-grid{grid-template-columns:repeat(2,1fr);}
-    .svc-grid{grid-template-columns:1fr;}
-    .wrap{padding:0 22px;}
-  }
-  @media (max-width:520px){
-    .values-grid{grid-template-columns:1fr;}
-    .hero{padding-top:130px;}
-    .hex-a{width:200px;height:230px;left:8%;}
-    .hex-b{width:130px;height:150px;}
-    .hex-c{width:130px;height:150px;}
-    .hex-grid .hexcell{width:160px;height:184px;}
-    .hex-grid .hexcell.offset{margin-top:40px;}
-  }
-</style>
+<link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
 
 <header>
   <nav>
-    <a href="#top" class="brand">
-      <img src="assets/logo.png" alt="Off Pitch Africa logo">
+    <a href="index.html" class="brand">
+      <img src="assets/img/logo.png" alt="Off Pitch Africa logo">
       <span class="brand-word">EST. KENYA</span>
     </a>
-    <div class="navlinks">
-      <a href="#about">About</a>
-      <a href="#values">Values</a>
-      <a href="#services">What We Do</a>
-      <a href="#gallery">Gallery</a>
-      <a href="#contact">Contact</a>
-      <a href="#partner" class="nav-cta">Partner With Us</a>
+    <div class="navlinks" id="navLinks">
+      <a href="index.html" class="active">Home</a>
+      <a href="about.html">About</a>
+      <a href="services.html">What We Do</a>
+      <a href="gallery.html">Gallery</a>
+      <a href="contact.html">Contact</a>
+      <a href="contact.html#partner" class="nav-cta">Partner With Us</a>
     </div>
+    <button class="nav-burger" id="navBurger" aria-label="Toggle menu" aria-expanded="false"><span></span></button>
   </nav>
 </header>
 
 <main id="top">
 
   <!-- HERO -->
-  <section class="hero">
-    <div class="wrap hero-grid">
-      <div>
+  <section class="hero" id="heroSlideshow">
+    <div class="hero-bg-static" style="background-image:url('assets/img/crop_celebration2.jpg');"></div>
+    <div class="hero-bg-layers" id="heroLayers"></div>
+    <div class="hero-scrim"></div>
+    <div class="wrap">
+      <div class="hero-inner">
         <div class="eyebrow">KENYAN SPORTS MEDIA &amp; STORYTELLING PLATFORM</div>
         <h1>STORIES THAT LIVE <span>OFF THE PITCH</span></h1>
         <p class="lede">A leading platform for amplifying sports and athlete narratives for sustainable development in Africa and beyond — from the final whistle to what happens next.</p>
         <div class="hero-ctas">
-          <a href="#partner" class="btn btn-primary">Partner With Us →</a>
+          <a href="contact.html#partner" class="btn btn-primary">Partner With Us →</a>
           <a href="https://linktr.ee/off_pitch?utm_source=linktree_profile_share&ltsid=ee306f58-b25d-410f-a508-c2c5804de5df" target="_blank" rel="noopener" class="btn btn-ghost">Listen &amp; Follow</a>
         </div>
         <div class="hero-contact">
           <div><strong>0704 107 373</strong>More Info</div>
           <div><strong>offpitchafrica@gmail.com</strong>Official Email</div>
-          <div><strong><a href="https://www.instagram.com/offpitchafrica/" target="_blank" rel="noopener" style="color:inherit;">@offpitchafrica</a></strong>On Instagram</div>
+          <div><strong><a href="https://www.instagram.com/offpitchafrica/" target="_blank" rel="noopener">@offpitchafrica</a></strong>On Instagram</div>
         </div>
       </div>
-      <div class="hex-mosaic">
-        <div class="hex hex-a"><img src="assets/crop_celebration2.jpg" alt="Athletes celebrating a championship win"></div>
-        <div class="hex hex-b"><img src="assets/crop_hockey1b.jpg" alt="Hockey player in action"></div>
-        <div class="hex hex-c"><img src="assets/crop_hockey2b.jpg" alt="Hockey match action shot"></div>
-      </div>
+    </div>
+    <div class="scroll-cue">
+      <div class="dot-ring">↓</div>
+      <span>SCROLL</span>
     </div>
   </section>
 
@@ -577,138 +66,127 @@
     </div>
   </div>
 
-  <!-- ABOUT -->
-  <section class="about" id="about">
+  <!-- STATS -->
+  <section class="stats">
+    <div class="wrap">
+      <div class="stats-grid">
+        <div class="stat-item"><div class="num">6</div><div class="lbl">Core Services</div></div>
+        <div class="stat-item"><div class="num">4+</div><div class="lbl">Disciplines Covered</div></div>
+        <div class="stat-item"><div class="num">KE</div><div class="lbl">Based in Nairobi</div></div>
+        <div class="stat-item"><div class="num">2026</div><div class="lbl">On Air This Year</div></div>
+      </div>
+      <div class="stats-note">Have real figures — episodes published, audience reach, events covered? Send them over and we'll drop them in here.</div>
+    </div>
+  </section>
+
+  <!-- QUICK INTRO -->
+  <section class="about" style="padding:100px 0 60px;">
     <div class="wrap">
       <div class="sec-head">
         <div class="eyebrow">INTRODUCTION</div>
-        <h2>About Off Pitch Africa</h2>
+        <h2>Beyond the final whistle</h2>
+        <p><strong style="color:#fff;">OFF PITCH AFRICA</strong> is a dynamic Kenyan sports media and storytelling platform dedicated to amplifying the untold narratives of African athletes to the world — the human stories, challenges, and triumphs that define life off the pitch. Founded by Bonphace Odhiambo Otieno.</p>
       </div>
-      <div class="about-grid">
-        <div class="about-copy">
-          <p><strong style="color:#fff;">OFF PITCH AFRICA</strong> is a dynamic Kenyan sports media and storytelling platform dedicated to amplifying the untold narratives of African athletes to the world. The platform goes beyond match results to explore the human stories, challenges, and triumphs that define life off the pitch.</p>
-          <div class="founder-tag">
-            <div class="dot"></div>
-            <span>Founded by <strong>Bonphace Odhiambo Otieno</strong></span>
-          </div>
-          <div class="about-photo">
-            <img src="assets/crop_bw_hockey.jpg" alt="Hockey players in action, monochrome">
-          </div>
-        </div>
-        <div class="mv-stack">
-          <div class="mv-card">
-            <h3>Our Mission</h3>
-            <p>To empower African athletes and sports stakeholders by providing a platform for authentic storytelling that inspires, informs, and drives the growth of sports across the continent.</p>
-          </div>
-          <div class="mv-card vision">
-            <h3>Our Vision</h3>
-            <p>To become Africa's leading sports storytelling platform, recognized globally for shaping narratives that influence sports culture, policy, and development.</p>
-          </div>
-          <div class="mv-card" style="border-left-color:#9aa0ad;">
-            <h3 style="font-size:1.1rem;">Our Community</h3>
-            <p>Sports personalities, media gurus, fans of the game, data analysts, events organizers, strategic marketers and business personnel — connected by people like us.</p>
-          </div>
-        </div>
-      </div>
+      <a href="about.html" class="btn btn-ghost">Read Our Full Story →</a>
     </div>
   </section>
 
-  <!-- VALUES -->
-  <section class="values" id="values">
+  <!-- FEATURED COVERAGE CARDS -->
+  <section class="services" style="padding-top:80px;">
     <div class="wrap">
-      <div class="sec-head">
-        <div class="eyebrow">WHAT WE STAND FOR</div>
-        <h2>Our Core Values</h2>
+      <div class="sec-head-row">
+        <div class="sec-head on-light">
+          <div class="eyebrow">WHAT WE DO</div>
+          <h2>Featured Coverage</h2>
+        </div>
+        <a href="services.html" class="btn btn-ghost on-light">All Services →</a>
       </div>
-      <div class="values-grid">
-        <div class="value-card">
-          <div class="bar"></div>
-          <h3>Authenticity</h3>
-          <p>We are committed to sharing real experiences, unfiltered stories, told by us — in the Pitch and Off Pitch.</p>
-        </div>
-        <div class="value-card">
-          <div class="bar"></div>
-          <h3>Excellence</h3>
-          <p>It is in our nature — through training and skills development — to produce high quality production.</p>
-        </div>
-        <div class="value-card">
-          <div class="bar"></div>
-          <h3>Community</h3>
-          <p>We are connected by people like us: sports personalities, media gurus, fans, data analysts, events organizers, strategic marketers and business personnel.</p>
-        </div>
-        <div class="value-card">
-          <div class="bar"></div>
-          <h3>Innovation</h3>
-          <p>From Off Pitch to across digital pathways, we thrive in innovating sustainable solutions for sports, events production, coverage and marketing.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- SERVICES -->
-  <section class="services" id="services">
-    <div class="wrap">
-      <div class="sec-head">
-        <div class="eyebrow">WHAT WE DO</div>
-        <h2>How can we help?</h2>
-        <p>On our sets, we sit down players, fans, policy makers, brand influencers and investors to chat paths leading to the sustainable development of African players — when playing, and Off Pitch.</p>
-      </div>
-    </div>
-    <div class="wrap" style="padding:0;max-width:1180px;">
-      <div class="svc-grid">
-        <div class="svc-card">
-          <div class="svc-num">01 / PODCAST</div>
-          <h3>Off Pitch Podcast</h3>
-          <p>Studio sit-downs with players, fans, policy makers, brand influencers and investors — chatting the paths that lead to sustainable development for African players.</p>
-          <a href="https://podcasters.spotify.com/pod/show/off-pitch-podcast" target="_blank" rel="noopener" style="margin-top:16px;font-size:0.82rem;font-weight:700;color:var(--pitch-red);">Listen on Spotify →</a>
-        </div>
-        <div class="svc-card">
-          <div class="svc-num">02 / COVERAGE</div>
-          <h3>Sports Coverage</h3>
-          <p>From Hockey to Football, we cover events at community level and on global stages, for record-keeping and broadcast.</p>
-          <ul>
-            <li>Live sports commentary</li>
-            <li>Live data analysis from pitch to studio</li>
-          </ul>
-        </div>
-        <div class="svc-card">
-          <div class="svc-num">03 / CONTENT</div>
-          <h3>Digital Content Creation</h3>
-          <p>Digital production of sports news in long and short form.</p>
-          <ul>
-            <li>Custom team reels for institutions &amp; leagues</li>
-            <li>Fan-collaborated Off Pitch Reels</li>
-            <li>SDG campaigns — mental health, gender equity, climate action, peace</li>
-          </ul>
-        </div>
-        <div class="svc-card">
-          <div class="svc-num">04 / EVENTS</div>
-          <h3>Events Organization</h3>
-          <p>Tournament events, league proceedings coverage, and public and corporate themed events — on demand.</p>
-        </div>
-        <div class="svc-card">
-          <div class="svc-num">05 / ANALYSIS</div>
-          <h3>Sports Analysis</h3>
-          <p>Expert commentary and analysis across disciplines, from national leagues to continental tournaments.</p>
-        </div>
-        <div class="svc-card">
-          <div class="svc-num">06 / PARTNERSHIPS</div>
-          <h3>Brand Partnerships</h3>
-          <p>We partner with organizations to share our expertise across the board, sell brand merchandize globally, and customize brand promotion on request.</p>
-        </div>
+      <div class="card-grid">
+        <a href="https://www.instagram.com/offpitchafrica/" target="_blank" rel="noopener" class="story-card">
+          <img src="assets/img/crop_celebration2.jpg" alt="Championship celebration">
+          <span class="story-tag">Sports Coverage</span>
+          <div class="body">
+            <h3>Africa Cup of Nations Hockey — Commentators</h3>
+            <p>Live commentary and data analysis from the pitch to the studio, on the continental stage.</p>
+            <span class="story-link">VIEW ON INSTAGRAM →</span>
+          </div>
+        </a>
+        <a href="https://www.instagram.com/offpitchafrica/" target="_blank" rel="noopener" class="story-card">
+          <img src="assets/img/crop_hockey2b.jpg" alt="Hockey action shot">
+          <span class="story-tag">Sports Analysis</span>
+          <div class="body">
+            <h3>Kenya Hockey Union League — Experts</h3>
+            <p>Expert analysis and commentary across the domestic hockey league season.</p>
+            <span class="story-link">VIEW ON INSTAGRAM →</span>
+          </div>
+        </a>
+        <a href="https://www.instagram.com/offpitchafrica/" target="_blank" rel="noopener" class="story-card">
+          <img src="assets/img/crop_hockey1b.jpg" alt="Hockey player in motion">
+          <span class="story-tag">Events</span>
+          <div class="body">
+            <h3>Kenyatta University Annual KU Opens</h3>
+            <p>On-ground coverage of one of Kenya's biggest annual university sporting events.</p>
+            <span class="story-link">VIEW ON INSTAGRAM →</span>
+          </div>
+        </a>
       </div>
     </div>
 
     <div class="wrap featured">
       <div class="featured-inner">
-        <div class="eyebrow">FEATURED COVERAGE</div>
+        <div class="eyebrow">ALSO ON OUR SLATE</div>
         <div class="badge-row">
-          <span class="badge">AFRICA CUP OF NATIONS HOCKEY — COMMENTATORS</span>
-          <span class="badge">KENYA HOCKEY UNION LEAGUE — EXPERTS</span>
-          <span class="badge">KENYATTA UNIVERSITY ANNUAL KU OPENS</span>
           <span class="badge">MIXED MARTIAL ARTS &amp; BOXING STARS</span>
+          <span class="badge">OFF PITCH PODCAST — STUDIO SIT-DOWNS</span>
+          <span class="badge">BRAND PARTNERSHIPS &amp; MERCHANDIZE</span>
+          <span class="badge">SDG CAMPAIGN CONTENT</span>
         </div>
       </div>
+    </div>
+
+    <!-- WATCH ROW -->
+    <div class="wrap" style="padding-top:60px;">
+      <div class="sec-head-row">
+        <div class="sec-head on-light" style="margin-bottom:0;">
+          <div class="eyebrow">ON YOUTUBE</div>
+          <h2 style="font-size:1.9rem;">Watch Our Coverage</h2>
+        </div>
+        <a href="https://www.youtube.com/@offpitchAfrica" target="_blank" rel="noopener" class="btn btn-ghost on-light">Full Channel →</a>
+      </div>
+      <div class="media-row">
+        <a href="https://www.youtube.com/watch?v=onYddyoXVA8" target="_blank" rel="noopener" class="media-card">
+          <img src="https://img.youtube.com/vi/onYddyoXVA8/hqdefault.jpg" alt="Watch on YouTube" loading="lazy">
+          <div class="play-badge"><svg viewBox="0 0 24 24" fill="#fff"><polygon points="6 3 20 12 6 21"/></svg></div>
+        </a>
+        <a href="https://www.youtube.com/watch?v=DPB-AwIypSI" target="_blank" rel="noopener" class="media-card">
+          <img src="https://img.youtube.com/vi/DPB-AwIypSI/hqdefault.jpg" alt="Watch on YouTube" loading="lazy">
+          <div class="play-badge"><svg viewBox="0 0 24 24" fill="#fff"><polygon points="6 3 20 12 6 21"/></svg></div>
+        </a>
+        <a href="https://www.youtube.com/watch?v=plkNXmQ96tk" target="_blank" rel="noopener" class="media-card">
+          <img src="https://img.youtube.com/vi/plkNXmQ96tk/hqdefault.jpg" alt="Watch on YouTube" loading="lazy">
+          <div class="play-badge"><svg viewBox="0 0 24 24" fill="#fff"><polygon points="6 3 20 12 6 21"/></svg></div>
+        </a>
+        <a href="https://www.youtube.com/watch?v=ikjlL1JYTzw" target="_blank" rel="noopener" class="media-card">
+          <img src="https://img.youtube.com/vi/ikjlL1JYTzw/hqdefault.jpg" alt="Watch on YouTube" loading="lazy">
+          <div class="play-badge"><svg viewBox="0 0 24 24" fill="#fff"><polygon points="6 3 20 12 6 21"/></svg></div>
+        </a>
+      </div>
+      <div class="watch-info">
+        <p><strong style="color:#fff;">OFF PITCH PODCAST</strong> centers on the experiences of sportsmen and women on the pitch, with conversations about development off it — hosted by <strong style="color:#fff;">Bonphace Otieno</strong>. Episodes bring on players, fans, policy makers, brand influencers and investors from Kenya and across Africa's sports scene.</p>
+      </div>
+    </div>
+
+    <!-- PLAYBOOK / SUBSTACK -->
+    <div class="wrap" style="padding-top:60px;">
+      <a href="https://offpitchafricaplaybook.substack.com/" target="_blank" rel="noopener" class="playbook-card" style="text-decoration:none;">
+        <div class="pb-logo"><img src="assets/img/logo.png" alt="Off Pitch Africa Playbook"></div>
+        <div class="pb-body">
+          <div class="pb-eyebrow">OFFPITCH AFRICA PLAYBOOK · ON SUBSTACK</div>
+          <h3>Read The Playbook</h3>
+          <p>OffPitch Africa delivers powerful, human-centered stories from athletes across the continent — from major arenas to emerging grassroots talent.</p>
+        </div>
+        <span class="pb-cta">Subscribe →</span>
+      </a>
     </div>
 
     <div class="wrap follow-strip">
@@ -718,27 +196,11 @@
         <a href="https://www.instagram.com/offpitchafrica/" target="_blank" rel="noopener" class="social-pill">Instagram</a>
         <a href="https://www.youtube.com/@offpitchAfrica" target="_blank" rel="noopener" class="social-pill">YouTube</a>
         <a href="https://www.tiktok.com/@podcastoffpitch" target="_blank" rel="noopener" class="social-pill">TikTok</a>
-        <a href="https://podcasters.spotify.com/pod/show/off-pitch-podcast" target="_blank" rel="noopener" class="social-pill">Spotify</a>
+        <a href="https://open.spotify.com/show/2E5mgDfKByqyDlk3zeuVN2" target="_blank" rel="noopener" class="social-pill">Spotify</a>
+        <a href="https://offpitchafricaplaybook.substack.com/" target="_blank" rel="noopener" class="social-pill">Substack</a>
         <a href="https://www.facebook.com/OffPitchAfrica" target="_blank" rel="noopener" class="social-pill">Facebook</a>
         <a href="https://x.com/PodcastoffPitch" target="_blank" rel="noopener" class="social-pill">X</a>
         <a href="https://wa.me/254704107373" target="_blank" rel="noopener" class="social-pill social-pill-accent">WhatsApp</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- GALLERY -->
-  <section class="gallery" id="gallery">
-    <div class="wrap">
-      <div class="sec-head">
-        <div class="eyebrow">MOMENTS</div>
-        <h2>Off Pitch, On Camera</h2>
-        <p>Real sets, real stands, real community — captured across the disciplines we cover.</p>
-      </div>
-      <div class="hex-grid">
-        <div class="hexcell"><img src="assets/crop_celebration2.jpg" alt="Championship celebration"></div>
-        <div class="hexcell offset"><img src="assets/crop_team.jpg" alt="Off Pitch community gathering"></div>
-        <div class="hexcell"><img src="assets/crop_hockey2b.jpg" alt="Hockey action shot"></div>
-        <div class="hexcell offset"><img src="assets/crop_hockey1b.jpg" alt="Hockey player in motion"></div>
       </div>
     </div>
   </section>
@@ -749,99 +211,75 @@
       <div>
         <div class="eyebrow">BRAND PARTNERSHIPS</div>
         <h2>Partner with Off Pitch Africa</h2>
-        <p>We are pleased to partner with you or your organization as brand partners, sharing our expertise across the board. We sell brand merchandize to promote your brand around the globe — and on request, we customize merchandize and help with brand promotion as partners or consultants.</p>
+        <p>We share our expertise across the board, sell brand merchandize globally, and customize brand promotion on request — as partners or consultants.</p>
       </div>
-      <div class="partner-box">
+      <div class="partner-box" style="padding:34px;">
         <h3>Ready to tell your story?</h3>
-        <p>Send us a message and we'll get back to you about coverage, content, or a brand partnership.</p>
-        <form id="contactForm" action="https://formspree.io/f/xykrplgy" method="POST">
-          <div class="field">
-            <label for="cf-name">Name</label>
-            <input id="cf-name" name="name" type="text" required autocomplete="name">
-          </div>
-          <div class="field">
-            <label for="cf-email">Email</label>
-            <input id="cf-email" name="email" type="email" required autocomplete="email">
-          </div>
-          <div class="field">
-            <label for="cf-message">Message</label>
-            <textarea id="cf-message" name="message" rows="4" required></textarea>
-          </div>
-          <button type="submit" class="btn btn-primary">Send Message</button>
-          <div id="formStatus"></div>
-        </form>
-        <div class="form-divider">OR</div>
-        <div style="display:flex;gap:10px;">
-          <a href="mailto:offpitchafrica@gmail.com" class="btn btn-ghost" style="flex:1;justify-content:center;">Email Us</a>
-          <a href="https://wa.me/254704107373" target="_blank" rel="noopener" class="btn btn-ghost" style="flex:1;justify-content:center;border-color:#25D366;color:#25D366;">WhatsApp Us</a>
-        </div>
+        <p>Reach out and let's discuss coverage, content, or a brand partnership built for your organization.</p>
+        <a href="contact.html" class="btn btn-primary" style="width:100%;justify-content:center;">Get In Touch →</a>
       </div>
     </div>
   </section>
 
-  <!-- CONTACT / FOOTER -->
-  <footer id="contact">
-    <div class="wrap">
-      <div class="contact-grid">
-        <div>
-          <h2>Let's talk<br>off pitch.</h2>
-          <p class="lede">Whether it's a match to cover, a story to tell, or a brand to build — we're one call or DM away.</p>
-          <div class="foot-cta">
-            <a href="https://linktr.ee/off_pitch?utm_source=linktree_profile_share&ltsid=ee306f58-b25d-410f-a508-c2c5804de5df" target="_blank" rel="noopener" class="btn btn-ghost">All Our Links →</a>
-          </div>
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-col">
+        <div class="foot-brand-block">
+          <img src="assets/img/logo.png" alt="Off Pitch Africa">
         </div>
-        <div class="contact-list">
-          <div class="contact-item">
-            <div class="label">PHONE</div>
-            <a href="tel:+254704107373">+254 704 10 7373</a>
-          </div>
-          <div class="contact-item">
-            <div class="label">EMAIL</div>
-            <a href="mailto:offpitchafrica@gmail.com">offpitchafrica@gmail.com</a>
-          </div>
-          <div class="contact-item">
-            <div class="label">WHATSAPP</div>
-            <a href="https://wa.me/254704107373" target="_blank" rel="noopener">Message us directly</a>
-          </div>
-          <div class="contact-item">
-            <div class="label">SOCIAL</div>
-            <div style="display:flex;flex-direction:column;gap:4px;">
-              <a href="https://www.instagram.com/offpitchafrica/" target="_blank" rel="noopener">Instagram — @offpitchafrica</a>
-              <a href="https://www.tiktok.com/@podcastoffpitch" target="_blank" rel="noopener" style="font-size:0.95rem;">TikTok — @podcastoffpitch</a>
-              <a href="https://x.com/PodcastoffPitch" target="_blank" rel="noopener" style="font-size:0.95rem;">X — @PodcastoffPitch</a>
-            </div>
-          </div>
-          <div class="contact-item">
-            <div class="label">BASED IN</div>
-            <span class="val">Nairobi, Kenya</span>
-          </div>
-        </div>
+        <p>A Kenyan sports media and storytelling platform amplifying African athlete narratives, on and off the pitch. Founded by Bonphace Odhiambo Otieno.</p>
       </div>
-      <div class="foot-bottom">
-        <div class="foot-brand">
-          <img src="assets/logo.png" alt="Off Pitch Africa">
-          <span>© <span id="year"></span> Off Pitch Africa. Founded by Bonphace Odhiambo Otieno.</span>
-        </div>
-        <span>Amplifying African sports narratives, on and off the pitch.</span>
+      <div class="foot-col">
+        <h4>Navigate</h4>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="services.html">What We Do</a></li>
+          <li><a href="gallery.html">Gallery</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+      <div class="foot-col">
+        <h4>Follow</h4>
+        <ul>
+          <li><a href="https://www.instagram.com/offpitchafrica/" target="_blank" rel="noopener">Instagram</a></li>
+          <li><a href="https://www.youtube.com/@offpitchAfrica" target="_blank" rel="noopener">YouTube</a></li>
+          <li><a href="https://www.tiktok.com/@podcastoffpitch" target="_blank" rel="noopener">TikTok</a></li>
+          <li><a href="https://x.com/PodcastoffPitch" target="_blank" rel="noopener">X</a></li>
+          <li><a href="https://www.facebook.com/OffPitchAfrica" target="_blank" rel="noopener">Facebook</a></li>
+          <li><a href="https://offpitchafricaplaybook.substack.com/" target="_blank" rel="noopener">Substack (Playbook)</a></li>
+        </ul>
+      </div>
+      <div class="foot-col">
+        <h4>Contact</h4>
+        <ul>
+          <li><a href="tel:+254704107373">+254 704 10 7373</a></li>
+          <li><a href="mailto:offpitchafrica@gmail.com">offpitchafrica@gmail.com</a></li>
+          <li><a href="https://wa.me/254704107373" target="_blank" rel="noopener">WhatsApp</a></li>
+          <li>Nairobi, Kenya</li>
+        </ul>
       </div>
     </div>
-  </footer>
-
-</main>
+    <div class="foot-bottom">
+      <span>© <span id="year"></span> Off Pitch Africa. All rights reserved.</span>
+      <span>Amplifying African sports narratives, on and off the pitch.</span>
+    </div>
+  </div>
+</footer>
 
 <!-- CHAT WIDGET -->
 <button id="chatToggle" aria-label="Open chat with Off Pitch Africa assistant" aria-expanded="false">
   <svg class="chat-icon" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
   <svg class="close-icon" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
 </button>
-
 <div id="chatPanel">
   <div class="chat-head">
-    <img src="assets/logo.png" alt="">
-    <div>
-      <strong>Off Pitch Africa</strong>
-      <span>Ask about our services</span>
-    </div>
+    <img src="assets/img/logo.png" alt="">
+    <div><strong>Off Pitch Africa</strong><span>Ask about our services</span></div>
   </div>
   <div class="chat-body" id="chatBody">
     <div class="chat-msg bot">Hey — I'm the Off Pitch Africa assistant. Ask me about our podcast, coverage, partnerships, or how to reach the team.</div>
@@ -854,107 +292,6 @@
   </div>
 </div>
 
-<script>
-  document.getElementById('year').textContent = new Date().getFullYear();
-
-  /* ---------- Contact form (Formspree) ---------- */
-  const contactForm = document.getElementById('contactForm');
-  if (contactForm) {
-    contactForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const status = document.getElementById('formStatus');
-      const btn = contactForm.querySelector('button[type="submit"]');
-      const originalLabel = btn.textContent;
-      btn.disabled = true;
-      btn.textContent = 'Sending…';
-      status.textContent = '';
-      status.style.color = '#9aa0ad';
-
-      try {
-        const res = await fetch(contactForm.action, {
-          method: 'POST',
-          body: new FormData(contactForm),
-          headers: { 'Accept': 'application/json' }
-        });
-        if (res.ok) {
-          contactForm.reset();
-          status.textContent = "Thanks — we'll be in touch soon.";
-          status.style.color = 'var(--signal-teal)';
-        } else {
-          status.textContent = 'Something went wrong. Please email us directly.';
-          status.style.color = '#ff8080';
-        }
-      } catch (err) {
-        status.textContent = 'Network error. Please email us directly.';
-        status.style.color = '#ff8080';
-      } finally {
-        btn.disabled = false;
-        btn.textContent = originalLabel;
-      }
-    });
-  }
-
-  /* ---------- Chat assistant ---------- */
-  const chatToggle = document.getElementById('chatToggle');
-  const chatPanel = document.getElementById('chatPanel');
-  const chatBody = document.getElementById('chatBody');
-  const chatInput = document.getElementById('chatInput');
-  const chatSend = document.getElementById('chatSend');
-  let chatHistory = [];
-  let chatOpened = false;
-
-  chatToggle.addEventListener('click', () => {
-    chatOpened = !chatOpened;
-    chatToggle.classList.toggle('open', chatOpened);
-    chatPanel.classList.toggle('open', chatOpened);
-    chatToggle.setAttribute('aria-expanded', String(chatOpened));
-    if (chatOpened) chatInput.focus();
-  });
-
-  function addMessage(text, role) {
-    const div = document.createElement('div');
-    div.className = 'chat-msg ' + (role === 'user' ? 'user' : 'bot');
-    div.textContent = text;
-    chatBody.appendChild(div);
-    chatBody.scrollTop = chatBody.scrollHeight;
-    return div;
-  }
-
-  async function sendChat() {
-    const text = chatInput.value.trim();
-    if (!text) return;
-    addMessage(text, 'user');
-    chatHistory.push({ role: 'user', content: text });
-    chatInput.value = '';
-    chatSend.disabled = true;
-
-    const typingEl = addMessage('Typing…', 'bot');
-    typingEl.classList.add('typing');
-
-    try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, history: chatHistory.slice(0, -1) })
-      });
-
-      if (!res.ok) throw new Error('bad response');
-      const data = await res.json();
-      typingEl.remove();
-      addMessage(data.reply, 'bot');
-      chatHistory.push({ role: 'assistant', content: data.reply });
-    } catch (err) {
-      typingEl.remove();
-      addMessage("I'm not connected yet — this chat needs the backend function deployed (see README.md). Meanwhile, reach us at offpitchafrica@gmail.com or +254 704 10 7373.", 'bot');
-    } finally {
-      chatSend.disabled = false;
-    }
-  }
-
-  chatSend.addEventListener('click', sendChat);
-  chatInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') sendChat();
-  });
-</script>
+<script src="assets/js/main.js"></script>
 </body>
 </html>

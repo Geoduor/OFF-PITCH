@@ -1,8 +1,8 @@
 {
   "name": "off-pitch-africa-website",
   "version": "1.0.0",
-  "type": "module",
   "private": true,
+  "type": "module",
   "description": "Off Pitch Africa marketing site with a working contact form and an AI chat assistant backend.",
   "scripts": {
     "dev": "vercel dev"

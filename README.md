@@ -1,15 +1,14 @@
-# Off Pitch Africa — Website
+# Off Pitch Africa — Website (Multi-Page)
 
-A one-page marketing site for Off Pitch Africa with two working "agentic" pieces:
+A 5-page marketing site for Off Pitch Africa: **Home, About, What We Do,
+Gallery, Contact** — sharing one stylesheet, one script file, and the same
+working contact form + AI chat assistant on every page.
 
-1. A **contact form** that actually emails you (via Formspree — no backend needed).
-2. An **AI chat assistant** on the site that answers visitor questions using only
-   real facts about Off Pitch Africa (via a small serverless function that calls
-   the Anthropic API).
-
-Both pieces need a few minutes of setup before they're "live" — a static HTML
-file alone can't send emails or call an AI model securely. Follow the steps
-below in order.
+Design direction is adapted from a sports-news site layout you shared as a
+reference (full-bleed photo hero, scroll cue, card-style feature grid, stats
+strip) — rebuilt using Off Pitch Africa's real brand colors, logo, photos,
+and copy. No content was invented; see section 5 below for exactly what's
+real vs. what you can still add.
 
 ---
 
@@ -17,120 +16,176 @@ below in order.
 
 ```
 /
-├── index.html          the website
-├── package.json         minimal project file (for deployment)
-├── assets/               logo + photos used on the site
-│   └── ...
+├── index.html            Home
+├── about.html             About (mission, vision, values, founder)
+├── services.html          What We Do (all 6 services + featured coverage)
+├── gallery.html           Gallery (filterable photo grid)
+├── contact.html           Contact (working form + all contact details)
+├── package.json           minimal project file (for deployment)
+├── assets/
+│   ├── css/style.css       shared styles for all 5 pages
+│   ├── js/main.js          shared behavior: nav, chat widget, form, gallery filter
+│   └── img/                logo + photos
 └── api/
-    └── chat.js           serverless function that powers the chat assistant
+    └── chat.js             serverless function powering the AI chat assistant
 ```
 
-Keep this exact structure when you upload/deploy — `index.html` expects
-`assets/...` and `/api/chat` to be reachable relative to itself.
+Keep this exact structure when you upload/deploy. Every page links to
+`assets/css/style.css`, `assets/js/main.js`, and images under `assets/img/`
+using relative paths — so the folder layout must stay intact.
 
 ---
 
-## 2. Set up the contact form (Formspree — free)
+## 2. What's already wired in (from before)
 
-1. Go to https://formspree.io and create a free account.
-2. Create a new form. Formspree gives you a form ID that looks like `mjaybnzk`.
-3. Open `index.html`, find this line (inside the `#contactForm` section, near
-   "Ready to tell your story?"):
+- **Contact form** → already connected to your live Formspree endpoint
+  (`https://formspree.io/f/xykrplgy`) on `contact.html`. No further setup
+  needed for this part.
+- **Chat assistant** → calls `/api/chat`, a serverless function in
+  `api/chat.js`, present on every page. This requires your Vercel deployment
+  to have `ANTHROPIC_API_KEY` set (see below) **and** billing/credit active
+  on your Anthropic account — the assistant will show a graceful fallback
+  message until both are true.
 
-   ```html
-   <form id="contactForm" action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
-   ```
-
-4. Replace `YOUR_FORM_ID` with the ID Formspree gave you.
-5. In Formspree's dashboard, set the notification email to
-   `offpitchafrica@gmail.com` (or wherever you want submissions to land).
-
-That's it — once deployed, the form submits without a page reload and shows
-a "Thanks — we'll be in touch soon" message. No server code required for this
-part.
+If you already deployed the single-page version to Vercel, just push this
+whole updated folder to the same project (or run `vercel --prod` again from
+this folder) — your existing `ANTHROPIC_API_KEY` environment variable will
+still apply, since it's set at the project level, not per-file.
 
 ---
 
-## 3. Set up the AI chat assistant
+## 3. Redeploying to Vercel
 
-The chat widget (bottom-right bubble) calls `/api/chat`, a serverless
-function in `api/chat.js`. This function calls Anthropic's API on the
-server side, so your API key is never exposed to visitors. This requires
-deploying to a host that supports serverless functions — **Vercel** is the
-simplest (free tier is enough for a site like this).
+From inside this project folder:
 
-### Deploy to Vercel
+```
+vercel --prod
+```
 
-1. Create a free account at https://vercel.com.
-2. Install the Vercel CLI (needs Node.js installed):
-   ```
-   npm install -g vercel
-   ```
-3. From inside this project folder, run:
-   ```
-   vercel
-   ```
-   and follow the prompts (accept defaults) to create and deploy the project.
-4. In the Vercel dashboard → your project → **Settings → Environment
-   Variables**, add:
-   - Name: `ANTHROPIC_API_KEY`
-   - Value: your Anthropic API key (create one at https://console.anthropic.com)
-5. Redeploy (`vercel --prod`) so the function picks up the new environment
-   variable.
+That's it if you've already got the project linked and the environment
+variable set. If this is a fresh project instead, follow the same steps as
+before:
 
-Once deployed, the chat bubble will answer questions using only the facts
-written into `api/chat.js` (mission, services, contact info) — it's told to
-say "I'm not sure" and point to your contact details rather than make things
-up if it doesn't know something.
-
-### If you'd rather use Netlify instead of Vercel
-
-The function needs to move to `netlify/functions/chat.js` and be called from
-the frontend as `/.netlify/functions/chat` instead of `/api/chat` (one line
-to change in `index.html`). Netlify also uses environment variables under
-**Site settings → Environment variables**. Ask me if you'd like this
-converted.
-
-### Cost note
-
-Each chat message triggers one small Anthropic API call (using the fast
-`claude-haiku-4-5` model to keep costs low). Check current pricing at
-https://docs.claude.com before launching if you expect high traffic.
+1. `vercel` (first-time setup, accept defaults)
+2. In the Vercel dashboard → your project → **Settings → Environment
+   Variables**, add `ANTHROPIC_API_KEY` with your key from
+   console.anthropic.com (requires billing/credit active on that account)
+3. `vercel --prod` to redeploy with the key active
 
 ---
 
-## 4. Local preview (without the chat backend)
+## 4. Local preview
 
-You can open `index.html` directly in a browser to check the design any
-time. The contact form and chat assistant won't fully work until deployed
-(the form needs your live Formspree ID, and `/api/chat` only exists once
-deployed to Vercel/Netlify with the API key set) — you'll see a friendly
-fallback message in the chat widget if it can't reach the backend.
+Open `index.html` directly in a browser to check any page's design — all
+five pages link to each other via the nav bar and footer. The contact form
+and chat assistant work fully once deployed; locally, the chat will show its
+fallback message since `/api/chat` only exists on a real deployment.
 
 ---
 
-## 5. What's real vs. what you need to add
+## 5. What's real vs. what you can still add
 
-Everything on the page (mission, vision, values, services, contact info,
-photos, logo, and social links) comes directly from the Off Pitch Africa
-company profile and your live Linktree (linktr.ee/off_pitch) — nothing was
-invented. Social accounts linked on the site:
+Everything on every page — mission, vision, founder, values, all 6 services,
+featured coverage credits, contact info, social links, and photos — comes
+directly from the Off Pitch Africa company profile and your live Linktree.
+Nothing was invented.
 
-- Instagram: https://www.instagram.com/offpitchafrica/
-- YouTube: https://www.youtube.com/@offpitchAfrica
-- TikTok: https://www.tiktok.com/@podcastoffpitch
-- X: https://x.com/PodcastoffPitch
-- Facebook: https://www.facebook.com/OffPitchAfrica
-- Off Pitch Podcast (Spotify): https://podcasters.spotify.com/pod/show/off-pitch-podcast
-- WhatsApp: https://wa.me/254704107373
+**Design credit:** The Home page's news/video card grid was restyled to match
+the layout of fih.hockey (the International Hockey Federation's official
+site) — dark overlay-caption cards, a "Watch" video row with play-button
+thumbnails, per your reference. The "Read The Playbook" callout card matches
+the look of the Substack link-preview card you shared, using your real
+Substack tagline pulled directly from offpitchafricaplaybook.substack.com.
 
-If any of these accounts change, update the links in `index.html` (search
-for "social-pill" and "contact-item") and in the assistant's knowledge in
-`api/chat.js` (the `SYSTEM_PROMPT` constant) so the chat widget stays
-accurate.
+Two spots are intentionally left as clearly-marked placeholders rather than
+guessed at:
 
-The only things you must supply yourself:
+- **Stats strip on the Home page** (currently shows "6 Core Services," "4+
+  Disciplines," etc. — safe facts, not guesses). If you have real numbers —
+  episodes published, audience reach, events covered — send them over and
+  we'll swap them in.
+- **Watch row video thumbnails** currently reuse your existing photos as
+  placeholders and link out to your YouTube channel — they don't claim to be
+  actual video stills. Send real video thumbnails/screenshots any time and
+  we'll swap them in.
+- **Gallery** uses the same photos from your company profile; add higher-res
+  or additional event photos any time by dropping them into `assets/img/`
+  and adding a `<div class="hexcell">` entry in `gallery.html`.
 
-- Your Formspree form ID (step 2)
-- Your Anthropic API key, added as an environment variable on your host
-  (step 3) — never paste it into `index.html` or `chat.js` directly
+The only setup items still on you:
+
+- Anthropic billing/credit for the chat assistant to actually respond
+  (see prior conversation — console.anthropic.com → Plans & Billing)
+- The social media slideshow feed (below) needs its own API credentials
+
+---
+
+## 6. Live social slideshow (Home page hero)
+
+The Home page hero background is now a slideshow that cross-fades between
+your **actual recent photos from YouTube, Instagram, and Facebook** —
+pulled live via each platform's official API (not scraping). It's powered
+by `api/social-feed.js`, called by the browser every time someone loads the
+Home page.
+
+**Nothing breaks if you skip this setup** — the hero just shows your
+existing static photo until you add credentials. Each platform is
+independent: configure just YouTube, or just Instagram, or all three.
+
+### YouTube (easiest — ~5 minutes, free)
+
+1. Go to [console.cloud.google.com](https://console.cloud.google.com) and
+   create a project (or use an existing one).
+2. In the sidebar: **APIs & Services → Library** → search "YouTube Data API
+   v3" → **Enable**.
+3. **APIs & Services → Credentials** → **Create Credentials → API Key**.
+   Copy the key.
+4. In Vercel: **Settings → Environment Variables**, add:
+   - `YOUTUBE_API_KEY` = the key you just copied
+   - (optional) `YOUTUBE_CHANNEL_ID` — only needed if you ever change
+     channels; it already defaults to Off Pitch Africa's channel.
+
+### Instagram (~15 minutes — needs a Business or Creator account)
+
+Your Instagram account must be a **Business or Creator account** (not
+Personal) and linked to a Facebook Page. If it isn't yet, Instagram's app
+settings will walk you through converting it — it's free and doesn't change
+how you post.
+
+1. Go to [developers.facebook.com](https://developers.facebook.com) → **My
+   Apps → Create App** → choose "Business" as the type.
+2. In your new app's dashboard, add the **Instagram** product.
+3. Follow Meta's setup flow to connect your Instagram account and generate a
+   **long-lived access token** (their Graph API Explorer tool, linked from
+   the same dashboard, can generate this — select your app, your Instagram
+   permissions, and exchange for a long-lived token).
+4. In Vercel: add environment variable `IG_ACCESS_TOKEN` = that token.
+
+Long-lived tokens last ~60 days and need refreshing — Meta's docs cover the
+refresh flow. If this becomes a hassle, let us know and we can add an
+automatic refresh step.
+
+### Facebook (~10 minutes — same Meta Developer app as Instagram)
+
+1. In the same Meta app from the Instagram steps, make sure the **Pages**
+   product is added.
+2. Use Graph API Explorer to select your Page and generate a **Page Access
+   Token** with the `pages_read_engagement` permission.
+3. Also grab your Page's numeric ID (visible in Page settings, or via the
+   Graph API Explorer response).
+4. In Vercel: add `FB_PAGE_ID` and `FB_PAGE_ACCESS_TOKEN`.
+
+### After adding any of these
+
+Redeploy so Vercel picks up the new environment variables:
+
+```
+vercel --prod
+```
+
+Reload the Home page — if at least one platform is configured correctly,
+the hero background will start cross-fading between real photos every 6
+seconds. Open your browser's dev tools → Network tab → look for a call to
+`/api/social-feed` to confirm it's returning images (check the `sources`
+field in the response to see counts per platform).
+
