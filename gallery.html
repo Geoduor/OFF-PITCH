@@ -7,6 +7,11 @@
 <meta name="description" content="Photos from Off Pitch Africa's coverage — hockey, football, and community moments.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="icon" href="assets/img/favicons/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicons/favicon-16.png">
+<link rel="icon" type="image/png" sizes="192x192" href="assets/img/favicons/favicon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/img/favicons/favicon-180.png">
 <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
@@ -18,6 +23,7 @@
       <span class="brand-word">EST. KENYA</span>
     </a>
     <div class="navlinks" id="navLinks">
+      <button class="nav-close" id="navClose" aria-label="Close menu">&times;</button>
       <a href="index.html">Home</a>
       <a href="about.html">About</a>
       <a href="services.html">What We Do</a>
@@ -28,9 +34,10 @@
     <button class="nav-burger" id="navBurger" aria-label="Toggle menu" aria-expanded="false"><span></span></button>
   </nav>
 </header>
+<div class="nav-overlay" id="navOverlay"></div>
 
 <main>
-  <section class="page-hero" style="background-image:url('assets/img/crop_hockey1b.jpg');">
+  <section class="page-hero" style="background-image:url('assets/img/trophy_presentation_blazers.jpg');">
     <div class="wrap">
       <div class="eyebrow">MOMENTS</div>
       <h1>Off Pitch, On Camera</h1>
@@ -48,11 +55,12 @@
         <button class="filter-pill" data-filter="celebration">Celebrations</button>
       </div>
       <div class="hex-grid">
-        <div class="hexcell" data-category="celebration"><img src="assets/img/crop_celebration2.jpg" alt="Championship celebration"></div>
-        <div class="hexcell offset" data-category="community"><img src="assets/img/crop_team.jpg" alt="Off Pitch community gathering"></div>
-        <div class="hexcell" data-category="hockey"><img src="assets/img/crop_hockey2b.jpg" alt="Hockey action shot"></div>
-        <div class="hexcell offset" data-category="hockey"><img src="assets/img/crop_hockey1b.jpg" alt="Hockey player in motion"></div>
-        <div class="hexcell" data-category="hockey"><img src="assets/img/crop_bw_hockey.jpg" alt="Hockey players, monochrome"></div>
+        <div class="hexcell" data-category="community"><img src="assets/img/host_studio.jpg" alt="Off Pitch Africa host in the broadcast studio"></div>
+        <div class="hexcell offset" data-category="community"><img src="assets/img/banner_hold.jpg" alt="Off Pitch Africa banner at a hockey event"></div>
+        <div class="hexcell" data-category="hockey"><img src="assets/img/trophy_handshake.jpg" alt="Trophy handover at a hockey tournament"></div>
+        <div class="hexcell offset" data-category="community"><img src="assets/img/team_partners_group.jpg" alt="Off Pitch Africa team with brand partners"></div>
+        <div class="hexcell" data-category="celebration"><img src="assets/img/performance_hockey_giftbag.jpg" alt="Off Pitch Africa with Performance Hockey partners"></div>
+        <div class="hexcell offset" data-category="community"><img src="assets/img/merch_pins.jpg" alt="Off Pitch Africa branded merchandise pins"></div>
       </div>
     </div>
   </section>
@@ -98,6 +106,7 @@
           <li><a href="https://www.tiktok.com/@podcastoffpitch" target="_blank" rel="noopener">TikTok</a></li>
           <li><a href="https://x.com/PodcastoffPitch" target="_blank" rel="noopener">X</a></li>
           <li><a href="https://www.facebook.com/OffPitchAfrica" target="_blank" rel="noopener">Facebook</a></li>
+          <li><a href="https://offpitchafricaplaybook.substack.com/" target="_blank" rel="noopener">Substack (Playbook)</a></li>
         </ul>
       </div>
       <div class="foot-col">
