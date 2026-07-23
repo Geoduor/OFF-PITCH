@@ -60,8 +60,7 @@ section{position:relative;}
 /* ---------- NAV ---------- */
 header{
   position:fixed;top:0;left:0;right:0;z-index:100;
-  background:rgba(11,11,13,0.86);
-  backdrop-filter:blur(10px);
+  background:rgba(11,11,13,0.94);
   border-bottom:1px solid var(--line);
 }
 nav{
