@@ -4,20 +4,32 @@ document.addEventListener('DOMContentLoaded', () => {
   const yearEl = document.getElementById('year');
   if (yearEl) yearEl.textContent = new Date().getFullYear();
 
-  /* ---------- Mobile nav toggle ---------- */
+  /* ---------- Mobile nav toggle (slide-in drawer) ---------- */
   const burger = document.getElementById('navBurger');
   const navlinks = document.getElementById('navLinks');
+  const navClose = document.getElementById('navClose');
+  const navOverlay = document.getElementById('navOverlay');
+
+  function setNavOpen(open) {
+    if (!navlinks || !burger) return;
+    navlinks.classList.toggle('open', open);
+    burger.classList.toggle('open', open);
+    burger.setAttribute('aria-expanded', String(open));
+    if (navOverlay) navOverlay.classList.toggle('open', open);
+    document.body.style.overflow = open ? 'hidden' : '';
+  }
+
   if (burger && navlinks) {
     burger.addEventListener('click', () => {
-      const open = navlinks.classList.toggle('open');
-      burger.classList.toggle('open', open);
-      burger.setAttribute('aria-expanded', String(open));
+      setNavOpen(!navlinks.classList.contains('open'));
     });
     navlinks.querySelectorAll('a').forEach(a => {
-      a.addEventListener('click', () => {
-        navlinks.classList.remove('open');
-        burger.classList.remove('open');
-      });
+      a.addEventListener('click', () => setNavOpen(false));
+    });
+    if (navClose) navClose.addEventListener('click', () => setNavOpen(false));
+    if (navOverlay) navOverlay.addEventListener('click', () => setNavOpen(false));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') setNavOpen(false);
     });
   }
 
