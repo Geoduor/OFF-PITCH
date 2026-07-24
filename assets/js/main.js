@@ -36,10 +36,29 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ---------- Contact form (Formspree) ---------- */
   const contactForm = document.getElementById('contactForm');
   if (contactForm) {
+    // Bot-speed trap: stamp the moment the form became interactive. A real
+    // person needs at least a couple seconds to read the form and type a
+    // message; a script submitting instantly on page load is almost always
+    // a bot. This is a heuristic, not a hard guarantee — paired with the
+    // honeypot field and Formspree's own spam filtering (see SECURITY.md).
+    const loadedAtField = document.getElementById('cf-loaded-at');
+    if (loadedAtField) loadedAtField.value = String(Date.now());
+    const MIN_FILL_TIME_MS = 2500;
+
     contactForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const status = document.getElementById('formStatus');
       const btn = contactForm.querySelector('button[type="submit"]');
+
+      if (loadedAtField && loadedAtField.value) {
+        const elapsed = Date.now() - Number(loadedAtField.value);
+        if (elapsed < MIN_FILL_TIME_MS) {
+          status.textContent = 'Please take a moment to review your message, then try again.';
+          status.style.color = '#ff8080';
+          return;
+        }
+      }
+
       const originalLabel = btn.textContent;
       btn.disabled = true;
       btn.textContent = 'Sending…';
@@ -54,6 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         if (res.ok) {
           contactForm.reset();
+          if (loadedAtField) loadedAtField.value = String(Date.now());
           status.textContent = "Thanks — we'll be in touch soon.";
           status.style.color = 'var(--signal-teal)';
         } else {

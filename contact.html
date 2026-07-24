@@ -83,8 +83,17 @@
                  auto-fill every field will fill this in. Formspree silently
                  discards submissions where this field is non-empty. -->
             <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">
+            <!-- Bot-speed trap: records when the form finished loading. If a
+                 submission arrives suspiciously fast (a human can't read the
+                 form and type a message in under ~3 seconds), main.js quietly
+                 blocks it client-side — real bots often submit instantly. -->
+            <input type="hidden" id="cf-loaded-at" name="_loaded_at" value="">
             <button type="submit" class="btn btn-primary">Send Message</button>
             <div id="formStatus"></div>
+            <p class="form-trust-note">
+              🔒 Sent securely over HTTPS via <a href="https://formspree.io/security/" target="_blank" rel="noopener">Formspree</a>,
+              a SOC&nbsp;2 Type&nbsp;2 &amp; GDPR-compliant processor — your details are encrypted at rest and never shared with anyone else.
+            </p>
           </form>
           <div class="form-divider">OR</div>
           <div style="display:flex;gap:10px;">

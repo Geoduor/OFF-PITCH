@@ -101,13 +101,28 @@ requests claiming a different origin.
   messages) and per-message length. Previously there was no length limit at
   all — someone could have sent a massive payload to run up your Anthropic
   bill or overwhelm the function.
-- The contact form now has `maxlength` limits on every field, plus a
-  **honeypot field** (`_gotcha`) — invisible to real people, but bots that
-  blindly fill in every form field on a page will fill it in too, letting
-  Formspree quietly discard the spam submission.
-- **Recommended (2-minute manual step, not code):** in your Formspree
-  dashboard, enable their built-in spam filtering / reCAPTCHA option for
-  extra protection beyond the honeypot.
+- The contact form now has `maxlength` limits on every field, plus two
+  layers of bot protection:
+  - A **honeypot field** (`_gotcha`) — invisible to real people, but bots
+    that blindly fill in every form field will fill it in too, letting
+    Formspree quietly discard the submission.
+  - A **bot-speed trap** — the form stamps the moment it loaded, and blocks
+    submission if it comes back in under ~2.5 seconds. Real people need at
+    least that long to read the form and type a message; scripted bots
+    almost always submit instantly.
+- **Verified directly from Formspree's own security page** (not assumed):
+  Formspree is **SOC 2 Type 2** audited, **GDPR/CCPA compliant**, encrypts
+  data at rest with **AES-256**, uses **TLS 1.2+** in transit, is hosted on
+  AWS, and runs a Web Application Firewall with active threat monitoring.
+  This is now stated directly on the contact page itself (with a link to
+  their security page) so partners submitting sensitive info can see it.
+- **Recommended next step for even stronger spam/bot protection:**
+  Formspree supports invisible Google reCAPTCHA v3 scoring, which needs a
+  free Google reCAPTCHA key (2-minute signup at
+  google.com/recaptcha/admin) plus pasting the secret key into your
+  Formspree form settings. I didn't wire this in yet since it needs your
+  own Google account — happy to build it the same way we did the other
+  integrations once you're ready.
 
 ### Rate Limiting
 This was a real, meaningful gap — nothing stopped someone from scripting
@@ -227,6 +242,7 @@ exploited to execute disguised scripts.
 - `vercel.json` — new file, global security headers
 - `api/chat.js` — CORS restriction, input validation, rate limiting, safer errors
 - `api/social-feed.js` — CORS restriction, rate limiting, URL sanitization
-- `assets/js/main.js` — client-side URL validation, message length guard, friendlier rate-limit message
-- `contact.html` — field length limits, honeypot spam trap
+- `assets/js/main.js` — client-side URL validation, message length guard, friendlier rate-limit message, contact form bot-speed trap
+- `assets/css/style.css` — trust note styling
+- `contact.html` — field length limits, honeypot spam trap, bot-speed trap field, visible trust/security note citing Formspree's verified compliance
 - `index.html`, `about.html`, `services.html`, `gallery.html`, `contact.html` — `maxlength` on chat input

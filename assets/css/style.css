@@ -494,6 +494,16 @@ nav{
 .field input:focus, .field textarea:focus, .field select:focus{outline:none;border-color:var(--signal-teal);}
 #contactForm .btn{width:100%;justify-content:center;border:none;cursor:pointer;font-family:'Inter',sans-serif;margin-top:4px;}
 #formStatus{font-size:0.82rem;margin-top:12px;min-height:1.2em;font-family:'Space Mono',monospace;}
+.form-trust-note{
+  font-size:0.76rem;
+  color:#7c8091;
+  line-height:1.6;
+  margin-top:16px;
+  padding-top:14px;
+  border-top:1px solid var(--line);
+}
+.form-trust-note a{color:var(--signal-teal);}
+.form-trust-note a:hover{text-decoration:underline;}
 .form-divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:#5c606b;font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.1em;}
 .form-divider::before,.form-divider::after{content:'';flex:1;height:1px;background:var(--line);}
 
