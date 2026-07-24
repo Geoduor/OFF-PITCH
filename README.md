@@ -20,12 +20,14 @@ real vs. what you can still add.
 ├── about.html             About (mission, vision, values, founder)
 ├── services.html          What We Do (all 6 services + featured coverage)
 ├── gallery.html           Gallery (filterable photo grid)
+├── blog.html              Blog (OffPitch Africa Playbook on Substack)
+├── videos.html            Videos (real YouTube videos + Spotify podcast)
 ├── contact.html           Contact (working form + all contact details)
 ├── package.json           minimal project file (for deployment)
 ├── vercel.json            global security headers (CSP, HSTS, etc. — see SECURITY.md)
 ├── SECURITY.md            full security documentation — read this
 ├── assets/
-│   ├── css/style.css       shared styles for all 5 pages
+│   ├── css/style.css       shared styles for all 7 pages
 │   ├── js/main.js          shared behavior: nav, chat widget, form, gallery filter
 │   └── img/                logo + photos
 └── api/
@@ -111,13 +113,18 @@ guessed at:
   Disciplines," etc. — safe facts, not guesses). If you have real numbers —
   episodes published, audience reach, events covered — send them over and
   we'll swap them in.
-- **Watch row video thumbnails** currently reuse your existing photos as
-  placeholders and link out to your YouTube channel — they don't claim to be
-  actual video stills. Send real video thumbnails/screenshots any time and
-  we'll swap them in.
+- **Watch row videos** (Home page and the new Videos page) link to your 4
+  real YouTube videos, with thumbnails pulled live from YouTube's own CDN —
+  fully real, not placeholders.
 - **Gallery** uses the same photos from your company profile; add higher-res
   or additional event photos any time by dropping them into `assets/img/`
   and adding a `<div class="hexcell">` entry in `gallery.html`.
+- **Blog page** (`blog.html`) features your real Substack publication (real
+  tagline, real subscribe link), but doesn't list individual post titles
+  yet — Substack's post list only renders via JavaScript, which blocks
+  automated fetching, so I couldn't pull specific posts automatically. Send
+  me 3-4 real post titles + links (same way you sent the YouTube video
+  URLs) and I'll list them individually on the page.
 
 The only setup items still on you:
 

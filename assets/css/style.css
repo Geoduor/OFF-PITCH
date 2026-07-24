@@ -70,7 +70,7 @@ nav{
 .brand{display:flex;align-items:center;gap:12px;}
 .brand img{height:44px;width:auto;}
 .brand-word{font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.15em;color:#9aa0ad;}
-.navlinks{display:flex;gap:32px;align-items:center;}
+.navlinks{display:flex;gap:24px;align-items:center;}
 .navlinks a{
   font-size:0.82rem;font-weight:600;letter-spacing:0.03em;
   color:var(--chalk);opacity:0.75;transition:opacity .2s, color .2s;
