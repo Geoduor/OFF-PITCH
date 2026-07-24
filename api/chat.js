@@ -2,6 +2,53 @@
 // Deploy target: Vercel (zero-config — any file in /api becomes an endpoint).
 // Requires an environment variable ANTHROPIC_API_KEY set in your hosting
 // provider's dashboard. Never put the API key in frontend code.
+//
+// SECURITY NOTES (see SECURITY.md for the full picture):
+// - CORS is restricted to this site's own origin(s) below.
+// - Input is length-capped and type-checked before it's ever sent to Anthropic.
+// - A lightweight in-memory rate limiter blocks rapid-fire abuse from a single
+//   IP. It resets when the function cold-starts (serverless instances aren't
+//   persistent), so it's a best-effort speed bump, not a hard guarantee — see
+//   SECURITY.md for the recommended production-grade upgrade (Upstash).
+// - Error messages returned to the browser never include raw API responses,
+//   stack traces, or the API key itself — only a generic message. Full detail
+//   goes to server-side logs only (visible to you in Vercel, not visitors).
+
+const ALLOWED_ORIGINS = [
+  'https://off-pitch-nine.vercel.app'
+  // Add your custom domain here once you have one, e.g.:
+  // 'https://offpitchafrica.com'
+];
+
+const MAX_MESSAGE_LENGTH = 1000;
+const MAX_HISTORY_ENTRIES = 10;
+const MAX_HISTORY_ENTRY_LENGTH = 1000;
+
+// Best-effort in-memory rate limit: N requests per IP per minute.
+// Resets on cold start / across instances — see SECURITY.md.
+const RATE_LIMIT = 12; // requests
+const RATE_WINDOW_MS = 60 * 1000;
+const requestLog = new Map();
+
+function isRateLimited(ip) {
+  const now = Date.now();
+  const timestamps = (requestLog.get(ip) || []).filter(t => now - t < RATE_WINDOW_MS);
+  timestamps.push(now);
+  requestLog.set(ip, timestamps);
+  // Prevent unbounded growth of the map across many distinct IPs.
+  if (requestLog.size > 5000) requestLog.clear();
+  return timestamps.length > RATE_LIMIT;
+}
+
+function applyCors(req, res) {
+  const origin = req.headers.origin;
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+}
 
 const SYSTEM_PROMPT = `
 You are the website chat assistant for OFF PITCH AFRICA, a Kenyan sports media
@@ -71,27 +118,59 @@ this page or the phone/email above.
 `.trim();
 
 export default async function handler(req, res) {
+  applyCors(req, res);
+
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
+  }
+
   if (req.method !== 'POST') {
-    res.setHeader('Allow', 'POST');
+    res.setHeader('Allow', 'POST, OPTIONS');
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  // Reject cross-origin callers outright (defense in depth beyond CORS,
+  // which only stops browsers — this stops scripted/server-side abuse too).
+  const origin = req.headers.origin;
+  if (origin && !ALLOWED_ORIGINS.includes(origin)) {
+    return res.status(403).json({ error: 'Origin not allowed.' });
+  }
+
+  const ip = (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown')
+    .toString()
+    .split(',')[0]
+    .trim();
+  if (isRateLimited(ip)) {
+    res.setHeader('Retry-After', '60');
+    return res.status(429).json({ error: 'Too many requests — please wait a moment and try again.' });
+  }
+
   if (!process.env.ANTHROPIC_API_KEY) {
+    console.error('Chat function called but ANTHROPIC_API_KEY is not set.');
     return res.status(500).json({
-      error: 'Server is missing ANTHROPIC_API_KEY. Set it in your hosting provider\'s environment variables.'
+      error: 'The assistant is not configured yet. Please try again later.'
     });
   }
 
-  const { message, history } = req.body || {};
+  const body = req.body || {};
+  const { message, history } = body;
 
-  if (!message || typeof message !== 'string') {
+  if (typeof message !== 'string' || !message.trim()) {
     return res.status(400).json({ error: 'A "message" string is required.' });
+  }
+  if (message.length > MAX_MESSAGE_LENGTH) {
+    return res.status(400).json({ error: `Message is too long (max ${MAX_MESSAGE_LENGTH} characters).` });
   }
 
   const safeHistory = Array.isArray(history)
     ? history
-        .filter(m => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
-        .slice(-10) // keep the payload small
+        .filter(m =>
+          m &&
+          (m.role === 'user' || m.role === 'assistant') &&
+          typeof m.content === 'string' &&
+          m.content.length <= MAX_HISTORY_ENTRY_LENGTH
+        )
+        .slice(-MAX_HISTORY_ENTRIES)
     : [];
 
   try {
@@ -111,6 +190,7 @@ export default async function handler(req, res) {
     });
 
     if (!response.ok) {
+      // Log full detail server-side only; never forward raw API errors to the browser.
       const errText = await response.text();
       console.error('Anthropic API error:', response.status, errText);
       return res.status(502).json({ error: 'The assistant is temporarily unavailable. Please try again shortly.' });

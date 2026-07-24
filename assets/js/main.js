@@ -91,11 +91,28 @@ document.addEventListener('DOMContentLoaded', () => {
   const heroLayers = document.getElementById('heroLayers');
   const featuredGrid = document.getElementById('featuredCoverageGrid');
 
+  // SECURITY: defense-in-depth. The /api/social-feed endpoint already
+  // validates these are https:// URLs server-side, but we never trust data
+  // from a network response blindly before writing it into the DOM — a
+  // second check here costs nothing and guards against any future change to
+  // the backend that might forget to sanitize.
+  function isSafeHttpsUrl(value) {
+    if (typeof value !== 'string') return false;
+    try {
+      const u = new URL(value, window.location.href);
+      return u.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  }
+
   if (heroLayers || featuredGrid) {
     fetch('/api/social-feed')
       .then(res => res.ok ? res.json() : Promise.reject(new Error('bad response')))
       .then(data => {
-        const images = Array.isArray(data.images) ? data.images.filter(i => i && i.src) : [];
+        const images = Array.isArray(data.images)
+          ? data.images.filter(i => i && isSafeHttpsUrl(i.src) && (!i.link || isSafeHttpsUrl(i.link)))
+          : [];
         if (!images.length) return; // keep static fallbacks, do nothing further
 
         // --- Hero slideshow ---
@@ -196,9 +213,15 @@ document.addEventListener('DOMContentLoaded', () => {
     return div;
   }
 
+  const MAX_CHAT_MESSAGE_LENGTH = 1000; // mirrors the server-side limit in api/chat.js
+
   async function sendChat() {
     const text = chatInput.value.trim();
     if (!text) return;
+    if (text.length > MAX_CHAT_MESSAGE_LENGTH) {
+      addMessage(`That message is a bit long — please keep it under ${MAX_CHAT_MESSAGE_LENGTH} characters.`, 'bot');
+      return;
+    }
     addMessage(text, 'user');
     chatHistory.push({ role: 'user', content: text });
     chatInput.value = '';
@@ -213,7 +236,14 @@ document.addEventListener('DOMContentLoaded', () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: text, history: chatHistory.slice(0, -1) })
       });
+
+      if (res.status === 429) {
+        typingEl.remove();
+        addMessage("We're getting a lot of messages right now — please wait a moment and try again.", 'bot');
+        return;
+      }
       if (!res.ok) throw new Error('bad response');
+
       const data = await res.json();
       typingEl.remove();
       addMessage(data.reply, 'bot');

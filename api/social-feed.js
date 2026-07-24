@@ -112,10 +112,70 @@ function shuffle(arr) {
   return a;
 }
 
+// SECURITY: only ever hand the frontend a well-formed https:// URL. Even
+// though these values come from official platform APIs (not free-text user
+// input), we treat any external API response as untrusted before it's used
+// in the browser as an <img src> or an <a href> — a compromised or
+// misbehaving upstream response should never be able to smuggle a
+// javascript: URI or similar into the page.
+function isSafeHttpsUrl(value) {
+  if (typeof value !== 'string') return false;
+  try {
+    const u = new URL(value);
+    return u.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+function sanitizeImages(images) {
+  return images.filter(img => img && isSafeHttpsUrl(img.src) && (!img.link || isSafeHttpsUrl(img.link)));
+}
+
+const ALLOWED_ORIGINS = [
+  'https://off-pitch-nine.vercel.app'
+  // Add your custom domain here once you have one.
+];
+
+// Best-effort in-memory rate limit — see chat.js and SECURITY.md for details
+// on why this is a speed bump, not a hard guarantee, on serverless.
+const RATE_LIMIT = 30;
+const RATE_WINDOW_MS = 60 * 1000;
+const requestLog = new Map();
+
+function isRateLimited(ip) {
+  const now = Date.now();
+  const timestamps = (requestLog.get(ip) || []).filter(t => now - t < RATE_WINDOW_MS);
+  timestamps.push(now);
+  requestLog.set(ip, timestamps);
+  if (requestLog.size > 5000) requestLog.clear();
+  return timestamps.length > RATE_LIMIT;
+}
+
 export default async function handler(req, res) {
+  const origin = req.headers.origin;
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
+  }
+
   if (req.method !== 'GET') {
-    res.setHeader('Allow', 'GET');
+    res.setHeader('Allow', 'GET, OPTIONS');
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const ip = (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown')
+    .toString()
+    .split(',')[0]
+    .trim();
+  if (isRateLimited(ip)) {
+    res.setHeader('Retry-After', '60');
+    return res.status(429).json({ error: 'Too many requests.' });
   }
 
   const [youtube, instagram, facebook] = await Promise.all([
@@ -124,7 +184,7 @@ export default async function handler(req, res) {
     fetchFacebook()
   ]);
 
-  const combined = shuffle([...instagram, ...facebook, ...youtube]).slice(0, 10);
+  const combined = sanitizeImages(shuffle([...instagram, ...facebook, ...youtube])).slice(0, 10);
 
   // Cache at the edge for an hour, serve stale for a day while revalidating —
   // keeps this well within every platform's free API rate limits.

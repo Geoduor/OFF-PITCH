@@ -22,17 +22,24 @@ real vs. what you can still add.
 ├── gallery.html           Gallery (filterable photo grid)
 ├── contact.html           Contact (working form + all contact details)
 ├── package.json           minimal project file (for deployment)
+├── vercel.json            global security headers (CSP, HSTS, etc. — see SECURITY.md)
+├── SECURITY.md            full security documentation — read this
 ├── assets/
 │   ├── css/style.css       shared styles for all 5 pages
 │   ├── js/main.js          shared behavior: nav, chat widget, form, gallery filter
 │   └── img/                logo + photos
 └── api/
-    └── chat.js             serverless function powering the AI chat assistant
+    ├── chat.js             serverless function powering the AI chat assistant
+    └── social-feed.js      serverless function powering the live social media feed
 ```
 
 Keep this exact structure when you upload/deploy. Every page links to
 `assets/css/style.css`, `assets/js/main.js`, and images under `assets/img/`
 using relative paths — so the folder layout must stay intact.
+
+**See `SECURITY.md`** for a full breakdown of what security measures are in
+place, why, and what's still on you to set up (mostly 2FA on your various
+accounts — can't do that one remotely).
 
 ---
 
