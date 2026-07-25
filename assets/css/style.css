@@ -305,7 +305,7 @@ nav{
 .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;text-align:center;}
 .stat-item .num{font-family:'Anton',sans-serif;font-size:clamp(2rem,4vw,3rem);color:#fff;line-height:1;}
 .stat-item .lbl{font-family:'Space Mono',monospace;font-size:0.7rem;letter-spacing:0.1em;color:var(--signal-teal);margin-top:10px;text-transform:uppercase;}
-.stats-note{text-align:center;margin-top:26px;font-family:'Space Mono',monospace;font-size:0.68rem;color:#5c606b;}
+.stats-note{text-align:center;margin-top:26px;font-family:'Space Mono',monospace;font-size:0.68rem;color:#9aa0ad;}
 
 /* ---------- STORY / FEATURE CARDS (FIH news-grid style) ---------- */
 .card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;}
@@ -460,8 +460,8 @@ nav{
 }
 .social-pill svg{width:17px;height:17px;flex-shrink:0;}
 .social-pill:hover{border-color:var(--pitch-red);color:var(--pitch-red);transform:translateY(-2px);}
-.social-pill-accent{background:#25D366;border-color:#25D366;color:#fff;}
-.social-pill-accent:hover{background:#1ebe57;border-color:#1ebe57;color:#fff;}
+.social-pill-accent{background:#25D366;border-color:#25D366;color:var(--ink);}
+.social-pill-accent:hover{background:#1ebe57;border-color:#1ebe57;color:var(--ink);}
 
 /* ---------- GALLERY (hex) ---------- */
 .gallery{background:var(--ink);padding:110px 0;}
@@ -532,7 +532,7 @@ footer{background:var(--ink);padding:90px 0 0;border-top:1px solid var(--line);}
 .foot-brand-block{display:flex;align-items:center;gap:12px;margin-bottom:18px;}
 .foot-brand-block img{height:36px;}
 .foot-bottom{display:flex;justify-content:space-between;align-items:center;padding:26px 0;flex-wrap:wrap;gap:12px;}
-.foot-bottom span{font-family:'Space Mono',monospace;font-size:0.72rem;color:#6c707d;}
+.foot-bottom span{font-family:'Space Mono',monospace;font-size:0.72rem;color:#9aa0ad;}
 
 /* ---------- CHAT WIDGET ---------- */
 #chatToggle{
