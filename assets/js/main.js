@@ -1,16 +1,20 @@
 // Off Pitch Africa — shared site behavior (nav, chat widget, contact form)
 
-// PERFORMANCE: the Google Fonts stylesheet is loaded with media="print" in
-// each page's <head>, which lets the browser fetch it WITHOUT blocking
-// initial render (print stylesheets don't block screen rendering). By the
-// time this script runs — placed at the end of <body>, after all HTML has
-// already been parsed — the CSS has typically already finished downloading
-// in the background, so switching it to media="all" here is usually
-// instant, with zero added render-blocking delay. Runs immediately (not
-// inside DOMContentLoaded) so the swap happens as early as possible.
-(function swapGoogleFontsMedia() {
-  const link = document.getElementById('gfonts-link');
-  if (link) link.media = 'all';
+// PERFORMANCE: both the Google Fonts stylesheet AND our own site.css are
+// loaded with media="print" in each page's <head> — a well-established
+// technique that lets the browser fetch them WITHOUT blocking initial
+// render (print stylesheets don't block screen rendering). A hand-picked
+// "critical CSS" block (inlined directly above, covering the header, nav,
+// and whichever hero this page uses) renders the visible-without-scrolling
+// content instantly, while the full stylesheet loads in the background and
+// gets swapped in the moment it's ready — usually near-instant since it's
+// been downloading in parallel the whole time. Runs immediately (not
+// inside DOMContentLoaded) so both swaps happen as early as possible.
+(function swapNonBlockingStylesheets() {
+  const fontsLink = document.getElementById('gfonts-link');
+  if (fontsLink) fontsLink.media = 'all';
+  const siteCss = document.getElementById('site-css');
+  if (siteCss) siteCss.media = 'all';
 })();
 
 document.addEventListener('DOMContentLoaded', () => {
