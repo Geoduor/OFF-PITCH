@@ -1,5 +1,18 @@
 // Off Pitch Africa — shared site behavior (nav, chat widget, contact form)
 
+// PERFORMANCE: the Google Fonts stylesheet is loaded with media="print" in
+// each page's <head>, which lets the browser fetch it WITHOUT blocking
+// initial render (print stylesheets don't block screen rendering). By the
+// time this script runs — placed at the end of <body>, after all HTML has
+// already been parsed — the CSS has typically already finished downloading
+// in the background, so switching it to media="all" here is usually
+// instant, with zero added render-blocking delay. Runs immediately (not
+// inside DOMContentLoaded) so the swap happens as early as possible.
+(function swapGoogleFontsMedia() {
+  const link = document.getElementById('gfonts-link');
+  if (link) link.media = 'all';
+})();
+
 document.addEventListener('DOMContentLoaded', () => {
   const yearEl = document.getElementById('year');
   if (yearEl) yearEl.textContent = new Date().getFullYear();
@@ -126,7 +139,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  if (heroLayers || featuredGrid) {
+  // PERFORMANCE: this fetch isn't needed for the initial paint — the page
+  // already shows real static fallback content immediately. Deferring it
+  // until after the window 'load' event keeps it from competing with
+  // critical resources (fonts, CSS, hero image) for bandwidth/connections
+  // during the page's most important loading window.
+  function fetchSocialFeed() {
+    if (!heroLayers && !featuredGrid) return;
     fetch('/api/social-feed')
       .then(res => res.ok ? res.json() : Promise.reject(new Error('bad response')))
       .then(data => {
@@ -203,6 +222,14 @@ document.addEventListener('DOMContentLoaded', () => {
         // Social feed not configured yet or failed — static fallback content
         // (real facts from the company profile) stays as-is. No action needed.
       });
+  }
+
+  if (heroLayers || featuredGrid) {
+    if (document.readyState === 'complete') {
+      setTimeout(fetchSocialFeed, 0);
+    } else {
+      window.addEventListener('load', () => setTimeout(fetchSocialFeed, 200));
+    }
   }
 
   /* ---------- Chat assistant ---------- */
