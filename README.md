@@ -23,6 +23,10 @@ real vs. what you can still add.
 ├── blog.html              Blog (OffPitch Africa Playbook on Substack)
 ├── videos.html            Videos (real YouTube videos + Spotify podcast)
 ├── contact.html           Contact (working form + all contact details)
+├── privacy.html           Privacy Policy (what data is collected and how)
+├── 404.html               Branded "page not found" error page
+├── sitemap.xml            Lists all 7 real pages for search engines
+├── robots.txt             Allows crawling, points to sitemap.xml
 ├── package.json           minimal project file (for deployment)
 ├── vercel.json            global security headers (CSP, HSTS, etc. — see SECURITY.md)
 ├── SECURITY.md            full security documentation — read this
@@ -208,4 +212,40 @@ the hero background will start cross-fading between real photos every 6
 seconds. Open your browser's dev tools → Network tab → look for a call to
 `/api/social-feed` to confirm it's returning images (check the `sources`
 field in the response to see counts per platform).
+
+---
+
+## 7. Site hygiene: SEO, legal, and error page
+
+A few standard-but-easy-to-miss items were added:
+
+- **Open Graph / Twitter Card tags** on all 7 main pages — when the site is
+  shared on WhatsApp, Instagram bio links, X, etc., it now shows a proper
+  title, description, and preview image instead of a bare link. Each page
+  uses a real photo already on that page as its preview image.
+- **`sitemap.xml`** and **`robots.txt`** — helps Google (and other search
+  engines) discover and index all 7 pages properly. If you ever add a
+  custom domain, update the URLs inside `sitemap.xml` and `robots.txt` to
+  match (they currently point to `off-pitch-nine.vercel.app`).
+- **`privacy.html`** — a real, accurate privacy policy describing exactly
+  what this site collects (contact form + chat messages, nothing else — no
+  cookies, no analytics) and where that data goes (Formspree for the
+  contact form, Anthropic's API for chat). Linked in the footer of every
+  page.
+- **`404.html`** — a branded "page not found" screen instead of Vercel's
+  generic default, shown automatically for any broken/mistyped link.
+
+### One more manual step: Formspree autoresponder
+
+Right now, when someone submits your contact form, **you** get notified —
+but **they** don't get any confirmation email of their own. Formspree can
+send one automatically:
+
+1. Log into [formspree.io](https://formspree.io) → open your form
+2. Go to the **Workflow** tab → under "Actions" click **+ Add New** → choose
+   **Auto Response**
+3. Set a from-name (e.g. "Off Pitch Africa"), a subject (e.g. "We got your
+   message!"), and a short thank-you message
+4. Save — this works automatically since the form already has a field
+   named `email`, which Formspree requires for autoresponses to work
 

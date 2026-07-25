@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://off-pitch-nine.vercel.app/sitemap.xml

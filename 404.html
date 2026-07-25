@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Page Not Found — Off Pitch Africa</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="icon" href="assets/img/favicons/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicons/favicon-16.png">
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+  .error-page{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:32px;
+    background:
+      radial-gradient(ellipse 900px 500px at 50% 0%, rgba(200,16,46,0.18), transparent 60%),
+      var(--ink);
+  }
+  .error-page .code{
+    font-family:'Anton',sans-serif;
+    font-size:clamp(5rem,18vw,10rem);
+    color:var(--pitch-red);
+    line-height:0.9;
+  }
+  .error-page h1{
+    font-size:clamp(1.6rem,4vw,2.4rem);
+    color:var(--chalk);
+    margin:10px 0 16px;
+  }
+  .error-page p{
+    color:#9aa0ad;
+    max-width:440px;
+    margin:0 auto 34px;
+    line-height:1.6;
+  }
+  .error-actions{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;}
+  .error-brand{margin-bottom:36px;}
+  .error-brand img{height:48px;margin:0 auto;}
+</style>
+</head>
+<body>
+
+<div class="error-page">
+  <div>
+    <div class="error-brand"><img src="assets/img/logo.png" alt="Off Pitch Africa"></div>
+    <div class="eyebrow" style="justify-content:center;">OFF THE MAP</div>
+    <div class="code">404</div>
+    <h1>This page went off pitch.</h1>
+    <p>The page you're looking for doesn't exist, moved, or the link's a little off. Let's get you back to the action.</p>
+    <div class="error-actions">
+      <a href="index.html" class="btn btn-primary">Back to Home →</a>
+      <a href="contact.html" class="btn btn-ghost">Contact Us</a>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
