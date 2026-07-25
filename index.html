@@ -19,12 +19,14 @@
 <meta name="twitter:description" content="OFF PITCH AFRICA is a Kenyan sports media and storytelling platform amplifying the untold narratives of African athletes to the world.">
 <meta name="twitter:image" content="https://off-pitch-nine.vercel.app/assets/img/team_celebration_wide.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="icon" href="assets/img/favicons/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicons/favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicons/favicon-16.png">
 <link rel="icon" type="image/png" sizes="192x192" href="assets/img/favicons/favicon-192.png">
 <link rel="apple-touch-icon" sizes="180x180" href="assets/img/favicons/favicon-180.png">
+<link rel="preload" as="image" href="assets/img/team_celebration_wide.webp" fetchpriority="high">
 <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
@@ -55,7 +57,7 @@
 
   <!-- HERO -->
   <section class="hero" id="heroSlideshow">
-    <div class="hero-bg-static" style="background-image:url('assets/img/team_celebration_wide.jpg');"></div>
+    <div class="hero-bg-static" style="background-image:url('assets/img/team_celebration_wide.webp');"></div>
     <div class="hero-bg-layers" id="heroLayers"></div>
     <div class="hero-scrim"></div>
     <div class="wrap">
@@ -124,8 +126,8 @@
         <a href="services.html" class="btn btn-ghost on-light">All Services →</a>
       </div>
       <div class="card-grid" id="featuredCoverageGrid">
-        <a href="https://www.instagram.com/p/C9mHGU_N01r/" target="_blank" rel="noopener" class="story-card" id="featCard0" data-fallback-img="assets/img/trophy_handshake.jpg">
-          <img src="assets/img/trophy_handshake.jpg" alt="Trophy presentation at a hockey tournament">
+        <a href="https://www.instagram.com/p/C9mHGU_N01r/" target="_blank" rel="noopener" class="story-card" id="featCard0" data-fallback-img="assets/img/trophy_handshake.webp">
+          <img src="assets/img/trophy_handshake.webp" alt="Trophy presentation at a hockey tournament">
           <span class="story-tag">Sports Coverage</span>
           <div class="body">
             <h3>Africa Cup of Nations Hockey — Commentators</h3>
@@ -133,8 +135,8 @@
             <span class="story-link">VIEW ON INSTAGRAM →</span>
           </div>
         </a>
-        <a href="https://www.instagram.com/p/DYWVS__sHDS/" target="_blank" rel="noopener" class="story-card" id="featCard1" data-fallback-img="assets/img/hockey_action_run.jpg">
-          <img src="assets/img/hockey_action_run.jpg" alt="Hockey players in action">
+        <a href="https://www.instagram.com/p/DYWVS__sHDS/" target="_blank" rel="noopener" class="story-card" id="featCard1" data-fallback-img="assets/img/hockey_action_run.webp">
+          <img src="assets/img/hockey_action_run.webp" alt="Hockey players in action">
           <span class="story-tag">Sports Analysis</span>
           <div class="body">
             <h3>Kenya Hockey Union League — Experts</h3>
@@ -142,8 +144,8 @@
             <span class="story-link">VIEW ON INSTAGRAM →</span>
           </div>
         </a>
-        <a href="https://www.instagram.com/p/DWzfntwCMpb/?img_index=1" target="_blank" rel="noopener" class="story-card" id="featCard2" data-fallback-img="assets/img/trophy_ceremony_group.jpg">
-          <img src="assets/img/trophy_ceremony_group.jpg" alt="Team celebrating with trophies at an event">
+        <a href="https://www.instagram.com/p/DWzfntwCMpb/?img_index=1" target="_blank" rel="noopener" class="story-card" id="featCard2" data-fallback-img="assets/img/trophy_ceremony_group.webp">
+          <img src="assets/img/trophy_ceremony_group.webp" alt="Team celebrating with trophies at an event">
           <span class="story-tag">Events</span>
           <div class="body">
             <h3>Kenyatta University Annual KU Opens</h3>
@@ -334,7 +336,7 @@
     <div class="chat-msg bot">Hey — I'm the Off Pitch Africa assistant. Ask me about our podcast, coverage, partnerships, or how to reach the team.</div>
   </div>
   <div class="chat-input-row">
-    <input id="chatInput" type="text" placeholder="Type a message…" autocomplete="off" maxlength="1000">
+    <input id="chatInput" type="text" placeholder="Type a message…" autocomplete="off" maxlength="1000" aria-label="Type your message to the Off Pitch Africa assistant">
     <button id="chatSend" aria-label="Send message">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
     </button>
