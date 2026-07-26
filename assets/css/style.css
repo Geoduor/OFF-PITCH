@@ -530,7 +530,7 @@ footer{background:var(--ink);padding:90px 0 0;border-top:1px solid var(--line);}
 .foot-col ul a{color:#c7cad3;font-size:0.92rem;transition:color .2s;}
 .foot-col ul a:hover{color:var(--signal-teal);}
 .foot-brand-block{display:flex;align-items:center;gap:12px;margin-bottom:18px;}
-.foot-brand-block img{height:36px;}
+.foot-brand-block img{height:36px;width:auto;}
 .foot-bottom{display:flex;justify-content:space-between;align-items:center;padding:26px 0;flex-wrap:wrap;gap:12px;}
 .foot-bottom span{font-family:'Space Mono',monospace;font-size:0.72rem;color:#9aa0ad;}
 
