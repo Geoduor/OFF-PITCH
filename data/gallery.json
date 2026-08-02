@@ -1,0 +1,8 @@
+[
+  { "id": "g1", "src": "assets/img/host_studio.webp", "alt": "Off Pitch Africa host in the broadcast studio", "category": "community" },
+  { "id": "g2", "src": "assets/img/banner_hold.webp", "alt": "Off Pitch Africa banner at a hockey event", "category": "community" },
+  { "id": "g3", "src": "assets/img/trophy_handshake.webp", "alt": "Trophy handover at a hockey tournament", "category": "hockey" },
+  { "id": "g4", "src": "assets/img/team_partners_group.webp", "alt": "Off Pitch Africa team with brand partners", "category": "community" },
+  { "id": "g5", "src": "assets/img/performance_hockey_giftbag.webp", "alt": "Off Pitch Africa with Performance Hockey partners", "category": "celebration" },
+  { "id": "g6", "src": "assets/img/merch_pins.webp", "alt": "Off Pitch Africa branded merchandise pins", "category": "community" }
+]

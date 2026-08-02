@@ -23,20 +23,31 @@ real vs. what you can still add.
 ├── blog.html              Blog (OffPitch Africa Playbook on Substack)
 ├── videos.html            Videos (real YouTube videos + Spotify podcast)
 ├── contact.html           Contact (working form + all contact details)
+├── admin.html             Password-protected content dashboard (see section 7)
 ├── privacy.html           Privacy Policy (what data is collected and how)
 ├── 404.html               Branded "page not found" error page
 ├── sitemap.xml            Lists all 7 real pages for search engines
-├── robots.txt             Allows crawling, points to sitemap.xml
+├── robots.txt             Allows crawling, points to sitemap.xml — blocks admin.html/api/
 ├── package.json           minimal project file (for deployment)
 ├── vercel.json            global security headers (CSP, HSTS, etc. — see SECURITY.md)
 ├── SECURITY.md            full security documentation — read this
+├── data/
+│   ├── events.json         upcoming events shown on the Home page
+│   ├── gallery.json         gallery photos + captions
+│   ├── blog.json            individual blog post links (empty until added)
+│   └── videos.json          YouTube video IDs shown on the Videos page
 ├── assets/
-│   ├── css/style.css       shared styles for all 7 pages
-│   ├── js/main.js          shared behavior: nav, chat widget, form, gallery filter
+│   ├── css/style.css       shared styles for all 7 public pages
+│   ├── css/admin.css       styles for the admin dashboard only
+│   ├── js/main.js          shared behavior: nav, chat widget, form, gallery filter,
+│   │                        and reading the /data/*.json files above
+│   ├── js/admin.js         admin dashboard behavior (login, editing, image upload)
 │   └── img/                logo + photos
 └── api/
     ├── chat.js             serverless function powering the AI chat assistant
-    └── social-feed.js      serverless function powering the live social media feed
+    ├── social-feed.js      serverless function powering the live social media feed
+    └── admin.js            serverless function powering the admin dashboard
+                             (auth + committing content changes to GitHub)
 ```
 
 Keep this exact structure when you upload/deploy. Every page links to
@@ -215,7 +226,72 @@ field in the response to see counts per platform).
 
 ---
 
-## 7. Site hygiene: SEO, legal, and error page
+## 7. Admin dashboard — update content without touching code
+
+A password-protected page at **`/admin.html`** lets you add/edit/remove
+**Events, Gallery photos, Blog post links, and Video IDs** directly from a
+browser — no code editing, no local files. Every save is a real commit to
+this GitHub repo (via GitHub's API), so Vercel picks it up and redeploys
+automatically, same as any other push — usually live within 10–20 seconds.
+
+The content lives in four small JSON files in `/data` (`events.json`,
+`gallery.json`, `blog.json`, `videos.json`) — these are the actual "database"
+for this static site. The public pages fetch them directly; the dashboard
+reads and writes them through `api/admin.js`.
+
+### One-time setup (do this before using the dashboard)
+
+**1. Create a GitHub Personal Access Token** (lets the dashboard commit on
+your behalf — scoped to only this repo, nothing else):
+1. Go to [github.com/settings/personal-access-tokens/new](https://github.com/settings/personal-access-tokens/new)
+2. **Resource owner**: your GitHub account. **Repository access**: "Only
+   select repositories" → choose `OFF-PITCH`.
+3. **Permissions → Repository permissions → Contents** → set to
+   **Read and write**. Leave everything else as "No access".
+4. Generate the token and copy it immediately (GitHub only shows it once).
+
+**2. Choose a dashboard password** — anything you'll remember; this is what
+you'll type into `/admin.html` to log in.
+
+**3. Generate a session secret** — a long random string used to sign login
+sessions (you never need to remember this one). Run this locally, or use
+any password generator:
+```
+openssl rand -hex 32
+```
+
+**4. Add all three as environment variables in Vercel** (Project → Settings
+→ Environment Variables):
+| Variable | Value |
+|---|---|
+| `GITHUB_TOKEN` | the token from step 1 |
+| `ADMIN_PASSWORD` | the password from step 2 |
+| `ADMIN_SESSION_SECRET` | the random string from step 3 |
+
+**5. Redeploy** (`vercel --prod`) so the new environment variables take effect.
+
+### Using it day-to-day
+
+1. Go to `https://off-pitch-nine.vercel.app/admin.html`
+2. Log in with the password from step 2 above
+3. Pick a tab (Events / Gallery / Blog / Videos), add/edit/remove items,
+   upload photos directly (they're auto-compressed in your browser before
+   upload — no need to resize anything yourself first)
+4. Click **Save Changes** — you'll see a confirmation once the commit goes
+   through, and the live site updates automatically within moments
+
+**Notes**
+- Images are capped at ~950KB after compression (plenty for web use, not
+  meant for raw camera-original files).
+- `admin.html` and `/api/*` are excluded from search engines via
+  `robots.txt` and a `noindex` meta tag — but the real security boundary is
+  the password + signed session, not obscurity.
+- If the dashboard ever shows "Not logged in" unexpectedly, your session
+  (12 hours) simply expired — just log in again.
+
+---
+
+## 8. Site hygiene: SEO, legal, and error page
 
 A few standard-but-easy-to-miss items were added:
 

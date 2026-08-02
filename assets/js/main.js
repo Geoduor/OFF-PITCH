@@ -124,6 +124,151 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  /* ---------- Dynamic content: Events / Gallery / Videos / Blog ----------
+     Each of these reads a small static JSON file (edited via the admin
+     dashboard, which commits straight to GitHub) and rebuilds its section.
+     If the fetch fails or the file is missing, the real static markup
+     already in the page (marked data-fallback="true") stays untouched —
+     same fail-safe pattern already used for the social feed above. */
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str == null ? '' : String(str);
+    return div.innerHTML;
+  }
+
+  // --- Events (index.html) ---
+  const eventsList = document.getElementById('eventsList');
+  if (eventsList) {
+    fetch('/data/events.json')
+      .then(res => res.ok ? res.json() : Promise.reject())
+      .then(data => {
+        const events = Array.isArray(data)
+          ? data.filter(e => e && e.active !== false && e.title && e.date)
+          : [];
+        const section = document.getElementById('events');
+        if (events.length === 0) {
+          if (section) section.style.display = 'none';
+          return;
+        }
+        eventsList.innerHTML = '';
+        events.forEach(ev => {
+          const card = document.createElement('div');
+          card.className = 'events-card';
+          const imgSrc = ev.image ? escapeHtml(ev.image) : 'assets/img/logo.webp';
+          const tel = ev.phone ? `<a href="tel:${escapeHtml(ev.phone)}" class="btn btn-primary">Call To Register →</a>` : '';
+          const mail = ev.email ? `<a href="mailto:${escapeHtml(ev.email)}" class="btn btn-ghost">Email Us</a>` : '';
+          const registerBtn = ev.registerLink
+            ? `<a href="${escapeHtml(ev.registerLink)}" target="_blank" rel="noopener" class="btn btn-primary">Register →</a>`
+            : tel;
+          card.innerHTML = `
+            <img src="${imgSrc}" alt="${escapeHtml(ev.title)} event poster" loading="lazy">
+            <div class="ev-body">
+              <h3 class="ev-title">${escapeHtml(ev.title)}</h3>
+              ${ev.theme ? `<p class="ev-theme">${escapeHtml(ev.theme)}</p>` : ''}
+              <ul class="ev-list">
+                <li><strong>Date:</strong> ${escapeHtml(ev.date)}</li>
+                ${ev.time ? `<li><strong>Time:</strong> ${escapeHtml(ev.time)}</li>` : ''}
+                ${ev.venue ? `<li><strong>Venue:</strong> ${escapeHtml(ev.venue)}</li>` : ''}
+              </ul>
+              <div class="ev-ctas">${registerBtn}${ev.registerLink ? '' : mail}</div>
+            </div>`;
+          eventsList.appendChild(card);
+        });
+      })
+      .catch(() => { /* keep static fallback */ });
+  }
+
+  // --- Gallery (gallery.html) ---
+  const hexGrid = document.getElementById('hexGrid');
+  if (hexGrid) {
+    fetch('/data/gallery.json')
+      .then(res => res.ok ? res.json() : Promise.reject())
+      .then(data => {
+        const photos = Array.isArray(data) ? data.filter(p => p && p.src) : [];
+        if (photos.length === 0) return; // keep static fallback
+        hexGrid.innerHTML = '';
+        photos.forEach((p, i) => {
+          const cell = document.createElement('div');
+          cell.className = 'hexcell' + (i % 2 === 1 ? ' offset' : '');
+          cell.dataset.category = p.category || 'community';
+          const img = document.createElement('img');
+          img.src = p.src;
+          img.alt = p.alt || 'Off Pitch Africa';
+          cell.appendChild(img);
+          hexGrid.appendChild(cell);
+        });
+        // Re-bind the filter buttons to the freshly rendered cells.
+        const filterPills = document.querySelectorAll('.filter-pill');
+        const cells = hexGrid.querySelectorAll('.hexcell');
+        filterPills.forEach(pill => {
+          const active = pill.classList.contains('active');
+          const filter = pill.dataset.filter;
+          cells.forEach(cell => {
+            const show = filter === 'all' || cell.dataset.category === filter;
+            if (active) cell.style.display = show ? '' : 'none';
+          });
+        });
+      })
+      .catch(() => { /* keep static fallback */ });
+  }
+
+  // --- Videos (videos.html) ---
+  const videosGrid = document.getElementById('videosGrid');
+  if (videosGrid) {
+    fetch('/data/videos.json')
+      .then(res => res.ok ? res.json() : Promise.reject())
+      .then(data => {
+        const videos = Array.isArray(data) ? data.filter(v => v && v.youtubeId) : [];
+        if (videos.length === 0) return; // keep static fallback
+        videosGrid.innerHTML = '';
+        videos.forEach(v => {
+          const a = document.createElement('a');
+          a.href = `https://www.youtube.com/watch?v=${encodeURIComponent(v.youtubeId)}`;
+          a.target = '_blank';
+          a.rel = 'noopener';
+          a.className = 'media-card';
+          a.style.aspectRatio = '16/9';
+          a.innerHTML = `
+            <img src="https://img.youtube.com/vi/${encodeURIComponent(v.youtubeId)}/hqdefault.jpg" alt="Watch on YouTube" loading="lazy">
+            <div class="play-badge"><svg viewBox="0 0 24 24" fill="#fff"><polygon points="6 3 20 12 6 21"/></svg></div>`;
+          videosGrid.appendChild(a);
+        });
+      })
+      .catch(() => { /* keep static fallback */ });
+  }
+
+  // --- Blog posts (blog.html) ---
+  const blogPosts = document.getElementById('blogPosts');
+  if (blogPosts) {
+    fetch('/data/blog.json')
+      .then(res => res.ok ? res.json() : Promise.reject())
+      .then(data => {
+        const posts = Array.isArray(data) ? data.filter(p => p && p.title && p.url) : [];
+        if (posts.length === 0) return; // no posts yet — Substack card below covers it
+        blogPosts.innerHTML = '';
+        blogPosts.style.display = '';
+        posts.forEach(p => {
+          const a = document.createElement('a');
+          a.href = p.url;
+          a.target = '_blank';
+          a.rel = 'noopener';
+          a.className = 'story-card';
+          const img = p.image ? escapeHtml(p.image) : 'assets/img/logo.webp';
+          a.innerHTML = `
+            <img src="${img}" alt="${escapeHtml(p.title)}">
+            <span class="story-tag">Blog</span>
+            <div class="body">
+              <h3>${escapeHtml(p.title)}</h3>
+              ${p.excerpt ? `<p>${escapeHtml(p.excerpt)}</p>` : ''}
+              <span class="story-link">READ POST →</span>
+            </div>`;
+          blogPosts.appendChild(a);
+        });
+      })
+      .catch(() => { /* keep Substack card as the only content */ });
+  }
+
   /* ---------- Live social feed (hero slideshow + featured cards) ---------- */
   const heroLayers = document.getElementById('heroLayers');
   const featuredGrid = document.getElementById('featuredCoverageGrid');

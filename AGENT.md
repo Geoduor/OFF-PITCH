@@ -56,28 +56,41 @@ temporarily "to see how it looks."
 ├── blog.html              OffPitch Africa Playbook (Substack)
 ├── videos.html            Real YouTube videos + Spotify podcast
 ├── contact.html           Working contact form + all contact details
+├── admin.html             Password-protected content dashboard (see §9a)
 ├── privacy.html           Privacy Policy (real data-flow disclosures)
 ├── 404.html               Branded error page (Vercel auto-serves this)
 ├── sitemap.xml            All 7 main pages, for search engines
-├── robots.txt             Allows crawling, points to sitemap.xml
+├── robots.txt             Allows crawling, points to sitemap.xml —
+│                           blocks admin.html and /api/ from indexing
 ├── package.json           Minimal — no dependencies at all
 ├── vercel.json            Global security headers (CSP, HSTS, etc.)
 ├── SECURITY.md            Full security posture — read before touching
 │                          api/*.js or vercel.json
 ├── README.md              Setup/deployment instructions for the client
 ├── AGENT.md               This file
+├── data/
+│   ├── events.json         Upcoming events (Home page) — see §9a
+│   ├── gallery.json         Gallery photos + captions
+│   ├── blog.json            Individual blog post links (empty = none yet)
+│   └── videos.json          YouTube video IDs (Videos page)
 ├── assets/
-│   ├── css/style.css       ONE shared stylesheet for all 9 pages
+│   ├── css/style.css       ONE shared stylesheet for all 9 public pages
+│   ├── css/admin.css       Styles for admin.html only
 │   ├── js/main.js          ONE shared script: nav, chat widget, contact
 │   │                        form, gallery filter, live social feed,
-│   │                        non-blocking font/CSS swap logic
+│   │                        non-blocking font/CSS swap logic, and reading
+│   │                        the /data/*.json files above (see §9a)
+│   ├── js/admin.js         Admin dashboard behavior (login, item editor,
+│   │                        client-side image compression, save/upload)
 │   └── img/                Logo (png+webp), real client photos (webp,
 │                            with .jpg kept only for OG/social-share tags),
-│                            favicons/
+│                            favicons/, uploads/ (dashboard-uploaded images)
 └── api/
     ├── chat.js             AI chat assistant (calls Anthropic API)
-    └── social-feed.js      Live social media feed (YouTube/Instagram/
-                             Facebook official APIs, not scraping)
+    ├── social-feed.js      Live social media feed (YouTube/Instagram/
+    │                        Facebook official APIs, not scraping)
+    └── admin.js            Admin dashboard backend — auth + commits
+                             content changes to this repo via GitHub's API
 ```
 
 Every page is a **fully self-contained HTML file** — there's no templating
@@ -298,6 +311,51 @@ responsive-image infrastructure). Don't promise the client an easy path to
 
 ---
 
+## 9a. Admin dashboard (content management without code)
+
+As of this session, `/admin.html` is a password-protected dashboard that
+lets the client manage **Events, Gallery, Blog links, and Videos** without
+touching code. This changed how content flows through the site — read this
+before editing any of `index.html`'s events section, `gallery.html`,
+`blog.html`, or `videos.html`.
+
+**Architecture**: the four JSON files in `/data` (`events.json`,
+`gallery.json`, `blog.json`, `videos.json`) are now the real content source
+for these sections — not the HTML. Each public page fetches its
+corresponding JSON file client-side (see the new functions in `main.js`,
+just above the social-feed code) and rebuilds the section from it. If the
+fetch fails or the file is empty/missing, the **static HTML already in the
+page** (marked `data-fallback="true"`) is left untouched — same fail-safe
+pattern already used for the live social feed, applied consistently here.
+
+**This means**: the static markup still sitting in `index.html` (events),
+`gallery.html` (hex-grid), and `videos.html` (media-row) is not dead code —
+it's the fallback shown before JS runs / if the fetch fails, so it must stay
+in sync with reality about as much as before. But the **source of truth**
+for what's actually displayed (once JS runs) is the JSON files.
+
+**Writing** to those JSON files happens two ways:
+1. Through `/admin.html` → `api/admin.js`, which authenticates (signed
+   session cookie, password in `ADMIN_PASSWORD` env var) and commits changes
+   straight to this GitHub repo via GitHub's REST API (`GITHUB_TOKEN` env
+   var, scoped to Contents: Read/write only on this repo). Every save is a
+   real commit — check git history if content ever needs to be traced back.
+2. Through a future Claude session editing the JSON files directly (fine to
+   do — they're just files, same no-fabrication rule applies to their
+   content as everything else on this site).
+
+**Image uploads** from the dashboard go through client-side canvas
+compression (max 1200px, JPEG ~82% quality) before being committed to
+`assets/img/uploads/` — so images landing there via the dashboard are
+already web-optimized; don't assume they need the same WebP-conversion pass
+as manually-added photos (though converting to WebP later is still fine).
+
+**Full setup/usage instructions**: see README.md section 7 — includes exact
+steps for the client to generate their GitHub token, password, and session
+secret.
+
+---
+
 ## 10. Known deferred/pending items
 
 The client has explicitly chosen to defer these — don't build them
@@ -323,6 +381,8 @@ unprompted, but pick them back up if asked:
 - **Individual Blog post links** — `blog.html` shows the Substack
   publication generally; specific post titles/links need the client to
   send them (Substack's post list is JS-rendered, blocking automated fetch).
+
+---
 
 ---
 

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Off Pitch Africa</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap">
+<link rel="icon" href="assets/img/favicons/favicon.ico" sizes="any">
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/admin.css">
+</head>
+<body class="admin-body">
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen" class="admin-login">
+  <div class="admin-login-box">
+    <img src="assets/img/logo.webp" width="72" height="74" alt="Off Pitch Africa">
+    <h1>Admin Dashboard</h1>
+    <p class="admin-sub">Enter the site password to manage content.</p>
+    <form id="loginForm" autocomplete="off">
+      <input type="password" id="passwordInput" placeholder="Password" autocomplete="current-password" required>
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Log In →</button>
+    </form>
+    <p id="loginError" class="admin-error" role="alert"></p>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" class="admin-dashboard" hidden>
+  <header class="admin-header">
+    <div class="admin-header-inner">
+      <div class="admin-brand">
+        <img src="assets/img/logo.webp" width="36" height="37" alt="">
+        <span>Off Pitch Africa — Admin</span>
+      </div>
+      <div class="admin-header-actions">
+        <a href="index.html" target="_blank" rel="noopener" class="btn btn-ghost admin-btn-sm">View Site →</a>
+        <button id="logoutBtn" class="btn btn-ghost admin-btn-sm">Log Out</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="admin-tabs">
+    <button class="admin-tab active" data-type="events">Events</button>
+    <button class="admin-tab" data-type="gallery">Gallery</button>
+    <button class="admin-tab" data-type="blog">Blog</button>
+    <button class="admin-tab" data-type="videos">Videos</button>
+  </div>
+
+  <main class="admin-main">
+    <div class="admin-panel-head">
+      <h2 id="panelTitle">Events</h2>
+      <div class="admin-panel-actions">
+        <button id="addItemBtn" class="btn btn-ghost admin-btn-sm">+ Add New</button>
+        <button id="saveBtn" class="btn btn-primary admin-btn-sm">Save Changes</button>
+      </div>
+    </div>
+    <p id="statusMsg" class="admin-status" role="status"></p>
+    <div id="itemsList" class="admin-items"></div>
+  </main>
+</div>
+
+<script src="assets/js/admin.js"></script>
+</body>
+</html>

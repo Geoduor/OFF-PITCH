@@ -15,10 +15,34 @@ classic security concerns are relevant.
 
 ## 1. Authentication & Authorization
 
-**There is no login system on this site** — no user accounts, no sessions,
-no passwords to protect on the frontend. So "authentication" here isn't
-about visitors logging in; it's about protecting the *accounts and API keys
-that operate the site*. That's the real attack surface:
+**Update (this session): the admin dashboard added a real login.** Before
+this, there was no login system anywhere on the site. Now `/admin.html` has
+one, described fully below — everything else in this section (protecting
+your various account logins) is still accurate and still matters just as
+much.
+
+### Admin dashboard login (`admin.html` / `api/admin.js`)
+
+- A single shared password (`ADMIN_PASSWORD` env var) — there are no
+  individual user accounts, since this is a one-operator dashboard.
+- On successful login, the server issues a signed session token (HMAC-SHA256,
+  keyed with `ADMIN_SESSION_SECRET`) stored as an **HttpOnly, Secure,
+  SameSite=Strict** cookie — JavaScript on the page can't read it, and it
+  won't be sent cross-site. Sessions expire after 12 hours.
+- Every request to `/api/admin` other than login/logout/check re-verifies
+  that signature server-side — a forged or tampered cookie is rejected, not
+  trusted.
+- Login attempts are rate-limited per IP (8/minute, same best-effort
+  in-memory approach as the chat endpoint — see the Rate Limiting section
+  below for the caveat).
+- `GITHUB_TOKEN` (used to commit content changes) never reaches the browser
+  — it's read from an environment variable and used only inside
+  `api/admin.js`, server-side.
+- The token itself should be scoped as narrowly as possible: a **fine-grained
+  GitHub PAT** limited to this one repository, with only "Contents:
+  Read and write" permission — not a classic token with full account access.
+
+**Pre-existing accounts to protect (still applies):**
 
 | Account | Why it matters | What to do |
 |---|---|---|
@@ -27,13 +51,14 @@ that operate the site*. That's the real attack surface:
 | Google Cloud | Holds your YouTube API key | You already have MFA enforced (Google required this) |
 | Meta for Developers | Holds Instagram/Facebook tokens | Enable 2FA on the Facebook account behind it |
 | Formspree | Receives contact form submissions | Enable 2FA if offered |
-| GitHub (if you use it) | Holds your source code | Enable 2FA, use a private repo |
+| GitHub | Holds your source code + now the admin dashboard's write access | Enable 2FA — this one matters more now than before |
 
-**Authorization** (who can do what) is simple here since there's one
-operator (you) and no visitor accounts — but it's worth naming: nobody
-except you should have write access to the Vercel project or the
-environment variables. If you ever bring on help, use Vercel's team
-member roles rather than sharing your own login.
+**Authorization** (who can do what): there's one dashboard operator (you)
+and no visitor accounts. Nobody except you should know the dashboard
+password or have write access to the Vercel project/environment variables.
+If you ever bring on help, give them their own GitHub PAT rather than
+sharing `GITHUB_TOKEN`, and consider a separate `ADMIN_PASSWORD` you can
+rotate independently of theirs.
 
 ---
 
