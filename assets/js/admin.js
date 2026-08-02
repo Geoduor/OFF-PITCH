@@ -22,8 +22,8 @@ const SCHEMAS = {
     label: 'Gallery',
     fields: [
       { key: 'src', label: 'Photo', type: 'image', required: true },
-      { key: 'alt', label: 'Description (alt text)', type: 'text' },
-      { key: 'category', label: 'Category', type: 'select', options: ['hockey', 'community', 'celebration'] }
+      { key: 'alt', label: 'Description (alt text)', type: 'text', aiAssist: 'altText' },
+      { key: 'category', label: 'Category', type: 'select', options: ['hockey', 'community', 'celebration'], aiAssist: 'category' }
     ]
   },
   blog: {
@@ -31,7 +31,7 @@ const SCHEMAS = {
     fields: [
       { key: 'title', label: 'Post Title', type: 'text', required: true },
       { key: 'url', label: 'Post URL (Substack link)', type: 'url', required: true },
-      { key: 'excerpt', label: 'Short excerpt', type: 'textarea' },
+      { key: 'excerpt', label: 'Short excerpt', type: 'textarea', aiAssist: 'excerpt' },
       { key: 'image', label: 'Cover Image (optional)', type: 'image' }
     ]
   },
@@ -362,6 +362,7 @@ function buildField(field, item) {
     if (!item[field.key] && field.options && field.options.length) item[field.key] = field.options[0];
     select.addEventListener('change', () => { item[field.key] = select.value; });
     wrap.appendChild(select);
+    if (field.aiAssist) wrap.appendChild(buildAiAssistButton(field, item, () => select.value = item[field.key]));
     return wrap;
   }
 
@@ -370,6 +371,7 @@ function buildField(field, item) {
     ta.value = item[field.key] || '';
     ta.addEventListener('input', () => { item[field.key] = ta.value; });
     wrap.appendChild(ta);
+    if (field.aiAssist) wrap.appendChild(buildAiAssistButton(field, item, () => ta.value = item[field.key]));
     return wrap;
   }
 
@@ -378,7 +380,67 @@ function buildField(field, item) {
   input.value = item[field.key] || '';
   input.addEventListener('input', () => { item[field.key] = input.value; });
   wrap.appendChild(input);
+  if (field.aiAssist) wrap.appendChild(buildAiAssistButton(field, item, () => input.value = item[field.key]));
   return wrap;
+}
+
+/* ---------------- AI content-assist ----------------
+   Every suggestion only fills the field in memory (item[field.key]) and
+   the visible control — nothing is saved until the section's own Save
+   Changes button is clicked, same as manual typing. */
+function buildAiAssistButton(field, item, applyToControl) {
+  const row = document.createElement('div');
+  row.className = 'admin-ai-row';
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'admin-ai-btn';
+  btn.textContent = '✨ Suggest';
+  const note = document.createElement('span');
+  note.className = 'admin-ai-note';
+  row.appendChild(btn);
+  row.appendChild(note);
+
+  btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    note.textContent = 'Thinking…';
+    try {
+      let body;
+      if (field.aiAssist === 'excerpt') {
+        if (!item.title) throw new Error('Add a post title first.');
+        body = { action: 'excerpt', title: item.title };
+      } else {
+        // altText/category are only used on the Gallery panel's 'src'
+        // photo field in this build — reference it directly rather than
+        // guessing, since a new unsaved item won't have any image key yet.
+        const imageFieldKey = 'src';
+        const pending = item._pendingUpload && item._pendingUpload[imageFieldKey];
+        if (pending) {
+          body = { action: field.aiAssist, imageBase64: pending.base64, imageMediaType: 'image/jpeg' };
+        } else if (item[imageFieldKey]) {
+          body = { action: field.aiAssist, imagePath: item[imageFieldKey] };
+        } else {
+          throw new Error('Add a photo first.');
+        }
+      }
+      const res = await fetch('/api/ai-assist', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Could not get a suggestion.');
+      item[field.key] = data.suggestion;
+      applyToControl();
+      note.textContent = 'Suggested — review before saving.';
+    } catch (err) {
+      note.textContent = err.message || 'Something went wrong.';
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  return row;
 }
 
 /* ---------------- Image compression (client-side, no dependencies) ---------------- */

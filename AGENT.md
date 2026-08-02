@@ -72,7 +72,8 @@ temporarily "to see how it looks."
 │   ├── events.json         Upcoming events (Home page) — see §9a
 │   ├── gallery.json         Gallery photos + captions
 │   ├── blog.json            Individual blog post links (empty = none yet)
-│   └── videos.json          YouTube video IDs (Videos page)
+│   ├── videos.json          YouTube video IDs (Videos page)
+│   └── live.json            Manual Facebook/Instagram/TikTok live toggle
 ├── assets/
 │   ├── css/style.css       ONE shared stylesheet for all 9 public pages
 │   ├── css/admin.css       Styles for admin.html only
@@ -89,8 +90,12 @@ temporarily "to see how it looks."
     ├── chat.js             AI chat assistant (calls Anthropic API)
     ├── social-feed.js      Live social media feed (YouTube/Instagram/
     │                        Facebook official APIs, not scraping)
-    └── admin.js            Admin dashboard backend — auth + commits
-                             content changes to this repo via GitHub's API
+    ├── admin.js            Admin dashboard backend — auth + commits
+    │                        content changes to this repo via GitHub's API
+    ├── ai-assist.js        AI content-assist for the dashboard (alt text,
+    │                        category, blog excerpt suggestions), §9c
+    └── live-status.js      Checks YouTube for an active live broadcast
+                             (powers the live-stream banner on Home, §9b)
 ```
 
 Every page is a **fully self-contained HTML file** — there's no templating
@@ -353,6 +358,68 @@ as manually-added photos (though converting to WebP later is still fine).
 **Full setup/usage instructions**: see README.md section 7 — includes exact
 steps for the client to generate their GitHub token, password, and session
 secret.
+
+---
+
+## 9b. Live stream banner
+
+A banner (`#liveBanner` on `index.html`, populated by `main.js`) shows when
+Off Pitch is broadcasting live — hidden the rest of the time. Two sources,
+checked independently:
+
+1. **YouTube** — auto-detected via `api/live-status.js`, which calls the
+   YouTube Data API's `search.list` with `eventType=live`. Uses the same
+   `YOUTUBE_API_KEY` / `YOUTUBE_CHANNEL_ID` env vars already documented for
+   the (paused) social feed — no new setup needed once those are set. When
+   live, the actual video is embedded directly on the page (real YouTube
+   iframe player, not just a link).
+   **Quota note**: this check is expensive (100 units/call against a
+   10,000/day default quota), so the response is edge-cached for 15 minutes
+   (`Cache-Control` in `live-status.js`) — this caps it around ~96 calls/day
+   total *regardless of visitor count*, safely under quota. Don't shorten
+   that cache window without requesting a quota increase from Google Cloud
+   first, or the key will start failing silently once quota runs out.
+2. **Facebook / Instagram / TikTok** — Meta doesn't offer a simple embed for
+   live video, so this is a **manual toggle** in the admin dashboard's
+   "Live" tab (`data/live.json`: `{active, platform, url, label}`). The
+   client flips it on right before going live elsewhere, pastes the live
+   post URL, and the banner shows a "Watch Live →" link-out button instead
+   of an embed. They flip it off when done.
+
+If YouTube live is detected, it takes priority over the manual toggle (an
+embedded player is better than a link-out when both are technically
+possible). If neither is active, the banner stays hidden — no fabricated
+"upcoming" state, consistent with this project's no-fabrication rule.
+
+---
+
+## 9c. AI content-assist (admin dashboard)
+
+Small "✨ Suggest" buttons next to certain fields in `admin.html`:
+- **Gallery**: suggest alt text and a category (hockey/community/celebration)
+  for an uploaded photo — vision call to Claude, describes only what's
+  visible in the image, never invents names/events it can't see.
+- **Blog**: suggest a short excerpt from just the post title (and nothing
+  else it doesn't know) — the system prompt explicitly forbids inventing
+  facts, quotes, or specifics not given to it.
+
+**This never auto-saves.** A suggestion only fills the field in memory and
+on screen — the section's existing **Save Changes** button is still the
+only thing that commits anything, so human review is structural, not a
+bolted-on checkbox. This matters for this project's no-fabrication rule:
+AI-drafted text is a *draft*, always reviewed before it can reach the site.
+
+**Backend**: `api/ai-assist.js` — reuses the same `ANTHROPIC_API_KEY` as
+`api/chat.js` (same Claude Haiku model), and the same admin session cookie
+as `api/admin.js` (the verify-session logic is duplicated rather than
+shared, following this project's existing convention of self-contained
+`/api` files). **Same billing dependency as the chat widget** — inactive
+until `ANTHROPIC_API_KEY` has usable credit (see §10).
+
+If asked to extend this to new fields, keep the same constraint: the model
+must only describe/summarize what it's actually given (an image, a title) —
+never invent event specifics, quotes, or claims. That's not a suggestion,
+it's this project's core rule (§2) applied to AI-generated drafts too.
 
 ---
 

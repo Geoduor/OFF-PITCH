@@ -35,7 +35,8 @@ real vs. what you can still add.
 │   ├── events.json         upcoming events shown on the Home page
 │   ├── gallery.json         gallery photos + captions
 │   ├── blog.json            individual blog post links (empty until added)
-│   └── videos.json          YouTube video IDs shown on the Videos page
+│   ├── videos.json          YouTube video IDs shown on the Videos page
+│   └── live.json            Manual Facebook/Instagram/TikTok live toggle
 ├── assets/
 │   ├── css/style.css       shared styles for all 7 public pages
 │   ├── css/admin.css       styles for the admin dashboard only
@@ -46,8 +47,12 @@ real vs. what you can still add.
 └── api/
     ├── chat.js             serverless function powering the AI chat assistant
     ├── social-feed.js      serverless function powering the live social media feed
-    └── admin.js            serverless function powering the admin dashboard
-                             (auth + committing content changes to GitHub)
+    ├── admin.js            serverless function powering the admin dashboard
+    │                        (auth + committing content changes to GitHub)
+    ├── ai-assist.js        AI "✨ Suggest" buttons in the admin dashboard
+    │                        (alt text / category / blog excerpt drafts)
+    └── live-status.js      checks YouTube for an active live broadcast
+                             (powers the live-stream banner on Home)
 ```
 
 Keep this exact structure when you upload/deploy. Every page links to
@@ -274,11 +279,24 @@ openssl rand -hex 32
 
 1. Go to `https://off-pitch-nine.vercel.app/admin.html`
 2. Log in with the password from step 2 above
-3. Pick a tab (Events / Gallery / Blog / Videos), add/edit/remove items,
-   upload photos directly (they're auto-compressed in your browser before
-   upload — no need to resize anything yourself first)
+3. Pick a tab (Events / Gallery / Blog / Videos / **Live**), add/edit/remove
+   items, upload photos directly (they're auto-compressed in your browser
+   before upload — no need to resize anything yourself first)
 4. Click **Save Changes** — you'll see a confirmation once the commit goes
    through, and the live site updates automatically within moments
+
+**About the "Live" tab**: this only controls the banner for Facebook,
+Instagram, and TikTok — toggle it on right before you go live there, paste
+the link, and off when you're done. **YouTube Live needs no toggle at all**
+— once `YOUTUBE_API_KEY` is set up (see section 6 below), the site detects
+it automatically and embeds the real live video directly on the Home page.
+
+**About the "✨ Suggest" buttons** (Gallery alt text/category, Blog excerpt):
+these draft a suggestion using AI — review and edit before saving, nothing
+is ever saved automatically. They use the same `ANTHROPIC_API_KEY` as the
+chat widget, so they're inactive until that key has usable billing/credit
+(same setup step, see section 6's chat widget note if you haven't done this
+yet).
 
 **Notes**
 - Images are capped at ~950KB after compression (plenty for web use, not
