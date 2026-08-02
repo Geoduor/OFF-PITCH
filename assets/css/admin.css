@@ -12,7 +12,12 @@
    even though the JS correctly toggles the hidden attribute. */
 [hidden]{display:none !important;}
 
-.admin-body{background:var(--ink);min-height:100vh;}
+/* Disables the browser's pull/bounce-back effect entirely (contain only
+   stops it from triggering page refresh/navigation — it still lets the
+   bounce itself happen, which is what was still visible here). */
+html, body{overscroll-behavior-y: none;}
+
+.admin-body{background:var(--ink);}
 
 /* ---------- Login screen ---------- */
 .admin-login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
@@ -35,20 +40,24 @@
 .admin-header-actions{display:flex;gap:10px;}
 .admin-btn-sm{padding:9px 16px !important;font-size:0.76rem !important;}
 
-.admin-tabs{max-width:1000px;margin:0 auto;padding:20px 24px 0;display:flex;gap:8px;flex-wrap:wrap;}
-.admin-tab{
-  background:transparent;border:1px solid var(--line);color:#9aa0ad;
-  font-family:'Space Mono',monospace;font-size:0.74rem;letter-spacing:0.05em;text-transform:uppercase;
-  padding:10px 18px;border-radius:3px;cursor:pointer;transition:all .15s ease;
+.admin-quicknav{
+  position:sticky;top:0;z-index:10;background:var(--navy);border-bottom:1px solid var(--line);
+  max-width:1000px;margin:0 auto;padding:14px 24px;display:flex;gap:8px;flex-wrap:wrap;
 }
-.admin-tab:hover{color:var(--chalk);border-color:rgba(244,241,236,0.35);}
-.admin-tab.active{background:var(--pitch-red);border-color:var(--pitch-red);color:#fff;}
+.admin-quicknav a{
+  background:transparent;border:1px solid var(--line);color:#9aa0ad;text-decoration:none;
+  font-family:'Space Mono',monospace;font-size:0.74rem;letter-spacing:0.05em;text-transform:uppercase;
+  padding:10px 18px;border-radius:3px;transition:all .15s ease;
+}
+.admin-quicknav a:hover{color:var(--chalk);border-color:rgba(244,241,236,0.35);}
 
-.admin-main{max-width:1000px;margin:0 auto;padding:28px 24px 80px;}
-.admin-panel-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:8px;}
+.admin-main{max-width:1000px;margin:0 auto;padding:36px 24px 80px;}
+.admin-panel{margin-bottom:64px;scroll-margin-top:76px;}
+.admin-panel:last-child{margin-bottom:0;}
+.admin-panel-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:8px;padding-bottom:14px;border-bottom:2px solid var(--pitch-red);}
 .admin-panel-head h2{color:#fff;font-size:1.5rem;}
 .admin-panel-actions{display:flex;gap:10px;}
-.admin-status{font-family:'Space Mono',monospace;font-size:0.78rem;color:var(--signal-teal);min-height:1.4em;margin-bottom:18px;}
+.admin-status{font-family:'Space Mono',monospace;font-size:0.78rem;color:var(--signal-teal);min-height:1.4em;margin:14px 0 4px;}
 .admin-status.error{color:#ff8080;}
 
 /* ---------- Item cards ---------- */

@@ -43,23 +43,75 @@
     </div>
   </header>
 
-  <div class="admin-tabs">
-    <button class="admin-tab active" data-type="events">Events</button>
-    <button class="admin-tab" data-type="gallery">Gallery</button>
-    <button class="admin-tab" data-type="blog">Blog</button>
-    <button class="admin-tab" data-type="videos">Videos</button>
-  </div>
+  <nav class="admin-quicknav">
+    <a href="#panel-events">Events</a>
+    <a href="#panel-gallery">Gallery</a>
+    <a href="#panel-blog">Blog</a>
+    <a href="#panel-videos">Videos</a>
+    <a href="#panel-live">Live</a>
+  </nav>
 
   <main class="admin-main">
-    <div class="admin-panel-head">
-      <h2 id="panelTitle">Events</h2>
-      <div class="admin-panel-actions">
-        <button id="addItemBtn" class="btn btn-ghost admin-btn-sm">+ Add New</button>
-        <button id="saveBtn" class="btn btn-primary admin-btn-sm">Save Changes</button>
+
+    <section class="admin-panel" id="panel-events" data-type="events">
+      <div class="admin-panel-head">
+        <h2>Events</h2>
+        <div class="admin-panel-actions">
+          <button class="btn btn-ghost admin-btn-sm admin-add-btn">+ Add New</button>
+          <button class="btn btn-primary admin-btn-sm admin-save-btn">Save Changes</button>
+        </div>
       </div>
-    </div>
-    <p id="statusMsg" class="admin-status" role="status"></p>
-    <div id="itemsList" class="admin-items"></div>
+      <p class="admin-status" role="status"></p>
+      <div class="admin-items"></div>
+    </section>
+
+    <section class="admin-panel" id="panel-gallery" data-type="gallery">
+      <div class="admin-panel-head">
+        <h2>Gallery</h2>
+        <div class="admin-panel-actions">
+          <button class="btn btn-ghost admin-btn-sm admin-add-btn">+ Add New</button>
+          <button class="btn btn-primary admin-btn-sm admin-save-btn">Save Changes</button>
+        </div>
+      </div>
+      <p class="admin-status" role="status"></p>
+      <div class="admin-items"></div>
+    </section>
+
+    <section class="admin-panel" id="panel-blog" data-type="blog">
+      <div class="admin-panel-head">
+        <h2>Blog</h2>
+        <div class="admin-panel-actions">
+          <button class="btn btn-ghost admin-btn-sm admin-add-btn">+ Add New</button>
+          <button class="btn btn-primary admin-btn-sm admin-save-btn">Save Changes</button>
+        </div>
+      </div>
+      <p class="admin-status" role="status"></p>
+      <div class="admin-items"></div>
+    </section>
+
+    <section class="admin-panel" id="panel-videos" data-type="videos">
+      <div class="admin-panel-head">
+        <h2>Videos</h2>
+        <div class="admin-panel-actions">
+          <button class="btn btn-ghost admin-btn-sm admin-add-btn">+ Add New</button>
+          <button class="btn btn-primary admin-btn-sm admin-save-btn">Save Changes</button>
+        </div>
+      </div>
+      <p class="admin-status" role="status"></p>
+      <div class="admin-items"></div>
+    </section>
+
+    <section class="admin-panel" id="panel-live" data-type="live">
+      <div class="admin-panel-head">
+        <h2>Live</h2>
+        <div class="admin-panel-actions">
+          <button class="btn btn-primary admin-btn-sm admin-save-btn">Save Changes</button>
+        </div>
+      </div>
+      <p class="admin-status" role="status"></p>
+      <div class="admin-items"></div>
+    </section>
+
   </main>
 </div>
 

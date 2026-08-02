@@ -40,11 +40,18 @@ const SCHEMAS = {
     fields: [
       { key: 'youtubeId', label: 'YouTube Video ID (the part after "v=" in the URL)', type: 'text', required: true }
     ]
+  },
+  live: {
+    label: 'Live',
+    singleton: true,
+    fields: [
+      { key: 'active', label: 'Currently live on Facebook/Instagram/TikTok', type: 'checkbox' },
+      { key: 'platform', label: 'Platform', type: 'select', options: ['Facebook', 'Instagram', 'TikTok', 'Other'] },
+      { key: 'url', label: 'Link to the live post/stream', type: 'url' },
+      { key: 'label', label: 'Message shown on the banner (optional)', type: 'text' }
+    ]
   }
 };
-
-let currentType = 'events';
-let items = [];
 
 const loginScreen = document.getElementById('loginScreen');
 const dashboard = document.getElementById('dashboard');
@@ -52,17 +59,6 @@ const loginForm = document.getElementById('loginForm');
 const loginError = document.getElementById('loginError');
 const passwordInput = document.getElementById('passwordInput');
 const logoutBtn = document.getElementById('logoutBtn');
-const tabs = document.querySelectorAll('.admin-tab');
-const panelTitle = document.getElementById('panelTitle');
-const itemsList = document.getElementById('itemsList');
-const addItemBtn = document.getElementById('addItemBtn');
-const saveBtn = document.getElementById('saveBtn');
-const statusMsg = document.getElementById('statusMsg');
-
-function showStatus(text, isError) {
-  statusMsg.textContent = text;
-  statusMsg.classList.toggle('error', Boolean(isError));
-}
 
 function genId(type) {
   return `${type}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
@@ -76,7 +72,7 @@ async function checkSession() {
     if (data.loggedIn) {
       loginScreen.hidden = true;
       dashboard.hidden = false;
-      loadType(currentType);
+      initAllPanels();
     } else {
       loginScreen.hidden = false;
       dashboard.hidden = true;
@@ -104,7 +100,7 @@ loginForm.addEventListener('submit', async (e) => {
       passwordInput.value = '';
       loginScreen.hidden = true;
       dashboard.hidden = false;
-      loadType(currentType);
+      initAllPanels();
     } else {
       loginError.textContent = data.error || 'Incorrect password.';
     }
@@ -128,74 +124,166 @@ logoutBtn.addEventListener('click', async () => {
   loginScreen.hidden = false;
 });
 
-/* ---------------- Tabs ---------------- */
-tabs.forEach(tab => {
-  tab.addEventListener('click', () => {
-    tabs.forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    currentType = tab.dataset.type;
-    panelTitle.textContent = SCHEMAS[currentType].label;
-    loadType(currentType);
-  });
-});
+/* ---------------- Panels ----------------
+   All 5 panels (Events / Gallery / Blog / Videos / Live) are visible on
+   the page at once — no tab-switching. Each panel keeps its own items
+   array and its own DOM references via closures, so editing one panel
+   never touches another's state. */
+let panelsInitialized = false;
 
-/* ---------------- Load / Render ---------------- */
-async function loadType(type) {
-  showStatus('Loading…');
-  itemsList.innerHTML = '';
-  try {
-    const res = await fetch(`/api/admin?action=get&type=${encodeURIComponent(type)}`, { credentials: 'same-origin' });
-    if (res.status === 401) { checkSession(); return; }
-    const data = await res.json();
-    items = Array.isArray(data.content) ? data.content : [];
-    renderItems();
-    showStatus('');
-  } catch {
-    showStatus('Could not load content. Please refresh and try again.', true);
+function initAllPanels() {
+  if (panelsInitialized) return; // avoid double-binding on repeat logins in the same page load
+  panelsInitialized = true;
+  Object.keys(SCHEMAS).forEach(type => initPanel(type));
+}
+
+function initPanel(type) {
+  const schema = SCHEMAS[type];
+  const section = document.getElementById(`panel-${type}`);
+  if (!section) return;
+
+  const itemsList = section.querySelector('.admin-items');
+  const statusMsg = section.querySelector('.admin-status');
+  const addBtn = section.querySelector('.admin-add-btn');
+  const saveBtn = section.querySelector('.admin-save-btn');
+
+  let items = [];
+
+  function showStatus(text, isError) {
+    statusMsg.textContent = text;
+    statusMsg.classList.toggle('error', Boolean(isError));
   }
-}
 
-function renderItems() {
-  itemsList.innerHTML = '';
-  const schema = SCHEMAS[currentType];
-  items.forEach((item, index) => {
-    itemsList.appendChild(buildItemCard(schema, item, index));
+  function renderItems() {
+    itemsList.innerHTML = '';
+    if (schema.singleton) {
+      if (type === 'live') {
+        const note = document.createElement('p');
+        note.className = 'admin-image-note';
+        note.style.marginBottom = '16px';
+        note.textContent = 'This only controls Facebook/Instagram/TikTok. YouTube Live is detected automatically — no need to touch anything here when going live on YouTube.';
+        itemsList.appendChild(note);
+      }
+      itemsList.appendChild(buildItemCard(schema, items[0] || {}, 0, true, items, renderItems));
+      return;
+    }
+    items.forEach((item, index) => {
+      itemsList.appendChild(buildItemCard(schema, item, index, false, items, renderItems));
+    });
+  }
+
+  async function load() {
+    showStatus('Loading…');
+    try {
+      const res = await fetch(`/api/admin?action=get&type=${encodeURIComponent(type)}`, { credentials: 'same-origin' });
+      if (res.status === 401) { checkSession(); return; }
+      const data = await res.json();
+      if (schema.singleton) {
+        items = [data.content && typeof data.content === 'object' ? data.content : {}];
+      } else {
+        items = Array.isArray(data.content) ? data.content : [];
+      }
+      renderItems();
+      showStatus('');
+    } catch {
+      showStatus('Could not load content. Please refresh and try again.', true);
+    }
+  }
+
+  if (addBtn) {
+    addBtn.addEventListener('click', () => {
+      const newItem = { id: genId(type) };
+      schema.fields.forEach(f => {
+        if (f.type === 'checkbox') newItem[f.key] = Boolean(f.default);
+      });
+      items.push(newItem);
+      renderItems();
+      itemsList.lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  }
+
+  saveBtn.addEventListener('click', async () => {
+    saveBtn.disabled = true;
+    showStatus('Saving…');
+    try {
+      // 1. Upload any pending images first, replacing the field with the real path.
+      for (const item of items) {
+        if (item._pendingUpload) {
+          for (const key of Object.keys(item._pendingUpload)) {
+            const { base64, filename } = item._pendingUpload[key];
+            const res = await fetch('/api/admin', {
+              method: 'POST',
+              credentials: 'same-origin',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ action: 'uploadImage', filename, base64 })
+            });
+            const data = await res.json();
+            if (!res.ok || !data.ok) throw new Error(data.error || 'Image upload failed.');
+            item[key] = data.path;
+          }
+          delete item._pendingUpload;
+          delete item._pendingPreview;
+        }
+      }
+
+      // 2. Strip any remaining internal-only fields before saving.
+      const cleanItems = items.map(({ _pendingUpload, _pendingPreview, ...rest }) => rest);
+      const payload = schema.singleton ? (cleanItems[0] || {}) : cleanItems;
+
+      const res = await fetch('/api/admin', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'save', type, content: payload })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || 'Save failed.');
+      showStatus('Saved — your live site will update in about 10–20 seconds as it redeploys.');
+    } catch (err) {
+      showStatus(err.message || 'Something went wrong. Please try again.', true);
+    } finally {
+      saveBtn.disabled = false;
+    }
   });
+
+  load();
 }
 
-function buildItemCard(schema, item, index) {
+function buildItemCard(schema, item, index, hideHeader, items, rerender) {
   const card = document.createElement('div');
   card.className = 'admin-item';
 
-  const header = document.createElement('div');
-  header.className = 'admin-item-header';
-  const label = document.createElement('span');
-  label.textContent = `${schema.label.slice(0, -1) || schema.label} ${index + 1}`;
-  const removeBtn = document.createElement('button');
-  removeBtn.type = 'button';
-  removeBtn.className = 'admin-item-remove';
-  removeBtn.textContent = 'Remove';
-  removeBtn.addEventListener('click', () => {
-    if (!confirm('Remove this item? This takes effect once you click Save Changes.')) return;
-    items.splice(index, 1);
-    renderItems();
-  });
-  header.appendChild(label);
-  header.appendChild(removeBtn);
-  card.appendChild(header);
+  if (!hideHeader) {
+    const header = document.createElement('div');
+    header.className = 'admin-item-header';
+    const label = document.createElement('span');
+    label.textContent = `${schema.label.slice(0, -1) || schema.label} ${index + 1}`;
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'admin-item-remove';
+    removeBtn.textContent = 'Remove';
+    removeBtn.addEventListener('click', () => {
+      if (!confirm('Remove this item? This takes effect once you click Save Changes.')) return;
+      items.splice(index, 1);
+      rerender();
+    });
+    header.appendChild(label);
+    header.appendChild(removeBtn);
+    card.appendChild(header);
+  }
 
   const fieldsWrap = document.createElement('div');
   fieldsWrap.className = 'admin-fields';
 
   schema.fields.forEach(field => {
-    fieldsWrap.appendChild(buildField(field, item, index));
+    fieldsWrap.appendChild(buildField(field, item));
   });
 
   card.appendChild(fieldsWrap);
   return card;
 }
 
-function buildField(field, item, index) {
+function buildField(field, item) {
   const wrap = document.createElement('div');
   wrap.className = 'admin-field' + (field.type === 'textarea' || field.type === 'image' ? ' full' : '');
 
@@ -293,18 +381,6 @@ function buildField(field, item, index) {
   return wrap;
 }
 
-/* ---------------- Add item ---------------- */
-addItemBtn.addEventListener('click', () => {
-  const schema = SCHEMAS[currentType];
-  const newItem = { id: genId(currentType) };
-  schema.fields.forEach(f => {
-    if (f.type === 'checkbox') newItem[f.key] = Boolean(f.default);
-  });
-  items.push(newItem);
-  renderItems();
-  itemsList.lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-});
-
 /* ---------------- Image compression (client-side, no dependencies) ---------------- */
 const MAX_DIMENSION = 1200;
 const JPEG_QUALITY = 0.82;
@@ -335,49 +411,5 @@ function compressImage(file) {
     img.src = objectUrl;
   });
 }
-
-/* ---------------- Save ---------------- */
-saveBtn.addEventListener('click', async () => {
-  saveBtn.disabled = true;
-  showStatus('Saving…');
-  try {
-    // 1. Upload any pending images first, replacing the field with the real path.
-    for (const item of items) {
-      if (item._pendingUpload) {
-        for (const key of Object.keys(item._pendingUpload)) {
-          const { base64, filename } = item._pendingUpload[key];
-          const res = await fetch('/api/admin', {
-            method: 'POST',
-            credentials: 'same-origin',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'uploadImage', filename, base64 })
-          });
-          const data = await res.json();
-          if (!res.ok || !data.ok) throw new Error(data.error || 'Image upload failed.');
-          item[key] = data.path;
-        }
-        delete item._pendingUpload;
-        delete item._pendingPreview;
-      }
-    }
-
-    // 2. Strip any remaining internal-only fields before saving.
-    const cleanItems = items.map(({ _pendingUpload, _pendingPreview, ...rest }) => rest);
-
-    const res = await fetch('/api/admin', {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'save', type: currentType, content: cleanItems })
-    });
-    const data = await res.json();
-    if (!res.ok || !data.ok) throw new Error(data.error || 'Save failed.');
-    showStatus('Saved — your live site will update in about 10–20 seconds as it redeploys.');
-  } catch (err) {
-    showStatus(err.message || 'Something went wrong. Please try again.', true);
-  } finally {
-    saveBtn.disabled = false;
-  }
-});
 
 checkSession();
