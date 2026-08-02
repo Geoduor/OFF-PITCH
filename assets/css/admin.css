@@ -4,6 +4,14 @@
    file so the public site's stylesheet stays untouched.
 ============================================================ */
 
+/* Must come first: guarantees [hidden] always wins over any other
+   display rule below, regardless of selector specificity/order.
+   Without this, .admin-login's explicit display:flex silently
+   overrides the browser's default [hidden]{display:none}, so the
+   login screen never visually disappears after a successful login
+   even though the JS correctly toggles the hidden attribute. */
+[hidden]{display:none !important;}
+
 .admin-body{background:var(--ink);min-height:100vh;}
 
 /* ---------- Login screen ---------- */
