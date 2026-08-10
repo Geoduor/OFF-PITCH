@@ -291,6 +291,22 @@ nav{
 @keyframes scroll{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
 @media (prefers-reduced-motion: reduce){.ticker-track{animation:none;}}
 
+/* ---------- LIVE BANNER ---------- */
+.live-banner{background:var(--ink);border-bottom:2px solid var(--pitch-red);padding:20px 0;}
+.live-banner-inner{max-width:1180px;margin:0 auto;padding:0 24px;}
+.live-badge{
+  display:inline-flex;align-items:center;gap:8px;background:var(--pitch-red);color:#fff;
+  font-family:'Space Mono',monospace;font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+  padding:6px 14px;border-radius:20px;margin-bottom:14px;
+}
+.live-badge .dot{width:8px;height:8px;border-radius:50%;background:#fff;animation:live-pulse 1.4s ease-in-out infinite;}
+@keyframes live-pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+@media (prefers-reduced-motion: reduce){.live-badge .dot{animation:none;}}
+.live-title{color:#fff;font-size:1.1rem;margin-bottom:16px;}
+.live-embed-wrap{position:relative;width:100%;max-width:720px;aspect-ratio:16/9;background:#000;border-radius:4px;overflow:hidden;}
+.live-embed-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0;}
+.live-link-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+
 /* ---------- SECTION HEADERS ---------- */
 .sec-head{max-width:640px;margin-bottom:56px;}
 .sec-head h2{font-size:clamp(2rem,4vw,3rem);color:var(--chalk);margin-top:14px;}
@@ -306,6 +322,71 @@ nav{
 .stat-item .num{font-family:'Anton',sans-serif;font-size:clamp(2rem,4vw,3rem);color:#fff;line-height:1;}
 .stat-item .lbl{font-family:'Space Mono',monospace;font-size:0.7rem;letter-spacing:0.1em;color:var(--signal-teal);margin-top:10px;text-transform:uppercase;}
 .stats-note{text-align:center;margin-top:26px;font-family:'Space Mono',monospace;font-size:0.68rem;color:#9aa0ad;}
+
+/* Fixtures & Results (Hockey5s Youth Africa Cup 2026) */
+.fixtures-filter{display:flex;gap:10px;margin-bottom:28px;flex-wrap:wrap;}
+.fixtures-filter-btn{
+  font-family:'Space Mono',monospace;font-size:0.75rem;letter-spacing:0.04em;text-transform:uppercase;
+  background:transparent;border:1px solid var(--line);color:var(--chalk);padding:8px 18px;border-radius:999px;
+  cursor:pointer;transition:background 0.15s,border-color 0.15s;
+}
+.fixtures-filter-btn:hover{border-color:var(--signal-teal);}
+.fixtures-filter-btn.active{background:var(--pitch-red);border-color:var(--pitch-red);color:#fff;}
+.fixtures-competition{margin-bottom:44px;}
+.fixtures-competition:last-child{margin-bottom:0;}
+.fixtures-competition-title{font-size:clamp(1.3rem,3vw,1.7rem);margin-bottom:4px;}
+.fixtures-competition-meta{font-family:'Space Mono',monospace;font-size:0.7rem;color:#9aa0ad;margin-bottom:22px;}
+.fixtures-day{margin-bottom:32px;}
+.fixtures-day:last-child{margin-bottom:0;}
+.fixtures-day-title{
+  font-family:'Space Mono',monospace;font-size:0.8rem;letter-spacing:0.05em;text-transform:uppercase;
+  color:var(--signal-teal);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--line);
+}
+.fixture-row{
+  display:grid;grid-template-columns:90px 1fr auto;align-items:center;gap:16px;
+  padding:14px 16px;background:var(--navy);border:1px solid var(--line);border-radius:4px;margin-bottom:8px;
+}
+.fixture-row:last-child{margin-bottom:0;}
+.fx-time{font-family:'Space Mono',monospace;font-size:0.8rem;color:#9aa0ad;}
+.fx-score{font-family:'Anton',sans-serif;font-size:1.3rem;letter-spacing:0.02em;color:#fff;}
+.fx-teams{font-size:0.98rem;color:var(--chalk);}
+.fx-teams em{font-style:normal;color:#9aa0ad;font-size:0.85em;margin:0 4px;}
+.fx-tag{font-family:'Space Mono',monospace;font-size:0.68rem;color:#9aa0ad;text-align:right;white-space:nowrap;}
+.fx-live-badge{
+  font-family:'Space Mono',monospace;font-size:0.68rem;font-weight:700;letter-spacing:0.05em;
+  background:var(--pitch-red);color:#fff;padding:3px 10px;border-radius:999px;
+  animation:fxPulse 1.6s ease-in-out infinite;grid-column:3;justify-self:end;
+}
+@keyframes fxPulse{0%,100%{opacity:1;}50%{opacity:0.55;}}
+@media (max-width:640px){
+  .fixture-row{grid-template-columns:70px 1fr;}
+  .fx-tag{grid-column:1 / -1;text-align:left;margin-top:4px;}
+}
+.events-teaser-card{
+  background:var(--navy);border:1px solid var(--line);border-radius:6px;padding:36px 40px;
+  display:flex;align-items:center;justify-content:space-between;gap:28px;flex-wrap:wrap;
+}
+@media (max-width:700px){.events-teaser-card{padding:28px;}}
+
+/* Merch */
+.merch-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:28px;margin-bottom:56px;}
+.merch-card{background:var(--navy);border:1px solid var(--line);border-radius:6px;padding:20px;text-align:center;}
+.merch-imgs{display:flex;gap:8px;margin-bottom:18px;border-radius:4px;overflow:hidden;background:#fff;}
+.merch-imgs img{flex:1;width:50%;height:220px;object-fit:contain;background:#fff;padding:6px;}
+.merch-imgs-single img{width:100%;}
+.merch-name{font-size:1.15rem;margin-bottom:4px;}
+.merch-note{font-family:'Space Mono',monospace;font-size:0.68rem;color:#9aa0ad;margin-bottom:10px;}
+.merch-price{font-family:'Anton',sans-serif;font-size:1.3rem;color:var(--signal-teal);letter-spacing:0.02em;}
+.merch-order-cta{
+  background:var(--pitch-red);border-radius:6px;padding:32px 36px;
+  display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;
+}
+.merch-order-cta h3, .merch-order-cta p{color:#fff;}
+.merch-order-actions{display:flex;gap:14px;flex-wrap:wrap;}
+.merch-order-cta .btn-primary{background:#fff;color:var(--pitch-red);}
+.merch-order-cta .btn-primary:hover{background:#f4f1ec;}
+.merch-order-cta .btn-ghost{border-color:rgba(255,255,255,0.5);color:#fff;}
+.merch-order-cta .btn-ghost:hover{border-color:#fff;}
 
 /* ---------- STORY / FEATURE CARDS (FIH news-grid style) ---------- */
 .card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;}

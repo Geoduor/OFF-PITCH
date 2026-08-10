@@ -15,9 +15,14 @@ events, analysis, brand partnerships). Founded by **Bonphace Odhiambo
 Otieno**. Plain HTML/CSS/JS — no framework, no build step, no bundler.
 Deployed on **Vercel**, which also hosts two serverless functions.
 
-7 main content pages (Home, About, What We Do, Gallery, Blog, Videos,
-Contact) plus 2 utility pages (Privacy Policy, 404). Live at
-`https://off-pitch-nine.vercel.app`.
+7 main content pages (Home, Events, About [includes What We Do], Gallery
+[includes Videos], Merch, Blog, Contact) plus 2 utility pages (Privacy
+Policy, 404). Live at `https://off-pitch-nine.vercel.app`.
+
+**`services.html` and `videos.html` no longer exist as separate pages** —
+merged into `about.html` and `gallery.html` respectively (client wanted a
+shorter nav). Both old URLs 301-redirect to their merged destination via
+`vercel.json`, so old links/bookmarks/social posts still work.
 
 As of the most recent session: **PageSpeed Insights (mobile)** — Performance
 93, Accessibility 100, Best Practices 100, SEO 100. See section 9 for the
@@ -49,12 +54,25 @@ temporarily "to see how it looks."
 ```
 /
 ├── index.html            Home — hero, live social slideshow, featured
-│                          coverage cards, watch row, playbook CTA
-├── about.html             Mission, vision, founder, core values
-├── services.html          All 6 services + featured coverage badges
-├── gallery.html           Filterable hex-grid photo gallery
+│                          coverage cards, watch row, events/fixtures
+│                          teaser, playbook CTA
+├── events.html            Events & Fixtures — the full Fixtures & Results
+│                          board (grouped by competition, then by day) plus
+│                          our own one-off events like "Off The Pitch, On
+│                          The Record". §9d has the details.
+├── about.html             Mission, vision, founder, core values, PLUS
+│                          "What We Do" (all 6 services + featured
+│                          coverage badges) — merged into one page, one
+│                          nav link. `services.html` no longer exists;
+│                          301-redirects to this page via vercel.json.
+├── gallery.html           Filterable hex-grid photo gallery, PLUS Videos
+│                          (YouTube grid + Spotify podcast) — merged into
+│                          one page, one nav link. `videos.html` no longer
+│                          exists; 301-redirects to this page via vercel.json.
+├── merch.html             Official merch — Hoodie, T-Shirt, Tank Top,
+│                          Bucket Hat, real photos + prices, orders go via
+│                          call/WhatsApp (no online checkout). §9e
 ├── blog.html              OffPitch Africa Playbook (Substack)
-├── videos.html            Real YouTube videos + Spotify podcast
 ├── contact.html           Working contact form + all contact details
 ├── admin.html             Password-protected content dashboard (see §9a)
 ├── privacy.html           Privacy Policy (real data-flow disclosures)
@@ -97,6 +115,9 @@ temporarily "to see how it looks."
     └── live-status.js      Checks YouTube for an active live broadcast
                              (powers the live-stream banner on Home, §9b)
 ```
+
+`data/fixtures.json` (Hockey5s Youth Africa Cup 2026 schedule/results, §9d)
+lives alongside `data/events.json`, `data/gallery.json`, etc.
 
 Every page is a **fully self-contained HTML file** — there's no templating
 system or includes. The header, footer, and chat widget markup is
@@ -321,8 +342,9 @@ responsive-image infrastructure). Don't promise the client an easy path to
 As of this session, `/admin.html` is a password-protected dashboard that
 lets the client manage **Events, Gallery, Blog links, and Videos** without
 touching code. This changed how content flows through the site — read this
-before editing any of `index.html`'s events section, `gallery.html`,
-`blog.html`, or `videos.html`.
+before editing any of `index.html`'s events section or `gallery.html`
+(which now holds both the photo gallery AND the videos grid — they were
+merged into one page, see §9f).
 
 **Architecture**: the four JSON files in `/data` (`events.json`,
 `gallery.json`, `blog.json`, `videos.json`) are now the real content source
@@ -333,11 +355,12 @@ fetch fails or the file is empty/missing, the **static HTML already in the
 page** (marked `data-fallback="true"`) is left untouched — same fail-safe
 pattern already used for the live social feed, applied consistently here.
 
-**This means**: the static markup still sitting in `index.html` (events),
-`gallery.html` (hex-grid), and `videos.html` (media-row) is not dead code —
-it's the fallback shown before JS runs / if the fetch fails, so it must stay
-in sync with reality about as much as before. But the **source of truth**
-for what's actually displayed (once JS runs) is the JSON files.
+**This means**: the static markup still sitting in `index.html` (events)
+and `gallery.html` (both the hex-grid AND the media-row, since Videos now
+lives on this page too) is not dead code — it's the fallback shown before
+JS runs / if the fetch fails, so it must stay in sync with reality about as
+much as before. But the **source of truth** for what's actually displayed
+(once JS runs) is the JSON files.
 
 **Writing** to those JSON files happens two ways:
 1. Through `/admin.html` → `api/admin.js`, which authenticates (signed
@@ -420,6 +443,126 @@ If asked to extend this to new fields, keep the same constraint: the model
 must only describe/summarize what it's actually given (an image, a title) —
 never invent event specifics, quotes, or claims. That's not a suggestion,
 it's this project's core rule (§2) applied to AI-generated drafts too.
+
+---
+
+## 9d. Events & Fixtures page (`events.html`)
+
+A dedicated page — not just a homepage section — because the client wants
+it to grow: it holds the one-off **Events** list (e.g. "Off The Pitch, On
+The Record") AND a **Fixtures & Results** board designed to hold more than
+one competition at once. Right now that's just the **U18 Hockey5s Youth
+Africa Cup**, 6–8 Aug 2026 at Sikh Union Nairobi Dashmesh Hockey Stadium
+(Kenya, Ghana, Nigeria, South Africa, Uganda) — but the client has said
+league fixtures/results are coming later, so the data model and rendering
+already support multiple competitions side by side without a rebuild.
+
+**Data**: `data/fixtures.json`, one flat array — each fixture has a
+`competition` field (e.g. "Hockey5s Youth Africa Cup 2026"). `main.js`
+groups rows by `competition` first, then by `date` within each, and renders
+each competition as its own block with its own heading. **Adding a future
+league is just adding more rows with a new `competition` value** — no code
+changes needed, just new fixtures entered through the same admin panel.
+
+Same architecture as Events/Gallery/Blog/Videos otherwise: no scraping, no
+live sports API — Bonphace manually updates each match's score and status
+(upcoming → live → final) in the "Fixtures & Results" admin panel after it
+happens, then clicks Save Changes.
+
+The full pre-tournament YAC schedule (20 matches) is already seeded in
+`data/fixtures.json`, sourced from the African Hockey Federation's official
+release via Mozzart Sport Kenya (31 Jul 2026). Medal-round matches (Sat 8
+Aug) have `team1`/`team2` set to "TBD" since those teams are only decided
+by the round-robin standings — fill them in once known.
+
+**Homepage**: `index.html` no longer carries the full Fixtures/Events
+content — just a compact teaser card (`.events-teaser-card`, near the top,
+where the old sections used to be) linking to `events.html`. Keeps the
+homepage light while the actual content lives in one place, not two
+copies that could drift out of sync.
+
+The static fallback on `events.html` (`data-fallback="true"`)
+intentionally has **no scores** — only the real, unchanging schedule —
+since a hardcoded score would go stale the moment the real one differs
+and this project doesn't fabricate current-state facts (§2). If that
+fallback is ever hit (JS/fetch failure), the live JSON-driven version is
+what actually carries results day-to-day.
+
+Once the YAC ends (after 8 Aug), this can either stay up as a historical
+record (fill in all the real final scores first) or be archived once a new
+competition is added — ask the client which they'd prefer rather than
+assuming.
+
+---
+
+## 9e. Merch page (`merch.html`)
+
+Static page, no admin panel (unlike Events/Gallery/Blog/Videos) — a
+one-off product list. Real photos, cropped by AI from the client's
+uploaded product-shot collages (each original had 2+ shots per image;
+individual product images were cut out and converted to WebP for site
+weight, matching this project's usual image-optimization standard).
+
+**Four products confirmed and live**, in `assets/img/merch/`:
+- **Hoodie** — Kshs 3,500 — `merch-hoodie-black.webp`, `merch-hoodie-white.webp`
+- **T-Shirt** — Kshs 1,000 — `merch-tshirt-white.webp`, `merch-tshirt-black.webp`
+  (also `merch-tshirt-white.jpg`, kept for the page's OG/social-share tag
+  per this project's WebP+JPG convention, §5)
+- **Tank Top** — Kshs 1,000 — `merch-tank-black.webp`, `merch-tank-white.webp`
+- **Bucket Hat** — Kshs 1,000 — `merch-bucket-hat.webp`
+
+**Deliberately left off** — don't add these without the client's explicit
+go-ahead, since guessing on a real commercial listing risks a wrong
+name/price pairing:
+- A yellow/black mesh training vest the client sent — client said leave it
+  out for now (not confirmed as a sellable product).
+- A wristband the client sent — client wants to sell it but hasn't sent a
+  price yet. Once they do: add a product card in `merch.html` (copy an
+  existing `.merch-card` block) and crop/convert the wristband photo the
+  same way (source collage: the one that also had the bucket hat).
+- "Caps" (Kshs 1,000, on the client's original price list) — no photo was
+  ever provided for this one. Ask the client for one before adding it.
+
+No online checkout — orders go through the existing phone/WhatsApp number,
+consistent with how this client actually does business (see §5). If the
+client ever wants real e-commerce (cart, online payment), that's a much
+bigger scope change — flag it as such rather than quietly building toward
+it.
+
+---
+
+## 9f. Page merges: About+What We Do, Gallery+Videos
+
+The client asked for a shorter nav. Two pairs of pages were merged into
+one URL each — **content wasn't cut, just combined**:
+
+- **`about.html`** now holds the original About content (mission, vision,
+  founder, core values) followed directly by everything that used to be on
+  `services.html` (the 6 services grid, featured coverage badges). One
+  partner/CTA section at the end (kept the more specific brand-partnership
+  copy from the old services page; dropped the more generic community CTA
+  that used to close the About page, since having both back-to-back read
+  as redundant).
+- **`gallery.html`** now holds the photo hex-grid followed by everything
+  that used to be on `videos.html` (YouTube grid + podcast blurb). One
+  partner/CTA at the end (kept Gallery's "got footage?" CTA; the old
+  Videos page's Spotify CTA was folded into the podcast blurb text
+  instead, as an inline link, rather than a second full CTA block).
+
+**`services.html` and `videos.html` are deleted from the repo.** Both URLs
+301-redirect via `vercel.json` (`/services.html` → `/about.html`,
+`/videos.html` → `/gallery.html`) so any existing bookmarks or social posts
+linking to the old URLs still land somewhere correct instead of 404ing.
+
+**Nothing changed under the hood for Gallery/Videos admin content** — the
+`#hexGrid` and `#videosGrid` containers (and their JSON-backed rendering in
+`main.js`, see §9a) work exactly the same, they're just two sections on one
+page now instead of two separate pages. The admin dashboard's Gallery and
+Videos panels are unaffected.
+
+If a client ever asks for one of these to split back into its own page,
+that's a straightforward reversal — the content sections themselves weren't
+restructured, only their page grouping.
 
 ---
 

@@ -3,20 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gallery — Off Pitch Africa</title>
-<meta name="description" content="Photos from Off Pitch Africa's coverage — hockey, football, and community moments.">
+<title>Gallery & Videos — Off Pitch Africa</title>
+<meta name="description" content="Photos and videos from Off Pitch Africa — event coverage, the podcast, and behind-the-scenes moments from across the disciplines we cover.">
 <link rel="canonical" href="https://off-pitch-nine.vercel.app/gallery.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Off Pitch Africa">
-<meta property="og:title" content="Gallery — Off Pitch Africa">
-<meta property="og:description" content="Photos from Off Pitch Africa's coverage — hockey, football, and community moments.">
+<meta property="og:title" content="Gallery & Videos — Off Pitch Africa">
+<meta property="og:description" content="Photos and videos from Off Pitch Africa — event coverage, the podcast, and behind-the-scenes moments from across the disciplines we cover.">
 <meta property="og:url" content="https://off-pitch-nine.vercel.app/gallery.html">
 <meta property="og:image" content="https://off-pitch-nine.vercel.app/assets/img/trophy_presentation_blazers.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="900">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Gallery — Off Pitch Africa">
-<meta name="twitter:description" content="Photos from Off Pitch Africa's coverage — hockey, football, and community moments.">
+<meta name="twitter:title" content="Gallery & Videos — Off Pitch Africa">
+<meta name="twitter:description" content="Photos and videos from Off Pitch Africa — event coverage, the podcast, and behind-the-scenes moments from across the disciplines we cover.">
 <meta name="twitter:image" content="https://off-pitch-nine.vercel.app/assets/img/trophy_presentation_blazers.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -43,12 +43,11 @@
     <div class="navlinks" id="navLinks">
       <button class="nav-close" id="navClose" aria-label="Close menu">&times;</button>
       <a href="index.html">Home</a>
-      <a href="index.html#events">Events</a>
+      <a href="events.html">Events</a>
       <a href="about.html">About</a>
-      <a href="services.html">What We Do</a>
       <a href="gallery.html" class="active">Gallery</a>
+      <a href="merch.html">Merch</a>
       <a href="blog.html">Blog</a>
-      <a href="videos.html">Videos</a>
       <a href="contact.html">Contact</a>
       <a href="contact.html#partner" class="nav-cta">Partner With Us</a>
     </div>
@@ -60,15 +59,19 @@
 <main>
   <section class="page-hero" style="background-image:url('assets/img/trophy_presentation_blazers.webp');">
     <div class="wrap">
-      <div class="eyebrow">MOMENTS</div>
+      <div class="eyebrow">MOMENTS &amp; COVERAGE</div>
       <h1>Off Pitch, On Camera</h1>
-      <p>Real sets, real stands, real community — captured across the disciplines we cover.</p>
+      <p>Real sets, real stands, real community — photos and videos captured across the disciplines we cover.</p>
       <div class="breadcrumb"><a href="index.html">Home</a><span class="sep">/</span>Gallery</div>
     </div>
   </section>
 
   <section class="gallery">
     <div class="wrap">
+      <div class="sec-head" style="margin-bottom:24px;">
+        <div class="eyebrow">PHOTOS</div>
+        <h2 style="font-size:clamp(1.6rem,3.6vw,2.2rem);">Gallery</h2>
+      </div>
       <div class="gallery-filter">
         <button class="filter-pill active" data-filter="all">All</button>
         <button class="filter-pill" data-filter="hockey">Hockey</button>
@@ -86,11 +89,46 @@
     </div>
   </section>
 
+  <section class="services" style="padding-top:70px;">
+    <div class="wrap">
+      <div class="sec-head-row">
+        <div class="sec-head on-light">
+          <div class="eyebrow">VIDEOS</div>
+          <h2>Latest Coverage</h2>
+        </div>
+        <a href="https://www.youtube.com/@offpitchAfrica" target="_blank" rel="noopener" class="btn btn-ghost on-light">Full Channel →</a>
+      </div>
+
+      <div class="media-row" id="videosGrid" data-fallback="true" style="grid-template-columns:repeat(2,1fr);gap:24px;">
+        <a href="https://www.youtube.com/watch?v=onYddyoXVA8" target="_blank" rel="noopener" class="media-card" style="aspect-ratio:16/9;">
+          <img src="https://img.youtube.com/vi/onYddyoXVA8/hqdefault.jpg" alt="Watch on YouTube" loading="lazy">
+          <div class="play-badge"><svg viewBox="0 0 24 24" fill="#fff"><polygon points="6 3 20 12 6 21"/></svg></div>
+        </a>
+        <a href="https://www.youtube.com/watch?v=DPB-AwIypSI" target="_blank" rel="noopener" class="media-card" style="aspect-ratio:16/9;">
+          <img src="https://img.youtube.com/vi/DPB-AwIypSI/hqdefault.jpg" alt="Watch on YouTube" loading="lazy">
+          <div class="play-badge"><svg viewBox="0 0 24 24" fill="#fff"><polygon points="6 3 20 12 6 21"/></svg></div>
+        </a>
+        <a href="https://www.youtube.com/watch?v=plkNXmQ96tk" target="_blank" rel="noopener" class="media-card" style="aspect-ratio:16/9;">
+          <img src="https://img.youtube.com/vi/plkNXmQ96tk/hqdefault.jpg" alt="Watch on YouTube" loading="lazy">
+          <div class="play-badge"><svg viewBox="0 0 24 24" fill="#fff"><polygon points="6 3 20 12 6 21"/></svg></div>
+        </a>
+        <a href="https://www.youtube.com/watch?v=ikjlL1JYTzw" target="_blank" rel="noopener" class="media-card" style="aspect-ratio:16/9;">
+          <img src="https://img.youtube.com/vi/ikjlL1JYTzw/hqdefault.jpg" alt="Watch on YouTube" loading="lazy">
+          <div class="play-badge"><svg viewBox="0 0 24 24" fill="#fff"><polygon points="6 3 20 12 6 21"/></svg></div>
+        </a>
+      </div>
+
+      <div class="watch-info" style="margin-top:32px;">
+        <p><strong style="color:#fff;">OFF PITCH PODCAST</strong> centers on the experiences of sportsmen and women on the pitch, with conversations about development off it — hosted by <strong style="color:#fff;">Bonphace Otieno</strong>. New videos are added regularly — subscribe on YouTube to catch every upload, or <a href="https://open.spotify.com/show/2E5mgDfKByqyDlk3zeuVN2" target="_blank" rel="noopener" style="color:var(--signal-teal);">listen on Spotify</a>.</p>
+      </div>
+    </div>
+  </section>
+
   <section class="partner">
     <div class="wrap partner-grid">
       <div>
         <div class="eyebrow">GOT FOOTAGE?</div>
-        <h2>Have photos from an event we covered?</h2>
+        <h2>Have photos or clips from an event we covered?</h2>
         <p>Send them our way — we love featuring the community's own moments in our reels and galleries.</p>
       </div>
       <div class="partner-box">
@@ -113,11 +151,11 @@
         <h4>Navigate</h4>
         <ul>
           <li><a href="index.html">Home</a></li>
+          <li><a href="events.html">Events</a></li>
           <li><a href="about.html">About</a></li>
-          <li><a href="services.html">What We Do</a></li>
           <li><a href="gallery.html">Gallery</a></li>
+          <li><a href="merch.html">Merch</a></li>
           <li><a href="blog.html">Blog</a></li>
-          <li><a href="videos.html">Videos</a></li>
           <li><a href="contact.html">Contact</a></li>
         </ul>
       </div>

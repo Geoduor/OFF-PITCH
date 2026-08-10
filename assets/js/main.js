@@ -124,6 +124,66 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  /* ---------- Live stream banner (index.html only) ----------
+     Two independent sources, checked together:
+     1. YouTube — auto-detected via /api/live-status (needs YOUTUBE_API_KEY;
+        silently reports not-live if that's not configured yet).
+     2. Facebook/Instagram/TikTok — manually toggled on/off from the admin
+        dashboard's "Live" tab (data/live.json), since those platforms don't
+        offer a simple way to auto-detect or embed a live stream. */
+  const liveBanner = document.getElementById('liveBanner');
+  if (liveBanner) {
+    const LIVE_POLL_MS = 120000; // safe to poll often client-side — the API response itself is edge-cached
+
+    function renderYouTubeLive(videoId, title) {
+      liveBanner.innerHTML = `
+        <div class="live-banner-inner">
+          <div class="live-badge"><span class="dot"></span>Live Now</div>
+          <p class="live-title">${escapeHtml(title || 'Watch our live broadcast')}</p>
+          <div class="live-embed-wrap">
+            <iframe src="https://www.youtube.com/embed/${encodeURIComponent(videoId)}?autoplay=0" title="Live stream" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+          </div>
+        </div>`;
+      liveBanner.hidden = false;
+    }
+
+    function renderManualLive(manual) {
+      const platformLabel = manual.platform ? escapeHtml(manual.platform) : 'social media';
+      liveBanner.innerHTML = `
+        <div class="live-banner-inner">
+          <div class="live-badge"><span class="dot"></span>Live Now on ${platformLabel}</div>
+          <div class="live-link-row">
+            <p class="live-title" style="margin-bottom:0;">${escapeHtml(manual.label || `We're streaming live on ${platformLabel} right now.`)}</p>
+            <a href="${escapeHtml(manual.url)}" target="_blank" rel="noopener" class="btn btn-primary">Watch Live →</a>
+          </div>
+        </div>`;
+      liveBanner.hidden = false;
+    }
+
+    function hideLiveBanner() {
+      liveBanner.hidden = true;
+      liveBanner.innerHTML = '';
+    }
+
+    function checkLiveStatus() {
+      Promise.all([
+        fetch('/api/live-status').then(r => r.ok ? r.json() : { live: false }).catch(() => ({ live: false })),
+        fetch('/data/live.json').then(r => r.ok ? r.json() : { active: false }).catch(() => ({ active: false }))
+      ]).then(([yt, manual]) => {
+        if (yt && yt.live && yt.videoId) {
+          renderYouTubeLive(yt.videoId, yt.title);
+        } else if (manual && manual.active && manual.url) {
+          renderManualLive(manual);
+        } else {
+          hideLiveBanner();
+        }
+      }).catch(() => hideLiveBanner());
+    }
+
+    checkLiveStatus();
+    setInterval(checkLiveStatus, LIVE_POLL_MS);
+  }
+
   /* ---------- Dynamic content: Events / Gallery / Videos / Blog ----------
      Each of these reads a small static JSON file (edited via the admin
      dashboard, which commits straight to GitHub) and rebuilds its section.
@@ -175,6 +235,94 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>`;
           eventsList.appendChild(card);
         });
+      })
+      .catch(() => { /* keep static fallback */ });
+  }
+
+  // --- Fixtures & Results (index.html) ---
+  const fixturesList = document.getElementById('fixturesList');
+  if (fixturesList) {
+    const COUNTRY_FLAGS = {
+      Kenya: '🇰🇪', Ghana: '🇬🇭', Nigeria: '🇳🇬', 'South Africa': '🇿🇦', Uganda: '🇺🇬'
+    };
+    const teamLabel = t => `${COUNTRY_FLAGS[t] ? COUNTRY_FLAGS[t] + ' ' : ''}${escapeHtml(t || 'TBD')}`;
+
+    let allFixtures = [];
+    let activeFilter = 'All';
+
+    function renderFixtures() {
+      fixturesList.innerHTML = '';
+      const filtered = activeFilter === 'All' ? allFixtures : allFixtures.filter(f => f.category === activeFilter);
+      if (filtered.length === 0) {
+        fixturesList.innerHTML = '<p class="admin-image-note">No fixtures to show.</p>';
+        return;
+      }
+      const competitions = [];
+      filtered.forEach(fx => {
+        const compName = fx.competition || 'Fixtures';
+        let comp = competitions.find(c => c.name === compName);
+        if (!comp) { comp = { name: compName, days: [] }; competitions.push(comp); }
+        let day = comp.days.find(d => d.date === fx.date);
+        if (!day) { day = { date: fx.date, rows: [] }; comp.days.push(day); }
+        day.rows.push(fx);
+      });
+
+      competitions.forEach(comp => {
+        const compWrap = document.createElement('div');
+        compWrap.className = 'fixtures-competition';
+        const h3 = document.createElement('h3');
+        h3.className = 'fixtures-competition-title';
+        h3.textContent = comp.name;
+        compWrap.appendChild(h3);
+
+        comp.days.forEach(day => {
+          const dayWrap = document.createElement('div');
+          dayWrap.className = 'fixtures-day';
+          const h4 = document.createElement('h4');
+          h4.className = 'fixtures-day-title';
+          h4.textContent = day.date;
+          dayWrap.appendChild(h4);
+
+          day.rows.forEach(fx => {
+            const row = document.createElement('div');
+            row.className = 'fixture-row';
+            row.dataset.category = fx.category || '';
+
+            const hasScore = fx.status !== 'upcoming' && (fx.score1 !== '' || fx.score2 !== '');
+            const scoreOrTime = fx.status === 'upcoming' || !hasScore
+              ? `<span class="fx-time">${escapeHtml(fx.time || '')}</span>`
+              : `<span class="fx-score">${escapeHtml(fx.score1)} – ${escapeHtml(fx.score2)}</span>`;
+            const liveBadge = fx.status === 'live' ? '<span class="fx-live-badge">LIVE</span>' : '';
+
+            row.innerHTML = `
+              ${scoreOrTime}
+              <span class="fx-teams">${teamLabel(fx.team1)} <em>vs</em> ${teamLabel(fx.team2)}</span>
+              <span class="fx-tag">${escapeHtml(fx.category || '')} · ${escapeHtml(fx.stage || '')}</span>
+              ${liveBadge}`;
+            dayWrap.appendChild(row);
+          });
+          compWrap.appendChild(dayWrap);
+        });
+        fixturesList.appendChild(compWrap);
+      });
+    }
+
+    const filterBtns = document.querySelectorAll('#fixturesFilter .fixtures-filter-btn');
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeFilter = btn.dataset.filter;
+        renderFixtures();
+      });
+    });
+
+    fetch('/data/fixtures.json')
+      .then(res => res.ok ? res.json() : Promise.reject())
+      .then(data => {
+        allFixtures = Array.isArray(data) ? data.filter(f => f && f.team1 && f.team2 && f.date) : [];
+        if (allFixtures.length === 0) return; // keep static fallback
+        renderFixtures();
       })
       .catch(() => { /* keep static fallback */ });
   }

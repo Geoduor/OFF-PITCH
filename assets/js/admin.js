@@ -1,477 +1,413 @@
-// Off Pitch Africa — admin dashboard client logic.
-// Talks only to /api/admin (same-origin). No frameworks, no build step —
-// consistent with the rest of this project.
+// Off Pitch Africa — admin dashboard backend.
+// Deploy target: Vercel (zero-config — any file in /api becomes an endpoint).
+//
+// What this does: lets Bonphace (or whoever has the password) update the
+// site's Events / Gallery / Blog / Videos content from a browser dashboard
+// (admin.html) instead of editing code. Every save is a real commit to the
+// GitHub repo via GitHub's REST API — Vercel then auto-deploys it, same as
+// any other push. There is no database; the JSON files in /data ARE the
+// database, version-controlled like everything else in this project.
+//
+// REQUIRED ENVIRONMENT VARIABLES (set in Vercel dashboard, never in code):
+//   ADMIN_PASSWORD        — the password used to log into /admin.html
+//   ADMIN_SESSION_SECRET   — any long random string, used to sign session
+//                             cookies (e.g. generate with `openssl rand -hex 32`)
+//   GITHUB_TOKEN            — a fine-grained GitHub Personal Access Token
+//                             scoped ONLY to this repo, with "Contents:
+//                             Read and write" permission. Nothing else.
+//
+// SECURITY NOTES (see SECURITY.md for the full picture):
+// - CORS is restricted to this site's own origin(s), same as api/chat.js.
+// - Sessions are HMAC-signed cookies (HttpOnly, Secure, SameSite=Strict) —
+//   no session data is trusted unless its signature checks out.
+// - Login attempts are rate-limited per IP (best-effort, in-memory — same
+//   caveat as chat.js: resets on cold start, see SECURITY.md).
+// - All writes go through basic shape/length validation before ever being
+//   committed — see validateContent() below.
+// - GITHUB_TOKEN never reaches the browser; every GitHub API call happens
+//   server-side only.
 
-const SCHEMAS = {
-  events: {
-    label: 'Events',
-    fields: [
-      { key: 'title', label: 'Event Title', type: 'text', required: true },
-      { key: 'theme', label: 'Theme / Subtitle', type: 'text' },
-      { key: 'date', label: 'Date (e.g. Saturday, 29th August 2026)', type: 'text', required: true },
-      { key: 'time', label: 'Time (e.g. 2:00 PM – 5:00 PM)', type: 'text' },
-      { key: 'venue', label: 'Venue', type: 'text' },
-      { key: 'image', label: 'Poster Image', type: 'image' },
-      { key: 'registerLink', label: 'Registration Link (optional — overrides Call/Email buttons)', type: 'url' },
-      { key: 'phone', label: 'Contact Phone', type: 'text' },
-      { key: 'email', label: 'Contact Email', type: 'text' },
-      { key: 'active', label: 'Show on site', type: 'checkbox', default: true }
-    ]
-  },
-  gallery: {
-    label: 'Gallery',
-    fields: [
-      { key: 'src', label: 'Photo', type: 'image', required: true },
-      { key: 'alt', label: 'Description (alt text)', type: 'text', aiAssist: 'altText' },
-      { key: 'category', label: 'Category', type: 'select', options: ['hockey', 'community', 'celebration'], aiAssist: 'category' }
-    ]
-  },
-  blog: {
-    label: 'Blog',
-    fields: [
-      { key: 'title', label: 'Post Title', type: 'text', required: true },
-      { key: 'url', label: 'Post URL (Substack link)', type: 'url', required: true },
-      { key: 'excerpt', label: 'Short excerpt', type: 'textarea', aiAssist: 'excerpt' },
-      { key: 'image', label: 'Cover Image (optional)', type: 'image' }
-    ]
-  },
-  videos: {
-    label: 'Videos',
-    fields: [
-      { key: 'youtubeId', label: 'YouTube Video ID (the part after "v=" in the URL)', type: 'text', required: true }
-    ]
-  },
-  live: {
-    label: 'Live',
-    singleton: true,
-    fields: [
-      { key: 'active', label: 'Currently live on Facebook/Instagram/TikTok', type: 'checkbox' },
-      { key: 'platform', label: 'Platform', type: 'select', options: ['Facebook', 'Instagram', 'TikTok', 'Other'] },
-      { key: 'url', label: 'Link to the live post/stream', type: 'url' },
-      { key: 'label', label: 'Message shown on the banner (optional)', type: 'text' }
-    ]
-  }
+import crypto from 'crypto';
+
+const ALLOWED_ORIGINS = [
+  'https://off-pitch-nine.vercel.app'
+  // Add your custom domain here once you have one, e.g.:
+  // 'https://offpitchafrica.com'
+];
+
+const GITHUB_OWNER = 'Geoduor';
+const GITHUB_REPO = 'OFF-PITCH';
+const GITHUB_BRANCH = 'main';
+const GITHUB_API = 'https://api.github.com';
+
+const SESSION_TTL_MS = 12 * 60 * 60 * 1000; // 12 hours
+const MAX_CONTENT_BYTES = 200 * 1000; // 200 KB cap on any single JSON data file
+const MAX_IMAGE_BYTES = 950 * 1000; // ~950 KB cap on uploaded images (base64 decoded)
+
+const DATA_FILES = {
+  events: 'data/events.json',
+  gallery: 'data/gallery.json',
+  blog: 'data/blog.json',
+  videos: 'data/videos.json',
+  fixtures: 'data/fixtures.json',
+  live: 'data/live.json'
 };
 
-const loginScreen = document.getElementById('loginScreen');
-const dashboard = document.getElementById('dashboard');
-const loginForm = document.getElementById('loginForm');
-const loginError = document.getElementById('loginError');
-const passwordInput = document.getElementById('passwordInput');
-const logoutBtn = document.getElementById('logoutBtn');
+/* ---------------- Rate limiting (login attempts only) ---------------- */
+const RATE_LIMIT = 8;
+const RATE_WINDOW_MS = 60 * 1000;
+const loginAttempts = new Map();
 
-function genId(type) {
-  return `${type}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+function isRateLimited(ip) {
+  const now = Date.now();
+  const timestamps = (loginAttempts.get(ip) || []).filter(t => now - t < RATE_WINDOW_MS);
+  timestamps.push(now);
+  loginAttempts.set(ip, timestamps);
+  if (loginAttempts.size > 5000) loginAttempts.clear();
+  return timestamps.length > RATE_LIMIT;
 }
 
-/* ---------------- Auth ---------------- */
-async function checkSession() {
+/* ---------------- CORS ---------------- */
+function applyCors(req, res) {
+  const origin = req.headers.origin;
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+}
+
+/* ---------------- Session cookie (HMAC-signed, no dependencies) ---------------- */
+function base64url(input) {
+  return Buffer.from(input).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function base64urlDecode(input) {
+  input = input.replace(/-/g, '+').replace(/_/g, '/');
+  while (input.length % 4) input += '=';
+  return Buffer.from(input, 'base64').toString('utf8');
+}
+
+function sign(payload) {
+  const secret = process.env.ADMIN_SESSION_SECRET || '';
+  return crypto.createHmac('sha256', secret).update(payload).digest('hex');
+}
+
+function createSessionToken() {
+  const payload = base64url(JSON.stringify({ exp: Date.now() + SESSION_TTL_MS }));
+  const signature = sign(payload);
+  return `${payload}.${signature}`;
+}
+
+function verifySessionToken(token) {
+  if (!token || typeof token !== 'string' || !token.includes('.')) return false;
+  const [payload, signature] = token.split('.');
+  const expected = sign(payload);
+  const sigBuf = Buffer.from(signature || '', 'hex');
+  const expBuf = Buffer.from(expected, 'hex');
+  if (sigBuf.length !== expBuf.length) return false;
+  if (!crypto.timingSafeEqual(sigBuf, expBuf)) return false;
   try {
-    const res = await fetch('/api/admin?action=check', { credentials: 'same-origin' });
-    const data = await res.json();
-    if (data.loggedIn) {
-      loginScreen.hidden = true;
-      dashboard.hidden = false;
-      initAllPanels();
-    } else {
-      loginScreen.hidden = false;
-      dashboard.hidden = true;
-    }
+    const data = JSON.parse(base64urlDecode(payload));
+    return typeof data.exp === 'number' && data.exp > Date.now();
   } catch {
-    loginScreen.hidden = false;
-    dashboard.hidden = true;
+    return false;
   }
 }
 
-loginForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  loginError.textContent = '';
-  const submitBtn = loginForm.querySelector('button[type="submit"]');
-  submitBtn.disabled = true;
-  try {
-    const res = await fetch('/api/admin', {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'login', password: passwordInput.value })
-    });
-    const data = await res.json();
-    if (res.ok && data.ok) {
-      passwordInput.value = '';
-      loginScreen.hidden = true;
-      dashboard.hidden = false;
-      initAllPanels();
-    } else {
-      loginError.textContent = data.error || 'Incorrect password.';
+function getCookie(req, name) {
+  const header = req.headers.cookie;
+  if (!header) return null;
+  const parts = header.split(';').map(p => p.trim());
+  for (const part of parts) {
+    const idx = part.indexOf('=');
+    if (idx === -1) continue;
+    if (part.slice(0, idx) === name) return decodeURIComponent(part.slice(idx + 1));
+  }
+  return null;
+}
+
+function setSessionCookie(res, token) {
+  const maxAge = Math.floor(SESSION_TTL_MS / 1000);
+  res.setHeader('Set-Cookie', `admin_session=${token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=${maxAge}`);
+}
+
+function clearSessionCookie(res) {
+  res.setHeader('Set-Cookie', 'admin_session=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0');
+}
+
+function requireSession(req) {
+  const token = getCookie(req, 'admin_session');
+  return verifySessionToken(token);
+}
+
+/* ---------------- GitHub REST API helpers ---------------- */
+function githubHeaders() {
+  return {
+    Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+    Accept: 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28',
+    'User-Agent': 'off-pitch-admin-dashboard'
+  };
+}
+
+async function githubGetFile(path) {
+  const url = `${GITHUB_API}/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}?ref=${GITHUB_BRANCH}`;
+  const res = await fetch(url, { headers: githubHeaders() });
+  if (res.status === 404) return { content: null, sha: null };
+  if (!res.ok) throw new Error(`GitHub GET failed: ${res.status}`);
+  const data = await res.json();
+  const decoded = Buffer.from(data.content, 'base64').toString('utf8');
+  return { content: decoded, sha: data.sha };
+}
+
+async function githubPutFile(path, contentString, sha, message) {
+  const url = `${GITHUB_API}/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`;
+  const body = {
+    message,
+    content: Buffer.from(contentString, 'utf8').toString('base64'),
+    branch: GITHUB_BRANCH
+  };
+  if (sha) body.sha = sha;
+  const res = await fetch(url, {
+    method: 'PUT',
+    headers: { ...githubHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) {
+    const errText = await res.text().catch(() => '');
+    console.error('GitHub PUT failed:', res.status, errText);
+    throw new Error(`GitHub PUT failed: ${res.status}`);
+  }
+  return res.json();
+}
+
+/* ---------------- Content validation ----------------
+   Keeps obviously-broken or oversized payloads from ever being committed.
+   Deliberately simple: length caps + required-field checks per type,
+   not a full schema validator. */
+function isNonEmptyString(v, maxLen) {
+  return typeof v === 'string' && v.trim().length > 0 && v.length <= maxLen;
+}
+function isOptionalString(v, maxLen) {
+  return v === undefined || v === '' || (typeof v === 'string' && v.length <= maxLen);
+}
+
+function validateContent(type, content) {
+  if (JSON.stringify(content).length > MAX_CONTENT_BYTES) {
+    return 'Content is too large.';
+  }
+
+  if (type === 'live') {
+    if (!content || typeof content !== 'object' || Array.isArray(content)) return 'Live status must be an object.';
+    const okActive = typeof content.active === 'boolean';
+    const okPlatform = isOptionalString(content.platform, 40);
+    const okUrl = isOptionalString(content.url, 500);
+    const okLabel = isOptionalString(content.label, 200);
+    if (!okActive || !okPlatform || !okUrl || !okLabel) return 'Live status has invalid fields.';
+    if (content.active && !content.url) return 'A URL is required when Live is turned on.';
+    return null;
+  }
+
+  if (!Array.isArray(content)) return 'Content must be a list.';
+  if (content.length > 200) return 'Too many items (max 200).';
+
+  const validators = {
+    events: item =>
+      isNonEmptyString(item.id, 100) &&
+      isNonEmptyString(item.title, 160) &&
+      isNonEmptyString(item.date, 80) &&
+      isOptionalString(item.theme, 200) &&
+      isOptionalString(item.time, 80) &&
+      isOptionalString(item.venue, 200) &&
+      isOptionalString(item.image, 300) &&
+      isOptionalString(item.registerLink, 500) &&
+      isOptionalString(item.phone, 40) &&
+      isOptionalString(item.email, 120) &&
+      typeof item.active === 'boolean',
+    gallery: item =>
+      isNonEmptyString(item.id, 100) &&
+      isNonEmptyString(item.src, 300) &&
+      isOptionalString(item.alt, 200) &&
+      isOptionalString(item.category, 40),
+    blog: item =>
+      isNonEmptyString(item.id, 100) &&
+      isNonEmptyString(item.title, 200) &&
+      isNonEmptyString(item.url, 500) &&
+      isOptionalString(item.excerpt, 400) &&
+      isOptionalString(item.image, 300),
+    videos: item =>
+      isNonEmptyString(item.id, 100) &&
+      isNonEmptyString(item.youtubeId, 30),
+    fixtures: item =>
+      isNonEmptyString(item.id, 100) &&
+      isOptionalString(item.competition, 160) &&
+      ['Men', 'Women'].includes(item.category) &&
+      isOptionalString(item.stage, 80) &&
+      isNonEmptyString(item.date, 60) &&
+      isOptionalString(item.time, 40) &&
+      isNonEmptyString(item.team1, 60) &&
+      isNonEmptyString(item.team2, 60) &&
+      isOptionalString(item.score1, 10) &&
+      isOptionalString(item.score2, 10) &&
+      ['upcoming', 'live', 'final'].includes(item.status)
+  };
+
+  const validator = validators[type];
+  if (!validator) return 'Unknown content type.';
+  for (const item of content) {
+    if (!item || typeof item !== 'object' || !validator(item)) {
+      return 'One or more items are missing required fields or are too long.';
     }
-  } catch {
-    loginError.textContent = 'Network error. Please try again.';
-  } finally {
-    submitBtn.disabled = false;
   }
-});
-
-logoutBtn.addEventListener('click', async () => {
-  try {
-    await fetch('/api/admin', {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'logout' })
-    });
-  } catch { /* ignore */ }
-  dashboard.hidden = true;
-  loginScreen.hidden = false;
-});
-
-/* ---------------- Panels ----------------
-   All 5 panels (Events / Gallery / Blog / Videos / Live) are visible on
-   the page at once — no tab-switching. Each panel keeps its own items
-   array and its own DOM references via closures, so editing one panel
-   never touches another's state. */
-let panelsInitialized = false;
-
-function initAllPanels() {
-  if (panelsInitialized) return; // avoid double-binding on repeat logins in the same page load
-  panelsInitialized = true;
-  Object.keys(SCHEMAS).forEach(type => initPanel(type));
+  return null;
 }
 
-function initPanel(type) {
-  const schema = SCHEMAS[type];
-  const section = document.getElementById(`panel-${type}`);
-  if (!section) return;
-
-  const itemsList = section.querySelector('.admin-items');
-  const statusMsg = section.querySelector('.admin-status');
-  const addBtn = section.querySelector('.admin-add-btn');
-  const saveBtn = section.querySelector('.admin-save-btn');
-
-  let items = [];
-
-  function showStatus(text, isError) {
-    statusMsg.textContent = text;
-    statusMsg.classList.toggle('error', Boolean(isError));
+/* ---------------- Handler ---------------- */
+export default async function handler(req, res) {
+  applyCors(req, res);
+  if (req.method === 'OPTIONS') {
+    res.status(204).end();
+    return;
   }
 
-  function renderItems() {
-    itemsList.innerHTML = '';
-    if (schema.singleton) {
-      if (type === 'live') {
-        const note = document.createElement('p');
-        note.className = 'admin-image-note';
-        note.style.marginBottom = '16px';
-        note.textContent = 'This only controls Facebook/Instagram/TikTok. YouTube Live is detected automatically — no need to touch anything here when going live on YouTube.';
-        itemsList.appendChild(note);
-      }
-      itemsList.appendChild(buildItemCard(schema, items[0] || {}, 0, true, items, renderItems));
+  const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket?.remoteAddress || 'unknown';
+
+  let action = req.query && req.query.action;
+  let body = {};
+  if (req.method === 'POST') {
+    try {
+      body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
+    } catch {
+      res.status(400).json({ error: 'Invalid JSON body.' });
       return;
     }
-    items.forEach((item, index) => {
-      itemsList.appendChild(buildItemCard(schema, item, index, false, items, renderItems));
-    });
+    action = action || body.action;
   }
 
-  async function load() {
-    showStatus('Loading…');
-    try {
-      const res = await fetch(`/api/admin?action=get&type=${encodeURIComponent(type)}`, { credentials: 'same-origin' });
-      if (res.status === 401) { checkSession(); return; }
-      const data = await res.json();
-      if (schema.singleton) {
-        items = [data.content && typeof data.content === 'object' ? data.content : {}];
-      } else {
-        items = Array.isArray(data.content) ? data.content : [];
+  if (!action) {
+    res.status(400).json({ error: 'Missing action.' });
+    return;
+  }
+
+  try {
+    /* ---- LOGIN ---- */
+    if (action === 'login' && req.method === 'POST') {
+      if (isRateLimited(ip)) {
+        res.status(429).json({ error: 'Too many attempts. Please wait a minute and try again.' });
+        return;
       }
-      renderItems();
-      showStatus('');
-    } catch {
-      showStatus('Could not load content. Please refresh and try again.', true);
+      const password = body.password;
+      const expected = process.env.ADMIN_PASSWORD || '';
+      const ok =
+        typeof password === 'string' &&
+        expected.length > 0 &&
+        password.length === expected.length &&
+        crypto.timingSafeEqual(Buffer.from(password), Buffer.from(expected));
+      if (!ok) {
+        res.status(401).json({ error: 'Incorrect password.' });
+        return;
+      }
+      setSessionCookie(res, createSessionToken());
+      res.status(200).json({ ok: true });
+      return;
     }
-  }
 
-  if (addBtn) {
-    addBtn.addEventListener('click', () => {
-      const newItem = { id: genId(type) };
-      schema.fields.forEach(f => {
-        if (f.type === 'checkbox') newItem[f.key] = Boolean(f.default);
-      });
-      items.push(newItem);
-      renderItems();
-      itemsList.lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    });
-  }
-
-  saveBtn.addEventListener('click', async () => {
-    saveBtn.disabled = true;
-    showStatus('Saving…');
-    try {
-      // 1. Upload any pending images first, replacing the field with the real path.
-      for (const item of items) {
-        if (item._pendingUpload) {
-          for (const key of Object.keys(item._pendingUpload)) {
-            const { base64, filename } = item._pendingUpload[key];
-            const res = await fetch('/api/admin', {
-              method: 'POST',
-              credentials: 'same-origin',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ action: 'uploadImage', filename, base64 })
-            });
-            const data = await res.json();
-            if (!res.ok || !data.ok) throw new Error(data.error || 'Image upload failed.');
-            item[key] = data.path;
-          }
-          delete item._pendingUpload;
-          delete item._pendingPreview;
-        }
-      }
-
-      // 2. Strip any remaining internal-only fields before saving.
-      const cleanItems = items.map(({ _pendingUpload, _pendingPreview, ...rest }) => rest);
-      const payload = schema.singleton ? (cleanItems[0] || {}) : cleanItems;
-
-      const res = await fetch('/api/admin', {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'save', type, content: payload })
-      });
-      const data = await res.json();
-      if (!res.ok || !data.ok) throw new Error(data.error || 'Save failed.');
-      showStatus('Saved — your live site will update in about 10–20 seconds as it redeploys.');
-    } catch (err) {
-      showStatus(err.message || 'Something went wrong. Please try again.', true);
-    } finally {
-      saveBtn.disabled = false;
+    /* ---- LOGOUT ---- */
+    if (action === 'logout' && req.method === 'POST') {
+      clearSessionCookie(res);
+      res.status(200).json({ ok: true });
+      return;
     }
-  });
 
-  load();
-}
-
-function buildItemCard(schema, item, index, hideHeader, items, rerender) {
-  const card = document.createElement('div');
-  card.className = 'admin-item';
-
-  if (!hideHeader) {
-    const header = document.createElement('div');
-    header.className = 'admin-item-header';
-    const label = document.createElement('span');
-    label.textContent = `${schema.label.slice(0, -1) || schema.label} ${index + 1}`;
-    const removeBtn = document.createElement('button');
-    removeBtn.type = 'button';
-    removeBtn.className = 'admin-item-remove';
-    removeBtn.textContent = 'Remove';
-    removeBtn.addEventListener('click', () => {
-      if (!confirm('Remove this item? This takes effect once you click Save Changes.')) return;
-      items.splice(index, 1);
-      rerender();
-    });
-    header.appendChild(label);
-    header.appendChild(removeBtn);
-    card.appendChild(header);
-  }
-
-  const fieldsWrap = document.createElement('div');
-  fieldsWrap.className = 'admin-fields';
-
-  schema.fields.forEach(field => {
-    fieldsWrap.appendChild(buildField(field, item));
-  });
-
-  card.appendChild(fieldsWrap);
-  return card;
-}
-
-function buildField(field, item) {
-  const wrap = document.createElement('div');
-  wrap.className = 'admin-field' + (field.type === 'textarea' || field.type === 'image' ? ' full' : '');
-
-  if (field.type === 'checkbox') {
-    wrap.classList.add('admin-field-checkbox');
-    const cb = document.createElement('input');
-    cb.type = 'checkbox';
-    cb.checked = item[field.key] !== undefined ? Boolean(item[field.key]) : Boolean(field.default);
-    item[field.key] = cb.checked;
-    cb.addEventListener('change', () => { item[field.key] = cb.checked; });
-    const lbl = document.createElement('label');
-    lbl.textContent = field.label;
-    wrap.appendChild(cb);
-    wrap.appendChild(lbl);
-    return wrap;
-  }
-
-  const lbl = document.createElement('label');
-  lbl.textContent = field.label;
-  wrap.appendChild(lbl);
-
-  if (field.type === 'image') {
-    wrap.classList.add('admin-image-field');
-    const preview = document.createElement('div');
-    preview.className = 'admin-image-preview';
-    const previewImg = document.createElement('img');
-    const currentSrc = item._pendingPreview && item._pendingPreview[field.key]
-      ? item._pendingPreview[field.key]
-      : (item[field.key] ? item[field.key] : '');
-    if (currentSrc) previewImg.src = currentSrc;
-    previewImg.alt = '';
-    preview.appendChild(previewImg);
-
-    const controls = document.createElement('div');
-    controls.className = 'admin-image-controls';
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = 'image/png,image/jpeg,image/webp';
-    const note = document.createElement('div');
-    note.className = 'admin-image-note';
-    note.textContent = 'Images are resized and compressed automatically before upload.';
-
-    fileInput.addEventListener('change', async () => {
-      const file = fileInput.files[0];
-      if (!file) return;
-      note.textContent = 'Compressing…';
-      try {
-        const { base64, dataUrl, filename } = await compressImage(file);
-        if (!item._pendingUpload) item._pendingUpload = {};
-        if (!item._pendingPreview) item._pendingPreview = {};
-        item._pendingUpload[field.key] = { base64, filename };
-        item._pendingPreview[field.key] = dataUrl;
-        previewImg.src = dataUrl;
-        note.textContent = 'Ready — will upload when you click Save Changes.';
-      } catch {
-        note.textContent = 'Could not process that image. Try a different file.';
-      }
-    });
-
-    controls.appendChild(fileInput);
-    controls.appendChild(note);
-    wrap.appendChild(preview);
-    wrap.appendChild(controls);
-    return wrap;
-  }
-
-  if (field.type === 'select') {
-    const select = document.createElement('select');
-    (field.options || []).forEach(opt => {
-      const o = document.createElement('option');
-      o.value = opt;
-      o.textContent = opt.charAt(0).toUpperCase() + opt.slice(1);
-      if (item[field.key] === opt) o.selected = true;
-      select.appendChild(o);
-    });
-    if (!item[field.key] && field.options && field.options.length) item[field.key] = field.options[0];
-    select.addEventListener('change', () => { item[field.key] = select.value; });
-    wrap.appendChild(select);
-    if (field.aiAssist) wrap.appendChild(buildAiAssistButton(field, item, () => select.value = item[field.key]));
-    return wrap;
-  }
-
-  if (field.type === 'textarea') {
-    const ta = document.createElement('textarea');
-    ta.value = item[field.key] || '';
-    ta.addEventListener('input', () => { item[field.key] = ta.value; });
-    wrap.appendChild(ta);
-    if (field.aiAssist) wrap.appendChild(buildAiAssistButton(field, item, () => ta.value = item[field.key]));
-    return wrap;
-  }
-
-  const input = document.createElement('input');
-  input.type = field.type === 'url' ? 'url' : 'text';
-  input.value = item[field.key] || '';
-  input.addEventListener('input', () => { item[field.key] = input.value; });
-  wrap.appendChild(input);
-  if (field.aiAssist) wrap.appendChild(buildAiAssistButton(field, item, () => input.value = item[field.key]));
-  return wrap;
-}
-
-/* ---------------- AI content-assist ----------------
-   Every suggestion only fills the field in memory (item[field.key]) and
-   the visible control — nothing is saved until the section's own Save
-   Changes button is clicked, same as manual typing. */
-function buildAiAssistButton(field, item, applyToControl) {
-  const row = document.createElement('div');
-  row.className = 'admin-ai-row';
-  const btn = document.createElement('button');
-  btn.type = 'button';
-  btn.className = 'admin-ai-btn';
-  btn.textContent = '✨ Suggest';
-  const note = document.createElement('span');
-  note.className = 'admin-ai-note';
-  row.appendChild(btn);
-  row.appendChild(note);
-
-  btn.addEventListener('click', async () => {
-    btn.disabled = true;
-    note.textContent = 'Thinking…';
-    try {
-      let body;
-      if (field.aiAssist === 'excerpt') {
-        if (!item.title) throw new Error('Add a post title first.');
-        body = { action: 'excerpt', title: item.title };
-      } else {
-        // altText/category are only used on the Gallery panel's 'src'
-        // photo field in this build — reference it directly rather than
-        // guessing, since a new unsaved item won't have any image key yet.
-        const imageFieldKey = 'src';
-        const pending = item._pendingUpload && item._pendingUpload[imageFieldKey];
-        if (pending) {
-          body = { action: field.aiAssist, imageBase64: pending.base64, imageMediaType: 'image/jpeg' };
-        } else if (item[imageFieldKey]) {
-          body = { action: field.aiAssist, imagePath: item[imageFieldKey] };
-        } else {
-          throw new Error('Add a photo first.');
-        }
-      }
-      const res = await fetch('/api/ai-assist', {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Could not get a suggestion.');
-      item[field.key] = data.suggestion;
-      applyToControl();
-      note.textContent = 'Suggested — review before saving.';
-    } catch (err) {
-      note.textContent = err.message || 'Something went wrong.';
-    } finally {
-      btn.disabled = false;
+    /* ---- CHECK SESSION ---- */
+    if (action === 'check' && req.method === 'GET') {
+      res.status(200).json({ loggedIn: requireSession(req) });
+      return;
     }
-  });
 
-  return row;
-}
+    // Everything below requires a valid session.
+    if (!requireSession(req)) {
+      res.status(401).json({ error: 'Not logged in.' });
+      return;
+    }
 
-/* ---------------- Image compression (client-side, no dependencies) ---------------- */
-const MAX_DIMENSION = 1200;
-const JPEG_QUALITY = 0.82;
-
-function compressImage(file) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    const objectUrl = URL.createObjectURL(file);
-    img.onload = () => {
-      URL.revokeObjectURL(objectUrl);
-      let { width, height } = img;
-      if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
-        const scale = MAX_DIMENSION / Math.max(width, height);
-        width = Math.round(width * scale);
-        height = Math.round(height * scale);
+    /* ---- GET CONTENT ---- */
+    if (action === 'get' && req.method === 'GET') {
+      const type = req.query.type;
+      const path = DATA_FILES[type];
+      if (!path) {
+        res.status(400).json({ error: 'Unknown content type.' });
+        return;
       }
-      const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, width, height);
-      const dataUrl = canvas.toDataURL('image/jpeg', JPEG_QUALITY);
-      const base64 = dataUrl.split(',')[1];
-      const safeBase = file.name.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9_-]/g, '-').slice(0, 40) || 'image';
-      resolve({ base64, dataUrl, filename: `${safeBase}.jpg` });
-    };
-    img.onerror = () => { URL.revokeObjectURL(objectUrl); reject(new Error('Could not load image')); };
-    img.src = objectUrl;
-  });
-}
+      const { content } = await githubGetFile(path);
+      const fallback = type === 'live' ? { active: false, platform: '', url: '', label: '' } : [];
+      res.status(200).json({ content: content ? JSON.parse(content) : fallback });
+      return;
+    }
 
-checkSession();
+    /* ---- SAVE CONTENT ---- */
+    if (action === 'save' && req.method === 'POST') {
+      const { type, content } = body;
+      const path = DATA_FILES[type];
+      if (!path) {
+        res.status(400).json({ error: 'Unknown content type.' });
+        return;
+      }
+      const validationError = validateContent(type, content);
+      if (validationError) {
+        res.status(400).json({ error: validationError });
+        return;
+      }
+      const { sha } = await githubGetFile(path); // fetch latest sha right before writing
+      const pretty = JSON.stringify(content, null, 2) + '\n';
+      await githubPutFile(path, pretty, sha, `admin: update ${type}`);
+      res.status(200).json({ ok: true });
+      return;
+    }
+
+    /* ---- UPLOAD IMAGE ---- */
+    if (action === 'uploadImage' && req.method === 'POST') {
+      const { filename, base64 } = body;
+      if (!isNonEmptyString(filename, 120) || !/^[a-zA-Z0-9_-]+\.(webp|jpg|jpeg|png)$/i.test(filename)) {
+        res.status(400).json({ error: 'Invalid filename. Use only letters, numbers, - and _, ending in .webp/.jpg/.jpeg/.png.' });
+        return;
+      }
+      if (typeof base64 !== 'string' || base64.length === 0) {
+        res.status(400).json({ error: 'Missing image data.' });
+        return;
+      }
+      const decodedSize = Math.floor(base64.length * 0.75);
+      if (decodedSize > MAX_IMAGE_BYTES) {
+        res.status(400).json({ error: 'Image too large (max ~950KB after compression).' });
+        return;
+      }
+      const safeName = `${Date.now()}-${filename.replace(/[^a-zA-Z0-9_.-]/g, '')}`;
+      const path = `assets/img/uploads/${safeName}`;
+      const url = `${GITHUB_API}/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`;
+      const ghRes = await fetch(url, {
+        method: 'PUT',
+        headers: { ...githubHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: `admin: upload image ${safeName}`,
+          content: base64,
+          branch: GITHUB_BRANCH
+        })
+      });
+      if (!ghRes.ok) {
+        const errText = await ghRes.text().catch(() => '');
+        console.error('GitHub image upload failed:', ghRes.status, errText);
+        res.status(502).json({ error: 'Upload failed. Please try again.' });
+        return;
+      }
+      res.status(200).json({ ok: true, path });
+      return;
+    }
+
+    res.status(400).json({ error: 'Unknown action.' });
+  } catch (err) {
+    console.error('Admin API error:', err);
+    res.status(500).json({ error: 'Something went wrong. Please try again.' });
+  }
+};

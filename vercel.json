@@ -1,4 +1,8 @@
 {
+  "redirects": [
+    { "source": "/services.html", "destination": "/about.html", "permanent": true },
+    { "source": "/videos.html", "destination": "/gallery.html", "permanent": true }
+  ],
   "headers": [
     {
       "source": "/(.*)",
