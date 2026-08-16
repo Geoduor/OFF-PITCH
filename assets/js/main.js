@@ -297,7 +297,7 @@ document.addEventListener('DOMContentLoaded', () => {
             row.innerHTML = `
               ${scoreOrTime}
               <span class="fx-teams">${teamLabel(fx.team1)} <em>vs</em> ${teamLabel(fx.team2)}</span>
-              <span class="fx-tag">${escapeHtml(fx.category || '')} · ${escapeHtml(fx.stage || '')}</span>
+              <span class="fx-tag">${escapeHtml(fx.category || '')} · ${escapeHtml(fx.stage || '')}${fx.venue ? ' · ' + escapeHtml(fx.venue) : ''}</span>
               ${liveBadge}`;
             dayWrap.appendChild(row);
           });
