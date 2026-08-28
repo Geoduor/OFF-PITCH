@@ -599,6 +599,14 @@ nav{
 .filter-pill.active, .filter-pill:hover{color:#fff;border-color:var(--pitch-red);background:rgba(200,16,46,0.12);}
 
 /* ---------- PARTNER CTA ---------- */
+.partners-strip{padding:80px 0 20px;}
+.partners-logos{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:24px;}
+.partner-logo-tile{background:#fff;border-radius:10px;padding:20px 28px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,0.25);}
+.partner-logo-tile img{height:56px;width:auto;max-width:200px;object-fit:contain;display:block;}
+@media (max-width:640px){
+  .partner-logo-tile{padding:14px 20px;}
+  .partner-logo-tile img{height:44px;}
+}
 .partner{background:var(--navy);padding:100px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
 .partner-grid{display:grid;grid-template-columns:1.2fr 0.8fr;gap:50px;align-items:center;}
 .partner h2{font-size:clamp(1.9rem,3.6vw,2.7rem);color:#fff;margin-bottom:20px;}
