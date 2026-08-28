@@ -80,6 +80,18 @@
         <button type="button" class="fixtures-filter-btn" data-filter="Women">Women</button>
         <button type="button" class="fixtures-filter-btn" data-filter="Men">Men</button>
       </div>
+      <div class="fixtures-date-filter" id="fixturesDateFilter">
+        <select id="fixturesCompetition" aria-label="Filter fixtures by competition">
+          <option value="All">All Competitions</option>
+        </select>
+        <select id="fixturesMonth" aria-label="Filter fixtures by month">
+          <option value="All">All Months</option>
+        </select>
+        <select id="fixturesDate" aria-label="Filter fixtures by date">
+          <option value="All">All Dates</option>
+        </select>
+        <button type="button" id="fixturesToggleAll" class="fixtures-filter-btn">View All Fixtures</button>
+      </div>
 
       <div id="fixturesList" data-fallback="true">
         <div class="fixtures-competition">

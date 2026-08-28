@@ -133,8 +133,9 @@ function sanitizeImages(images) {
 }
 
 const ALLOWED_ORIGINS = [
+  'https://offpitchafrica.com',
+  'https://www.offpitchafrica.com',
   'https://off-pitch-nine.vercel.app'
-  // Add your custom domain here once you have one.
 ];
 
 // Best-effort in-memory rate limit — see chat.js and SECURITY.md for details

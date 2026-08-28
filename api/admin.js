@@ -30,9 +30,9 @@
 import crypto from 'crypto';
 
 const ALLOWED_ORIGINS = [
+  'https://offpitchafrica.com',
+  'https://www.offpitchafrica.com',
   'https://off-pitch-nine.vercel.app'
-  // Add your custom domain here once you have one, e.g.:
-  // 'https://offpitchafrica.com'
 ];
 
 const GITHUB_OWNER = 'Geoduor';

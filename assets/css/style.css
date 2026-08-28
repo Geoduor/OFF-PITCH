@@ -332,6 +332,15 @@ nav{
 }
 .fixtures-filter-btn:hover{border-color:var(--signal-teal);}
 .fixtures-filter-btn.active{background:var(--pitch-red);border-color:var(--pitch-red);color:#fff;}
+.fixtures-date-filter{display:flex;gap:10px;margin-bottom:28px;flex-wrap:wrap;}
+.fixtures-date-filter select{
+  font-family:'Space Mono',monospace;font-size:0.75rem;letter-spacing:0.03em;
+  background:var(--navy);border:1px solid var(--line);color:var(--chalk);padding:9px 14px;border-radius:6px;
+  cursor:pointer;appearance:none;-webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%239aa0ad'%3E%3Cpath d='M5.5 7.5l4.5 4.5 4.5-4.5' stroke='%239aa0ad' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;
+}
+.fixtures-date-filter select:hover,.fixtures-date-filter select:focus{border-color:var(--signal-teal);outline:none;}
 .fixtures-competition{margin-bottom:44px;}
 .fixtures-competition:last-child{margin-bottom:0;}
 .fixtures-competition-title{font-size:clamp(1.3rem,3vw,1.7rem);margin-bottom:4px;}

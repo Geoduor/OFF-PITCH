@@ -1,37 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://off-pitch-nine.vercel.app/</loc>
+    <loc>https://offpitchafrica.com/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://off-pitch-nine.vercel.app/events.html</loc>
+    <loc>https://offpitchafrica.com/events.html</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://off-pitch-nine.vercel.app/about.html</loc>
+    <loc>https://offpitchafrica.com/about.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://off-pitch-nine.vercel.app/gallery.html</loc>
+    <loc>https://offpitchafrica.com/gallery.html</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://off-pitch-nine.vercel.app/merch.html</loc>
+    <loc>https://offpitchafrica.com/merch.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://off-pitch-nine.vercel.app/blog.html</loc>
+    <loc>https://offpitchafrica.com/blog.html</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://off-pitch-nine.vercel.app/contact.html</loc>
+    <loc>https://offpitchafrica.com/contact.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>

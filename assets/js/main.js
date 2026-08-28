@@ -249,12 +249,135 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let allFixtures = [];
     let activeFilter = 'All';
+    let activeCompetition = 'All';
+    let activeMonth = 'All';
+    let activeDate = 'All';
+    let showAll = false;
+
+    const MONTHS = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+    const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+    // Parses formats like "Saturday, 10 October 2026" or "Fri, 7 Aug 2026" -> {day, monthIdx, year, monthKey, monthLabel}
+    function parseFxDate(str) {
+      if (!str) return null;
+      const m = str.match(/(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})/);
+      if (!m) return null;
+      const day = parseInt(m[1], 10);
+      const monthAbbr = m[2].slice(0, 3).toLowerCase();
+      const monthIdx = MONTHS.indexOf(monthAbbr);
+      if (monthIdx === -1) return null;
+      const year = m[3];
+      return { day, monthIdx, year, monthKey: `${year}-${monthIdx}`, monthLabel: `${MONTH_NAMES[monthIdx]} ${year}` };
+    }
+
+    const competitionSelect = document.getElementById('fixturesCompetition');
+    const monthSelect = document.getElementById('fixturesMonth');
+    const dateSelect = document.getElementById('fixturesDate');
+
+    // Pool of fixtures matching everything EXCEPT the given filter level (for cascading options)
+    function poolFor(level) {
+      let pool = activeFilter === 'All' ? allFixtures : allFixtures.filter(f => f.category === activeFilter);
+      if (level !== 'competition' && activeCompetition !== 'All') {
+        pool = pool.filter(f => (f.competition || 'Fixtures') === activeCompetition);
+      }
+      if (level === 'date' && activeMonth !== 'All') {
+        pool = pool.filter(f => {
+          if (activeMonth === 'TBA') return !parseFxDate(f.date);
+          const parsed = parseFxDate(f.date);
+          return parsed && parsed.monthKey === activeMonth;
+        });
+      }
+      return pool;
+    }
+
+    function populateCompetitionOptions() {
+      const pool = poolFor('competition');
+      const seen = [];
+      pool.forEach(fx => {
+        const name = fx.competition || 'Fixtures';
+        if (!seen.includes(name)) seen.push(name);
+      });
+      competitionSelect.innerHTML = '<option value="All">All Competitions</option>' +
+        seen.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
+      competitionSelect.value = activeCompetition;
+    }
+
+    function populateMonthOptions() {
+      const pool = poolFor('month');
+      const seen = new Map(); // monthKey -> label
+      let hasTBA = false;
+      pool.forEach(fx => {
+        const parsed = parseFxDate(fx.date);
+        if (parsed) seen.set(parsed.monthKey, parsed.monthLabel);
+        else hasTBA = true;
+      });
+      const keys = Array.from(seen.keys()).sort();
+      monthSelect.innerHTML = '<option value="All">All Months</option>' +
+        keys.map(k => `<option value="${k}">${escapeHtml(seen.get(k))}</option>`).join('') +
+        (hasTBA ? '<option value="TBA">Dates TBA</option>' : '');
+      monthSelect.value = keys.includes(activeMonth) || (activeMonth === 'TBA' && hasTBA) ? activeMonth : 'All';
+      if (monthSelect.value !== activeMonth) activeMonth = monthSelect.value;
+    }
+
+    function populateDateOptions() {
+      const pool = poolFor('date');
+      const seen = new Map(); // date string -> parsed (for sorting)
+      pool.forEach(fx => {
+        if (!seen.has(fx.date)) seen.set(fx.date, parseFxDate(fx.date));
+      });
+      const entries = Array.from(seen.entries()).sort((a, b) => {
+        const pa = a[1], pb = b[1];
+        if (!pa && !pb) return 0;
+        if (!pa) return 1;
+        if (!pb) return -1;
+        return (pa.year - pb.year) || (pa.monthIdx - pb.monthIdx) || (pa.day - pb.day);
+      });
+      dateSelect.innerHTML = '<option value="All">All Dates</option>' +
+        entries.map(([date]) => `<option value="${escapeHtml(date)}">${escapeHtml(date)}</option>`).join('');
+      dateSelect.value = entries.some(([d]) => d === activeDate) ? activeDate : 'All';
+      if (dateSelect.value !== activeDate) activeDate = dateSelect.value;
+    }
+
+    function isNoFilterActive() {
+      return activeFilter === 'All' && activeCompetition === 'All' && activeMonth === 'All' && activeDate === 'All';
+    }
+
+    // Finds the earliest upcoming date (today or later) among status:upcoming fixtures with a parseable date
+    function nearestUpcomingDate() {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      let best = null;
+      allFixtures.forEach(fx => {
+        if (fx.status !== 'upcoming') return;
+        const p = parseFxDate(fx.date);
+        if (!p) return;
+        const d = new Date(p.year, p.monthIdx, p.day);
+        if (d < today) return;
+        if (!best || d < best.d) best = { d, dateStr: fx.date };
+      });
+      return best ? best.dateStr : null;
+    }
 
     function renderFixtures() {
       fixturesList.innerHTML = '';
-      const filtered = activeFilter === 'All' ? allFixtures : allFixtures.filter(f => f.category === activeFilter);
+      let filtered = activeFilter === 'All' ? allFixtures : allFixtures.filter(f => f.category === activeFilter);
+      if (activeCompetition !== 'All') {
+        filtered = filtered.filter(f => (f.competition || 'Fixtures') === activeCompetition);
+      }
+      if (activeDate !== 'All') {
+        filtered = filtered.filter(f => f.date === activeDate);
+      } else if (activeMonth !== 'All') {
+        filtered = filtered.filter(f => {
+          if (activeMonth === 'TBA') return !parseFxDate(f.date);
+          const parsed = parseFxDate(f.date);
+          return parsed && parsed.monthKey === activeMonth;
+        });
+      } else if (!showAll && isNoFilterActive()) {
+        const nextDate = nearestUpcomingDate();
+        if (nextDate) filtered = filtered.filter(f => f.date === nextDate);
+      }
       if (filtered.length === 0) {
-        fixturesList.innerHTML = '<p class="admin-image-note">No fixtures to show.</p>';
+        fixturesList.innerHTML = '<p class="admin-image-note">No fixtures match this filter.</p>';
         return;
       }
       const competitions = [];
@@ -307,21 +430,86 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
+    const toggleAllBtn = document.getElementById('fixturesToggleAll');
+
+    function syncToggleBtn() {
+      if (!toggleAllBtn) return;
+      const collapsed = !showAll && isNoFilterActive();
+      toggleAllBtn.textContent = collapsed ? 'View All Fixtures' : 'Back to Upcoming';
+      toggleAllBtn.classList.toggle('active', !collapsed);
+    }
+
     const filterBtns = document.querySelectorAll('#fixturesFilter .fixtures-filter-btn');
     filterBtns.forEach(btn => {
       btn.addEventListener('click', () => {
         filterBtns.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         activeFilter = btn.dataset.filter;
+        populateCompetitionOptions();
+        populateMonthOptions();
+        populateDateOptions();
+        syncToggleBtn();
         renderFixtures();
       });
     });
+
+    if (competitionSelect) {
+      competitionSelect.addEventListener('change', () => {
+        activeCompetition = competitionSelect.value;
+        activeMonth = 'All';
+        activeDate = 'All';
+        populateMonthOptions();
+        populateDateOptions();
+        syncToggleBtn();
+        renderFixtures();
+      });
+    }
+    if (monthSelect) {
+      monthSelect.addEventListener('change', () => {
+        activeMonth = monthSelect.value;
+        activeDate = 'All';
+        populateDateOptions();
+        syncToggleBtn();
+        renderFixtures();
+      });
+    }
+    if (dateSelect) {
+      dateSelect.addEventListener('change', () => {
+        activeDate = dateSelect.value;
+        syncToggleBtn();
+        renderFixtures();
+      });
+    }
+    if (toggleAllBtn) {
+      toggleAllBtn.addEventListener('click', () => {
+        if (!isNoFilterActive()) {
+          // reset all dropdown filters back to defaults, then collapse to upcoming-only
+          activeFilter = 'All';
+          activeCompetition = 'All';
+          activeMonth = 'All';
+          activeDate = 'All';
+          showAll = false;
+          filterBtns.forEach(b => b.classList.toggle('active', b.dataset.filter === 'All'));
+          populateCompetitionOptions();
+          populateMonthOptions();
+          populateDateOptions();
+        } else {
+          showAll = !showAll;
+        }
+        syncToggleBtn();
+        renderFixtures();
+      });
+    }
 
     fetch('/data/fixtures.json')
       .then(res => res.ok ? res.json() : Promise.reject())
       .then(data => {
         allFixtures = Array.isArray(data) ? data.filter(f => f && f.team1 && f.team2 && f.date) : [];
         if (allFixtures.length === 0) return; // keep static fallback
+        populateCompetitionOptions();
+        populateMonthOptions();
+        populateDateOptions();
+        syncToggleBtn();
         renderFixtures();
       })
       .catch(() => { /* keep static fallback */ });

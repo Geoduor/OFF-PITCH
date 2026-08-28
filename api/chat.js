@@ -15,9 +15,9 @@
 //   goes to server-side logs only (visible to you in Vercel, not visitors).
 
 const ALLOWED_ORIGINS = [
+  'https://offpitchafrica.com'
+  'https://www.offpitchafrica.com'
   'https://off-pitch-nine.vercel.app'
-  // Add your custom domain here once you have one, e.g.:
-  // 'https://offpitchafrica.com'
 ];
 
 const MAX_MESSAGE_LENGTH = 1000;

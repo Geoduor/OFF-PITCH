@@ -19,15 +19,14 @@
 import crypto from 'crypto';
 
 const ALLOWED_ORIGINS = [
+  'https://offpitchafrica.com',
+  'https://www.offpitchafrica.com',
   'https://off-pitch-nine.vercel.app'
-  // Add your custom domain here once you have one, e.g.:
-  // 'https://offpitchafrica.com'
 ];
 
 // Used to fetch already-saved images (for suggesting alt text/category on
-// existing gallery photos, not just freshly-uploaded ones). Update this
-// alongside ALLOWED_ORIGINS when the custom domain goes live.
-const SITE_ORIGIN = 'https://off-pitch-nine.vercel.app';
+// existing gallery photos, not just freshly-uploaded ones).
+const SITE_ORIGIN = 'https://offpitchafrica.com';
 
 const MODEL = 'claude-haiku-4-5-20251001';
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // Anthropic's own per-image cap
