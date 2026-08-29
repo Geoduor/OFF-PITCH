@@ -212,47 +212,27 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
         eventsList.innerHTML = '';
-        eventsList.classList.add('events-grid');
         events.forEach(ev => {
-          const hasPoster = !!ev.image;
           const card = document.createElement('div');
-          card.className = hasPoster ? 'events-card featured' : 'events-card compact';
-
+          card.className = 'events-card';
+          const imgSrc = ev.image ? escapeHtml(ev.image) : 'assets/img/logo.webp';
           const tel = ev.phone ? `<a href="tel:${escapeHtml(ev.phone)}" class="btn btn-primary">Call To Register →</a>` : '';
           const mail = ev.email ? `<a href="mailto:${escapeHtml(ev.email)}" class="btn btn-ghost">Email Us</a>` : '';
           const registerBtn = ev.registerLink
             ? `<a href="${escapeHtml(ev.registerLink)}" target="_blank" rel="noopener" class="btn btn-primary">Register →</a>`
             : tel;
-          const ctas = `${registerBtn}${ev.registerLink ? '' : mail}`;
-
-          if (hasPoster) {
-            // Poster already shows title/date/time/venue — don't repeat it as
-            // visible text, just a short caption plus an accessible summary
-            // for screen readers/SEO.
-            const metaBits = [ev.date, ev.time, ev.venue].filter(Boolean).map(escapeHtml).join(' · ');
-            card.innerHTML = `
-              <img src="${escapeHtml(ev.image)}" alt="${escapeHtml(ev.title)} event poster — ${escapeHtml(ev.theme || '')}. ${escapeHtml(metaBits)}" loading="lazy">
-              <div class="ev-body">
-                <span class="sr-only">${escapeHtml(ev.title)}. ${escapeHtml(metaBits)}</span>
-                ${ev.theme ? `<p class="ev-theme">${escapeHtml(ev.theme)}</p>` : ''}
-                ${ctas ? `<div class="ev-ctas">${ctas}</div>` : ''}
-              </div>`;
-          } else {
-            card.innerHTML = `
-              <div class="ev-body compact-body">
-                <img class="ev-badge" src="assets/img/events/khu-tournament-badge.svg" width="56" height="56" alt="" loading="lazy">
-                <div class="ev-text">
-                  <h3 class="ev-title">${escapeHtml(ev.title)}</h3>
-                  ${ev.theme ? `<p class="ev-theme">${escapeHtml(ev.theme)}</p>` : ''}
-                  <ul class="ev-list">
-                    <li><strong>Date:</strong> ${escapeHtml(ev.date)}</li>
-                    ${ev.time ? `<li><strong>Time:</strong> ${escapeHtml(ev.time)}</li>` : ''}
-                    ${ev.venue ? `<li><strong>Venue:</strong> ${escapeHtml(ev.venue)}</li>` : ''}
-                  </ul>
-                  ${ctas ? `<div class="ev-ctas">${ctas}</div>` : ''}
-                </div>
-              </div>`;
-          }
+          card.innerHTML = `
+            <img src="${imgSrc}" alt="${escapeHtml(ev.title)} event poster" loading="lazy">
+            <div class="ev-body">
+              <h3 class="ev-title">${escapeHtml(ev.title)}</h3>
+              ${ev.theme ? `<p class="ev-theme">${escapeHtml(ev.theme)}</p>` : ''}
+              <ul class="ev-list">
+                <li><strong>Date:</strong> ${escapeHtml(ev.date)}</li>
+                ${ev.time ? `<li><strong>Time:</strong> ${escapeHtml(ev.time)}</li>` : ''}
+                ${ev.venue ? `<li><strong>Venue:</strong> ${escapeHtml(ev.venue)}</li>` : ''}
+              </ul>
+              <div class="ev-ctas">${registerBtn}${ev.registerLink ? '' : mail}</div>
+            </div>`;
           eventsList.appendChild(card);
         });
       })
@@ -608,15 +588,17 @@ document.addEventListener('DOMContentLoaded', () => {
           a.href = p.url;
           a.target = '_blank';
           a.rel = 'noopener';
-          a.className = 'story-card';
+          a.className = 'article-card';
           const img = p.image ? escapeHtml(p.image) : 'assets/img/logo.webp';
           a.innerHTML = `
-            <img src="${img}" alt="${escapeHtml(p.title)}">
-            <span class="story-tag">Blog</span>
-            <div class="body">
+            <div class="article-img">
+              <img src="${img}" alt="${escapeHtml(p.title)}">
+              <span class="article-tag">Blog</span>
+            </div>
+            <div class="article-body">
               <h3>${escapeHtml(p.title)}</h3>
               ${p.excerpt ? `<p>${escapeHtml(p.excerpt)}</p>` : ''}
-              <span class="story-link">READ POST →</span>
+              <span class="article-link">READ POST →</span>
             </div>`;
           blogPosts.appendChild(a);
         });
