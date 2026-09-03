@@ -19,9 +19,7 @@
 import crypto from 'crypto';
 
 const ALLOWED_ORIGINS = [
-  'https://offpitchafrica.com',
-  'https://www.offpitchafrica.com',
-  'https://off-pitch-nine.vercel.app'
+  'https://offpitchafrica.com'
 ];
 
 // Used to fetch already-saved images (for suggesting alt text/category on

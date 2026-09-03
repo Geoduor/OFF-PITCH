@@ -17,7 +17,7 @@ Deployed on **Vercel**, which also hosts two serverless functions.
 
 7 main content pages (Home, Events, About [includes What We Do], Gallery
 [includes Videos], Merch, Blog, Contact) plus 2 utility pages (Privacy
-Policy, 404). Live at `https://off-pitch-nine.vercel.app`.
+Policy, 404). Live at `https://offpitchafrica.com`.
 
 **`services.html` and `videos.html` no longer exist as separate pages** —
 merged into `about.html` and `gallery.html` respectively (client wanted a
@@ -270,7 +270,7 @@ directly and runs `api/*.js` as serverless functions. `package.json` has no
 dependencies, so there's nothing to `npm install`.
 
 `ALLOWED_ORIGINS` in both `api/chat.js` and `api/social-feed.js` is
-hardcoded to `https://off-pitch-nine.vercel.app` — **update this if the
+hardcoded to `https://offpitchafrica.com` — **update this if the
 client ever adds a custom domain**, or the API endpoints will reject
 requests from the new domain. `sitemap.xml` and `robots.txt` also hardcode
 this domain and would need the same update.

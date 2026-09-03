@@ -277,7 +277,7 @@ openssl rand -hex 32
 
 ### Using it day-to-day
 
-1. Go to `https://off-pitch-nine.vercel.app/admin.html`
+1. Go to `https://offpitchafrica.com/admin.html`
 2. Log in with the password from step 2 above
 3. Pick a tab (Events / Gallery / Blog / Videos / **Live**), add/edit/remove
    items, upload photos directly (they're auto-compressed in your browser
