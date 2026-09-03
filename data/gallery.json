@@ -1,4 +1,117 @@
 [
+  {
+    "id": "forum-2026-program",
+    "src": "assets/img/events/aug-29-client/event-program.jpeg",
+    "alt": "Event program for Off The Pitch, On The Record on 29 August 2026",
+    "category": "event",
+    "caption": "Event Program",
+    "link": "https://www.youtube.com/live/sGp2oC8h4o8?si=UEeuPrzZ46nUWYR6"
+  },
+  {
+    "id": "forum-2026-panel-state-of-hockey",
+    "src": "assets/img/events/aug-29-client/panel-overview-state-of-hockey.jpeg",
+    "alt": "Panel overview card for The State of Hockey in Nairobi",
+    "category": "event",
+    "caption": "State Of Hockey"
+  },
+  {
+    "id": "forum-2026-panel-athletes",
+    "src": "assets/img/events/aug-29-client/panel-overview-athletes-officials-coaches.jpeg",
+    "alt": "Panel overview card for building a safer healthier hockey community",
+    "category": "event",
+    "caption": "Athletes & Coaches"
+  },
+  {
+    "id": "forum-2026-panel-growing-game",
+    "src": "assets/img/events/aug-29-client/panel-overview-growing-game.jpeg",
+    "alt": "Panel overview card for growing the game",
+    "category": "event",
+    "caption": "Growing The Game"
+  },
+  {
+    "id": "forum-2026-bonface",
+    "src": "assets/img/events/aug-29-client/speaker-bonface-otieno.jpeg",
+    "alt": "Bonface Otieno speaker card for Off The Pitch, On The Record",
+    "category": "event",
+    "caption": "Bonface Otieno"
+  },
+  {
+    "id": "forum-2026-meshack",
+    "src": "assets/img/events/aug-29-client/speaker-meshack-senge.jpeg",
+    "alt": "Meshack Senge speaker card for Off The Pitch, On The Record",
+    "category": "event",
+    "caption": "Meshack Senge"
+  },
+  {
+    "id": "forum-2026-carren",
+    "src": "assets/img/events/aug-29-client/speaker-carren-koloni.jpeg",
+    "alt": "Carren Koloni speaker card for Off The Pitch, On The Record",
+    "category": "event",
+    "caption": "Carren Koloni"
+  },
+  {
+    "id": "forum-2026-collince",
+    "src": "assets/img/events/aug-29-client/speaker-collince-dundo.jpeg",
+    "alt": "Collince Dundo speaker card for Off The Pitch, On The Record",
+    "category": "event",
+    "caption": "Collince Dundo"
+  },
+  {
+    "id": "forum-2026-brigid",
+    "src": "assets/img/events/aug-29-client/speaker-brigid-siantei.jpeg",
+    "alt": "Brigid Siantei speaker card for Off The Pitch, On The Record",
+    "category": "event",
+    "caption": "Brigid Siantei"
+  },
+  {
+    "id": "forum-2026-duncan",
+    "src": "assets/img/events/aug-29-client/speaker-duncan-murunga.jpeg",
+    "alt": "Duncan Murunga speaker card for Off The Pitch, On The Record",
+    "category": "event",
+    "caption": "Duncan Murunga"
+  },
+  {
+    "id": "forum-2026-maureen",
+    "src": "assets/img/events/aug-29-client/speaker-maureen-okumu.jpeg",
+    "alt": "Maureen Okumu speaker card for Off The Pitch, On The Record",
+    "category": "event",
+    "caption": "Maureen Okumu"
+  },
+  {
+    "id": "forum-2026-mark",
+    "src": "assets/img/events/aug-29-client/speaker-mark-simiyu.jpeg",
+    "alt": "Mark Simiyu speaker card for Off The Pitch, On The Record",
+    "category": "event",
+    "caption": "Mark Simiyu"
+  },
+  {
+    "id": "forum-2026-peter-njoroge",
+    "src": "assets/img/events/aug-29-client/speaker-peter-njoroge.jpeg",
+    "alt": "Peter Njoroge speaker card for Off The Pitch, On The Record",
+    "category": "event",
+    "caption": "Peter Njoroge"
+  },
+  {
+    "id": "forum-2026-peter-pinchez",
+    "src": "assets/img/events/aug-29-client/speaker-peter-pinchez.jpeg",
+    "alt": "Peter Pinchez speaker card for Off The Pitch, On The Record",
+    "category": "event",
+    "caption": "Peter Pinchez"
+  },
+  {
+    "id": "forum-2026-jedida",
+    "src": "assets/img/events/aug-29-client/speaker-jedida-zawadi.jpeg",
+    "alt": "Jedida Zawadi speaker card for Off The Pitch, On The Record",
+    "category": "event",
+    "caption": "Jedida Zawadi"
+  },
+  {
+    "id": "forum-2026-james",
+    "src": "assets/img/events/aug-29-client/speaker-james-juma.jpeg",
+    "alt": "James Juma speaker card for Off The Pitch, On The Record",
+    "category": "event",
+    "caption": "James Juma"
+  },
   { "id": "g1", "src": "assets/img/host_studio.webp", "alt": "Off Pitch Africa host in the broadcast studio", "category": "community" },
   { "id": "g2", "src": "assets/img/banner_hold.webp", "alt": "Off Pitch Africa banner at a hockey event", "category": "community" },
   { "id": "g3", "src": "assets/img/trophy_handshake.webp", "alt": "Trophy handover at a hockey tournament", "category": "hockey" },

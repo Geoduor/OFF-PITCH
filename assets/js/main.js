@@ -110,16 +110,18 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ---------- Gallery filter (if present) ---------- */
   const filterPills = document.querySelectorAll('.filter-pill');
   if (filterPills.length) {
-    const cells = document.querySelectorAll('.hexcell');
+    function applyGalleryFilter(filter) {
+      document.querySelectorAll('.gallery-item').forEach(cell => {
+        const show = filter === 'all' || cell.dataset.category === filter;
+        cell.style.display = show ? '' : 'none';
+      });
+    }
+
     filterPills.forEach(pill => {
       pill.addEventListener('click', () => {
         filterPills.forEach(p => p.classList.remove('active'));
         pill.classList.add('active');
-        const filter = pill.dataset.filter;
-        cells.forEach(cell => {
-          const show = filter === 'all' || cell.dataset.category === filter;
-          cell.style.display = show ? '' : 'none';
-        });
+        applyGalleryFilter(pill.dataset.filter);
       });
     });
   }
@@ -199,7 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- Events (index.html) ---
   const eventsList = document.getElementById('eventsList');
-  if (eventsList) {
+  if (eventsList && eventsList.dataset.staticOnly !== 'true') {
     fetch('/data/events.json')
       .then(res => res.ok ? res.json() : Promise.reject())
       .then(data => {
@@ -524,24 +526,34 @@ document.addEventListener('DOMContentLoaded', () => {
         if (photos.length === 0) return; // keep static fallback
         hexGrid.innerHTML = '';
         photos.forEach((p, i) => {
-          const cell = document.createElement('div');
-          cell.className = 'hexcell' + (i % 2 === 1 ? ' offset' : '');
+          const cell = document.createElement(p.link ? 'a' : 'div');
+          cell.className = 'gallery-item' + ((p.category || 'community') === 'event' ? ' event-item' : '');
           cell.dataset.category = p.category || 'community';
+          if (p.link) {
+            cell.href = p.link;
+            cell.target = '_blank';
+            cell.rel = 'noopener';
+            cell.setAttribute('aria-label', p.alt || 'Open Off Pitch Africa event media');
+          }
           const img = document.createElement('img');
           img.src = p.src;
           img.alt = p.alt || 'Off Pitch Africa';
           cell.appendChild(img);
+          if (p.caption) {
+            const caption = document.createElement('span');
+            caption.className = 'hex-caption';
+            caption.textContent = p.caption;
+            cell.appendChild(caption);
+          }
           hexGrid.appendChild(cell);
         });
-        // Re-bind the filter buttons to the freshly rendered cells.
+        // Apply whichever filter is currently active to the freshly rendered cells.
         const filterPills = document.querySelectorAll('.filter-pill');
-        const cells = hexGrid.querySelectorAll('.hexcell');
         filterPills.forEach(pill => {
-          const active = pill.classList.contains('active');
-          const filter = pill.dataset.filter;
-          cells.forEach(cell => {
-            const show = filter === 'all' || cell.dataset.category === filter;
-            if (active) cell.style.display = show ? '' : 'none';
+          if (!pill.classList.contains('active')) return;
+          document.querySelectorAll('.gallery-item').forEach(cell => {
+            const show = pill.dataset.filter === 'all' || cell.dataset.category === pill.dataset.filter;
+            cell.style.display = show ? '' : 'none';
           });
         });
       })
@@ -566,7 +578,8 @@ document.addEventListener('DOMContentLoaded', () => {
           a.style.aspectRatio = '16/9';
           a.innerHTML = `
             <img src="https://img.youtube.com/vi/${encodeURIComponent(v.youtubeId)}/hqdefault.jpg" alt="Watch on YouTube" loading="lazy">
-            <div class="play-badge"><svg viewBox="0 0 24 24" fill="#fff"><polygon points="6 3 20 12 6 21"/></svg></div>`;
+            <div class="play-badge"><svg viewBox="0 0 24 24" fill="#fff"><polygon points="6 3 20 12 6 21"/></svg></div>
+            ${v.title ? `<span class="media-label">${escapeHtml(v.title)}</span>` : ''}`;
           videosGrid.appendChild(a);
         });
       })

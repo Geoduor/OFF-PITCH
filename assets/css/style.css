@@ -350,6 +350,17 @@ nav{
   text-transform:uppercase;margin-bottom:12px;
 }
 .ev-program,.ev-speakers{text-align:left;margin-top:28px;padding-top:24px;border-top:1px solid var(--line);}
+.ev-links{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;text-align:left;margin-top:26px;}
+.ev-link-card{
+  background:rgba(244,241,236,0.04);border:1px solid var(--line);border-radius:6px;
+  padding:16px;transition:border-color .2s ease,transform .2s ease,background .2s ease;
+}
+.ev-link-card:hover{border-color:var(--signal-teal);background:rgba(79,209,217,0.06);transform:translateY(-2px);}
+.ev-link-card span{
+  display:block;font-family:'Space Mono',monospace;font-size:0.62rem;letter-spacing:0.08em;
+  color:var(--signal-teal);text-transform:uppercase;margin-bottom:8px;
+}
+.ev-link-card strong{display:block;color:#fff;font-size:0.9rem;line-height:1.35;}
 .ev-program h4,.ev-speakers h4{
   font-family:'Anton',sans-serif;font-size:1rem;letter-spacing:0.02em;color:var(--chalk);margin-bottom:14px;
 }
@@ -407,6 +418,7 @@ nav{
 @media (max-width:640px){
   .fixture-row{grid-template-columns:70px 1fr;}
   .fx-tag{grid-column:1 / -1;text-align:left;margin-top:4px;}
+  .ev-links{grid-template-columns:1fr;}
 }
 .events-teaser-card{
   background:var(--navy);border:1px solid var(--line);border-radius:6px;padding:36px 40px;
@@ -636,14 +648,32 @@ nav{
 .social-pill-accent{background:#25D366;border-color:#25D366;color:var(--ink);}
 .social-pill-accent:hover{background:#1ebe57;border-color:#1ebe57;color:var(--ink);}
 
-/* ---------- GALLERY (hex) ---------- */
+/* ---------- GALLERY ---------- */
 .gallery{background:var(--ink);padding:110px 0;}
 .gallery .eyebrow{color:var(--signal-teal);}
-.hex-grid{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;}
-.hex-grid .hexcell{width:230px;height:265px;clip-path:polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);overflow:hidden;position:relative;}
-.hex-grid .hexcell img{width:100%;height:100%;object-fit:cover;transition:transform .5s ease;}
-.hex-grid .hexcell:hover img{transform:scale(1.12);}
-.hex-grid .hexcell.offset{margin-top:70px;}
+.gallery-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:20px;align-items:start;}
+.gallery-item{
+  display:block;position:relative;overflow:hidden;min-height:260px;aspect-ratio:4/5;
+  background:var(--navy);border:1px solid var(--line);border-radius:8px;
+  transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease;
+}
+.gallery-item:hover{transform:translateY(-4px);border-color:rgba(79,209,217,0.48);box-shadow:0 18px 36px rgba(0,0,0,0.24);}
+.gallery-item img{width:100%;height:100%;object-fit:cover;transition:transform .5s ease;display:block;}
+.gallery-item:hover img{transform:scale(1.04);}
+.gallery-item.event-item{aspect-ratio:auto;min-height:0;background:#f5f5f2;padding:8px;display:flex;flex-direction:column;}
+.gallery-item.event-item img{height:auto;object-fit:contain;background:#f5f5f2;}
+.gallery-item.event-item:hover img{transform:none;}
+.gallery-item.event-item .hex-caption{
+  position:static;margin-top:8px;padding:10px 12px;border-radius:4px;
+  background:var(--navy);color:var(--chalk);
+}
+.hex-caption{
+  position:absolute;left:0;right:0;bottom:0;z-index:2;
+  display:block;padding:34px 16px 16px;
+  background:linear-gradient(180deg, transparent, rgba(11,11,13,0.92));
+  color:#fff;font-family:'Space Mono',monospace;font-size:0.64rem;font-weight:700;
+  letter-spacing:0.04em;text-align:center;text-transform:uppercase;
+}
 .gallery-filter{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:44px;}
 .filter-pill{
   font-family:'Space Mono',monospace;font-size:0.72rem;letter-spacing:0.05em;
@@ -784,8 +814,8 @@ footer{background:var(--ink);padding:90px 0 0;border-top:1px solid var(--line);}
   .foot-grid{grid-template-columns:1fr;}
   .hero{padding-top:130px;min-height:100vh;}
   .page-hero{padding-top:130px;}
-  .hex-grid .hexcell{width:160px;height:184px;}
-  .hex-grid .hexcell.offset{margin-top:40px;}
+  .gallery-grid{grid-template-columns:1fr;gap:16px;}
+  .gallery-item{min-height:auto;}
   #chatPanel{right:14px;bottom:90px;width:calc(100vw - 28px);}
   #chatToggle{right:16px;bottom:16px;}
 }
