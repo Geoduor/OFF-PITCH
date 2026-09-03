@@ -15,7 +15,7 @@
 //   goes to server-side logs only (visible to you in Vercel, not visitors).
 
 const ALLOWED_ORIGINS = [
-  'https://offpitchafrica.com'
+  'https://offpitchafrica.com',
   'https://www.offpitchafrica.com'
   'https://off-pitch-nine.vercel.app'
 ];
