@@ -17,7 +17,104 @@
   if (siteCss) siteCss.media = 'all';
 })();
 
+/* ---------- Cookie consent (gates GA4 until the visitor decides) ----------
+   GDPR/Kenya Data Protection Act: analytics cookies must not fire before
+   consent. GA4 is NEVER loaded via a static <script> tag in any page's
+   <head> anymore — it only ever loads from here, and only after Accept
+   (or a prior "accepted" preference already in localStorage). Preference
+   is stored under OPA_CONSENT_KEY as 'accepted' | 'rejected'. Runs
+   immediately (not inside DOMContentLoaded) so returning consenting
+   visitors get GA4 as early as possible — same reasoning as the
+   stylesheet swap above. */
+const OPA_CONSENT_KEY = 'opa_cookie_consent';
+
+function opaGetConsent() {
+  try { return localStorage.getItem(OPA_CONSENT_KEY); } catch { return null; }
+}
+function opaSetConsent(value) {
+  try { localStorage.setItem(OPA_CONSENT_KEY, value); } catch { /* private mode etc. */ }
+}
+function opaLoadGA4() {
+  if (window.__opaGaLoaded) return;
+  window.__opaGaLoaded = true;
+  const s = document.createElement('script');
+  s.async = true;
+  s.src = 'https://www.googletagmanager.com/gtag/js?id=G-DBL7XJFFQL';
+  document.head.appendChild(s);
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function () { window.dataLayer.push(arguments); };
+  window.gtag('js', new Date());
+  window.gtag('config', 'G-DBL7XJFFQL');
+}
+
+if (opaGetConsent() === 'accepted') opaLoadGA4();
+
+// Exposed so a "Cookie preferences" link (e.g. in the footer) can let a
+// visitor reopen the banner and change their mind later.
+window.OPA_openCookieSettings = function () {
+  try { localStorage.removeItem(OPA_CONSENT_KEY); } catch { /* ignore */ }
+  const existing = document.querySelector('.cookie-banner');
+  if (existing) existing.remove();
+  opaRenderCookieBanner();
+};
+
+function opaRenderCookieBanner() {
+  if (opaGetConsent()) return; // already decided, nothing to show
+  if (document.querySelector('.cookie-banner')) return; // already showing
+
+  const banner = document.createElement('div');
+  banner.className = 'cookie-banner';
+  banner.setAttribute('role', 'dialog');
+  banner.setAttribute('aria-label', 'Cookie preferences');
+  banner.innerHTML = `
+    <div class="cookie-banner-inner">
+      <p class="cookie-banner-text">
+        We use cookies to understand site traffic (Google Analytics). You can accept, reject, or manage your choice
+        — see our <a href="privacy.html">Privacy Policy</a>.
+      </p>
+      <div class="cookie-banner-actions">
+        <button type="button" class="btn btn-ghost cookie-btn-manage">Manage</button>
+        <button type="button" class="btn btn-ghost cookie-btn-reject">Reject</button>
+        <button type="button" class="btn btn-primary cookie-btn-accept">Accept</button>
+      </div>
+      <div class="cookie-manage-panel" hidden>
+        <label class="cookie-toggle-row">
+          <span>Strictly necessary <em>(always on)</em></span>
+          <input type="checkbox" checked disabled>
+        </label>
+        <label class="cookie-toggle-row">
+          <span>Analytics (Google Analytics)</span>
+          <input type="checkbox" class="cookie-analytics-toggle">
+        </label>
+        <button type="button" class="btn btn-primary cookie-btn-save">Save preferences</button>
+      </div>
+    </div>`;
+  document.body.appendChild(banner);
+
+  function closeBanner() { banner.remove(); }
+
+  banner.querySelector('.cookie-btn-accept').addEventListener('click', () => {
+    opaSetConsent('accepted');
+    opaLoadGA4();
+    closeBanner();
+  });
+  banner.querySelector('.cookie-btn-reject').addEventListener('click', () => {
+    opaSetConsent('rejected');
+    closeBanner();
+  });
+  banner.querySelector('.cookie-btn-manage').addEventListener('click', () => {
+    banner.querySelector('.cookie-manage-panel').hidden = false;
+  });
+  banner.querySelector('.cookie-btn-save').addEventListener('click', () => {
+    const wantsAnalytics = banner.querySelector('.cookie-analytics-toggle').checked;
+    opaSetConsent(wantsAnalytics ? 'accepted' : 'rejected');
+    if (wantsAnalytics) opaLoadGA4();
+    closeBanner();
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+  opaRenderCookieBanner();
   const yearEl = document.getElementById('year');
   if (yearEl) yearEl.textContent = new Date().getFullYear();
 
