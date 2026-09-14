@@ -380,6 +380,22 @@ nav{
 .speaker-name{font-size:0.82rem;font-weight:700;color:var(--chalk);line-height:1.3;}
 .speaker-role{font-size:0.72rem;color:var(--chalk);opacity:0.65;line-height:1.35;margin-top:2px;}
 
+/* ---------- NCHA Forum: group panel photos, program graphic, bio disclosures ---------- */
+.ev-program-graphic{width:100%;max-width:340px;height:auto;border-radius:10px;margin-bottom:18px;display:block;border:1px solid var(--line);}
+.ev-panel-photo{width:100%;max-width:480px;height:auto;border-radius:10px;margin-bottom:16px;display:block;border:1px solid var(--line);}
+.ev-bios{margin-top:14px;}
+.ev-bios summary{
+  cursor:pointer;font-family:'Space Mono',monospace;font-size:0.72rem;letter-spacing:0.04em;text-transform:uppercase;
+  color:var(--signal-teal);list-style:none;padding:4px 0;
+}
+.ev-bios summary::-webkit-details-marker{display:none;}
+.ev-bios summary::before{content:'+ ';}
+.ev-bios[open] summary::before{content:'− ';}
+.ev-bio-entry{margin-top:14px;padding-top:14px;border-top:1px solid var(--line);}
+.ev-bio-entry:first-of-type{margin-top:16px;}
+.ev-bio-name{font-size:0.82rem;font-weight:700;color:var(--chalk);margin-bottom:4px;}
+.ev-bio-entry p:not(.ev-bio-name){font-size:0.82rem;color:var(--chalk);opacity:0.8;line-height:1.55;}
+
 /* Fixtures & Results (Hockey5s Youth Africa Cup 2026) */
 .fixtures-filter{display:flex;gap:10px;margin-bottom:28px;flex-wrap:wrap;}
 .fixtures-filter-btn{
@@ -389,6 +405,32 @@ nav{
 }
 .fixtures-filter-btn:hover{border-color:var(--signal-teal);}
 .fixtures-filter-btn.active{background:var(--pitch-red);border-color:var(--pitch-red);color:#fff;}
+
+/* ---------- Fixtures date/competition dropdowns ----------
+   Previously plain <select> elements with zero custom styling — this
+   replaces the browser-default chrome with a themed pill matching
+   .fixtures-filter-btn, plus a custom chevron (SVG data URI, since a
+   <select>'s native arrow can't be recolored directly). */
+.fixtures-date-filter{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:28px;align-items:center;}
+.fixtures-date-filter select{
+  appearance:none;-webkit-appearance:none;-moz-appearance:none;
+  font-family:'Space Mono',monospace;font-size:0.75rem;letter-spacing:0.03em;text-transform:uppercase;
+  background-color:var(--navy);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%234FD1D9' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 16px center;
+  background-size:10px 6px;
+  border:1px solid var(--line);color:var(--chalk);
+  padding:9px 36px 9px 18px;border-radius:999px;
+  cursor:pointer;transition:border-color 0.15s,background-color 0.15s;
+  max-width:100%;
+}
+.fixtures-date-filter select:hover{border-color:var(--signal-teal);}
+.fixtures-date-filter select:focus{outline:none;border-color:var(--signal-teal);box-shadow:0 0 0 3px rgba(79,209,217,0.15);}
+.fixtures-date-filter select option{background:var(--navy);color:var(--chalk);}
+@media (max-width:640px){
+  .fixtures-date-filter select{flex:1 1 auto;}
+}
 .fixtures-competition{margin-bottom:44px;}
 .fixtures-competition:last-child{margin-bottom:0;}
 .fixtures-competition-title{font-size:clamp(1.3rem,3vw,1.7rem);margin-bottom:4px;}
@@ -820,22 +862,41 @@ footer{background:var(--ink);padding:90px 0 0;border-top:1px solid var(--line);}
   #chatToggle{right:16px;bottom:16px;}
 }
 
-/* ---------- Cookie consent banner ---------- */
+/* ---------- Footer "Cookie Preferences" link (styled to match the
+   adjacent Privacy Policy anchor, since it's a <button> for CSP reasons) ---------- */
+.footer-cookie-link{
+  background:none;border:none;padding:0;margin:0;font:inherit;
+  color:#9aa0ad;cursor:pointer;text-decoration:none;
+}
+.footer-cookie-link:hover{color:var(--signal-teal);text-decoration:underline;}
+
+/* ---------- Cookie consent banner ----------
+   Compact bottom bar, not a near-full-screen panel. The manage panel is
+   collapsed via display:none by default and only shown via the .is-open
+   class (added by main.js) — never via the `hidden` attribute, since a
+   class-based display rule here would otherwise silently override it. */
 .cookie-banner{
   position:fixed;left:0;right:0;bottom:0;z-index:200;
   background:var(--navy);border-top:2px solid var(--pitch-red);
-  padding:18px 20px;box-shadow:0 -8px 24px rgba(0,0,0,0.35);
+  padding:12px 16px;box-shadow:0 -8px 24px rgba(0,0,0,0.35);
 }
-.cookie-banner-inner{max-width:1100px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:16px 24px;}
-.cookie-banner-text{flex:1 1 320px;font-size:0.85rem;color:var(--chalk);opacity:0.9;line-height:1.5;margin:0;}
-.cookie-banner-text a{color:var(--signal-teal);text-decoration:underline;}
-.cookie-banner-actions{display:flex;gap:10px;flex-wrap:wrap;}
-.cookie-banner-actions .btn{padding:9px 18px;font-size:0.8rem;}
-.cookie-manage-panel{flex-basis:100%;border-top:1px solid var(--line);margin-top:14px;padding-top:14px;display:flex;flex-direction:column;gap:10px;}
-.cookie-toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:0.82rem;color:var(--chalk);max-width:420px;cursor:pointer;}
-.cookie-toggle-row em{opacity:0.6;font-style:normal;font-size:0.75rem;}
-.cookie-manage-panel .btn{align-self:flex-start;padding:9px 18px;font-size:0.8rem;}
+.cookie-banner-inner{max-width:1100px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:10px 20px;}
+.cookie-banner-text{flex:1 1 240px;font-size:0.76rem;color:var(--chalk);opacity:0.9;line-height:1.4;margin:0;}
+.cookie-banner-text a{color:var(--signal-teal);text-decoration:underline;white-space:nowrap;}
+.cookie-banner-actions{display:flex;gap:8px;flex-wrap:nowrap;flex-shrink:0;}
+.cookie-banner-actions .btn{padding:6px 14px;font-size:0.72rem;white-space:nowrap;}
+.cookie-manage-panel{
+  display:none;flex-basis:100%;border-top:1px solid var(--line);
+  margin-top:10px;padding-top:10px;flex-direction:column;gap:8px;
+}
+.cookie-manage-panel.is-open{display:flex;}
+.cookie-toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:0.76rem;color:var(--chalk);max-width:360px;cursor:pointer;}
+.cookie-toggle-row em{opacity:0.6;font-style:normal;font-size:0.7rem;}
+.cookie-manage-panel .btn{align-self:flex-start;padding:6px 14px;font-size:0.72rem;}
 @media (max-width:640px){
-  .cookie-banner-inner{flex-direction:column;align-items:stretch;}
-  .cookie-banner-actions{justify-content:flex-end;}
+  .cookie-banner{padding:10px 14px;}
+  .cookie-banner-inner{gap:8px;}
+  .cookie-banner-text{flex-basis:100%;font-size:0.72rem;}
+  .cookie-banner-actions{flex-basis:100%;justify-content:flex-end;}
 }
+

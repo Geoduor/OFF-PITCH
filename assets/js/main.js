@@ -69,21 +69,20 @@ function opaRenderCookieBanner() {
   banner.innerHTML = `
     <div class="cookie-banner-inner">
       <p class="cookie-banner-text">
-        We use cookies to understand site traffic (Google Analytics). You can accept, reject, or manage your choice
-        — see our <a href="privacy.html">Privacy Policy</a>.
+        We use cookies for analytics. <a href="privacy.html">Privacy Policy</a>
       </p>
       <div class="cookie-banner-actions">
         <button type="button" class="btn btn-ghost cookie-btn-manage">Manage</button>
         <button type="button" class="btn btn-ghost cookie-btn-reject">Reject</button>
         <button type="button" class="btn btn-primary cookie-btn-accept">Accept</button>
       </div>
-      <div class="cookie-manage-panel" hidden>
+      <div class="cookie-manage-panel">
         <label class="cookie-toggle-row">
           <span>Strictly necessary <em>(always on)</em></span>
           <input type="checkbox" checked disabled>
         </label>
         <label class="cookie-toggle-row">
-          <span>Analytics (Google Analytics)</span>
+          <span>Analytics</span>
           <input type="checkbox" class="cookie-analytics-toggle">
         </label>
         <button type="button" class="btn btn-primary cookie-btn-save">Save preferences</button>
@@ -103,7 +102,7 @@ function opaRenderCookieBanner() {
     closeBanner();
   });
   banner.querySelector('.cookie-btn-manage').addEventListener('click', () => {
-    banner.querySelector('.cookie-manage-panel').hidden = false;
+    banner.querySelector('.cookie-manage-panel').classList.toggle('is-open');
   });
   banner.querySelector('.cookie-btn-save').addEventListener('click', () => {
     const wantsAnalytics = banner.querySelector('.cookie-analytics-toggle').checked;
@@ -115,6 +114,12 @@ function opaRenderCookieBanner() {
 
 document.addEventListener('DOMContentLoaded', () => {
   opaRenderCookieBanner();
+
+  /* ---------- Footer "Cookie Preferences" link ---------- */
+  const footerCookiePrefs = document.getElementById('footerCookiePrefs');
+  if (footerCookiePrefs) {
+    footerCookiePrefs.addEventListener('click', () => window.OPA_openCookieSettings());
+  }
   const yearEl = document.getElementById('year');
   if (yearEl) yearEl.textContent = new Date().getFullYear();
 
