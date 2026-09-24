@@ -140,11 +140,10 @@ guessed at:
   or additional event photos any time by dropping them into `assets/img/`
   and adding a `<div class="hexcell">` entry in `gallery.html`.
 - **Blog page** (`blog.html`) features your real Substack publication (real
-  tagline, real subscribe link), but doesn't list individual post titles
-  yet — Substack's post list only renders via JavaScript, which blocks
-  automated fetching, so I couldn't pull specific posts automatically. Send
-  me 3-4 real post titles + links (same way you sent the YouTube video
-  URLs) and I'll list them individually on the page.
+  tagline, real subscribe link) **and full posts published from the admin
+  dashboard** — each post can have a cover image, body text, and links, and
+  opens in a reader right on the page (see section 7). Substack-only posts
+  still work too: just fill in the Substack URL and skip the body.
 
 The only setup items still on you:
 
@@ -234,10 +233,11 @@ field in the response to see counts per platform).
 ## 7. Admin dashboard — update content without touching code
 
 A password-protected page at **`/admin.html`** lets you add/edit/remove
-**Events, Gallery photos, Blog post links, and Video IDs** directly from a
-browser — no code editing, no local files. Every save is a real commit to
-this GitHub repo (via GitHub's API), so Vercel picks it up and redeploys
-automatically, same as any other push — usually live within 10–20 seconds.
+**Events, Fixtures, Gallery photos, full Blog posts, and Video IDs**
+directly from a browser — no code editing, no local files. Every save is a
+real commit to this GitHub repo (via GitHub's API), so Vercel picks it up
+and redeploys automatically, same as any other push — usually live within
+10–20 seconds.
 
 The content lives in four small JSON files in `/data` (`events.json`,
 `gallery.json`, `blog.json`, `videos.json`) — these are the actual "database"
@@ -279,10 +279,15 @@ openssl rand -hex 32
 
 1. Go to `https://offpitchafrica.com/admin.html`
 2. Log in with the password from step 2 above
-3. Pick a tab (Events / Gallery / Blog / Videos / **Live**), add/edit/remove
+3. Pick a tab (Events / Fixtures / Gallery / Blog / Videos / **Live**), add/edit/remove
    items, upload photos directly (they're auto-compressed in your browser
    before upload — no need to resize anything yourself first)
-4. Click **Save Changes** — you'll see a confirmation once the commit goes
+4. **Blog tab**: write the full post in the "Post Body" box (one paragraph
+   per line), optionally add a cover image, a publish date, an excerpt, and
+   any links (sources, videos, related reading). Leave the Substack URL
+   blank for on-site posts, or fill it in for posts that live on Substack.
+   Clicking a card on the Blog page opens the full post right there.
+5. Click **Save Changes** — you'll see a confirmation once the commit goes
    through, and the live site updates automatically within moments
 
 **About the "Live" tab**: this only controls the banner for Facebook,

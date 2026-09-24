@@ -71,7 +71,7 @@
       <div class="sec-head on-light">
         <div class="eyebrow">THE PLAYBOOK</div>
         <h2>Stories worth reading</h2>
-        <p>OffPitch Africa delivers powerful, human-centered stories from athletes across the continent — from major arenas to emerging grassroots talent. New editions land on Substack.</p>
+        <p>OffPitch Africa delivers powerful, human-centered stories from athletes across the continent — from major arenas to emerging grassroots talent. New editions are published here and on Substack.</p>
       </div>
 
       <div id="blogPosts" class="card-grid" style="display:none;margin-bottom:44px;"></div>
@@ -87,7 +87,7 @@
       </a>
 
       <div class="watch-info" style="margin-top:32px;">
-        <p><strong style="color:#fff;">More editions coming soon.</strong> We're adding direct links to individual Playbook stories right here — check back, or subscribe on Substack to get every new edition the moment it's published.</p>
+        <p><strong style="color:#fff;">New posts land here.</strong> Every Playbook post is published right on this page — click any card to read it in full. Subscribe on Substack to get each new edition the moment it's out.</p>
       </div>
     </div>
   </section>
@@ -191,6 +191,17 @@
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
     </button>
   </div>
+</div>
+
+<!-- BLOG POST READER (modal overlay — opened by main.js when a post card is clicked) -->
+<div id="postReader" class="post-reader" hidden>
+  <div class="post-reader-backdrop"></div>
+  <article class="post-reader-panel" role="dialog" aria-modal="true" aria-label="Blog post">
+    <button type="button" class="post-reader-close" aria-label="Close post">&times;</button>
+    <div class="post-reader-scroll">
+      <div class="post-reader-content" id="postReaderContent"></div>
+    </div>
+  </article>
 </div>
 
 <script src="assets/js/main.js"></script>

@@ -566,6 +566,47 @@ nav{
 }
 .article-card:hover .article-link{gap:10px;color:#e4122f;}
 
+/* Blog cards are <button> elements now (they open the in-page post reader),
+   so reset the browser's default button chrome and match the <a> version. */
+button.article-card{
+  border:none;cursor:pointer;text-align:left;width:100%;
+  font-family:inherit;padding:0;
+}
+
+/* ---------- BLOG POST READER (modal overlay) ---------- */
+.post-reader{position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;padding:24px;}
+.post-reader[hidden]{display:none;}
+.post-reader-backdrop{position:absolute;inset:0;background:rgba(11,11,13,0.86);backdrop-filter:blur(3px);}
+.post-reader-panel{
+  position:relative;z-index:2;background:var(--ink);border:1px solid var(--line);border-radius:10px;
+  width:100%;max-width:760px;max-height:88vh;display:flex;flex-direction:column;
+  box-shadow:0 30px 80px rgba(0,0,0,0.55);overflow:hidden;
+}
+.post-reader-close{
+  position:absolute;top:14px;right:14px;z-index:3;
+  width:42px;height:42px;border-radius:50%;border:1px solid var(--line);
+  background:rgba(11,11,13,0.72);color:var(--chalk);
+  font-size:1.4rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:border-color .2s ease,color .2s ease;
+}
+.post-reader-close:hover{border-color:var(--pitch-red);color:#fff;}
+.post-reader-scroll{overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.post-reader-content{padding:34px 38px 42px;}
+.post-reader-hero{width:100%;max-height:400px;object-fit:cover;display:block;border-radius:10px 10px 0 0;}
+.post-reader-content .post-reader-hero{margin:-34px -38px 30px;width:calc(100% + 76px);max-width:none;border-radius:10px 10px 0 0;}
+.post-reader-meta{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:12px;}
+.post-reader-date{font-family:'Space Mono',monospace;font-size:0.72rem;color:#9aa0ad;}
+.post-reader-title{font-size:clamp(1.5rem,3.6vw,2.1rem);color:#fff;line-height:1.08;margin-bottom:24px;}
+.post-reader-body p{color:#c7cad3;font-size:1.03rem;line-height:1.8;margin-bottom:20px;white-space:pre-line;}
+.post-reader-body p:last-child{margin-bottom:0;}
+.post-reader-links{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px;padding-top:26px;border-top:1px solid var(--line);}
+@media (max-width:640px){
+  .post-reader{padding:0;}
+  .post-reader-panel{max-height:100vh;height:100%;border-radius:0;border:none;}
+  .post-reader-content{padding:28px 22px 40px;}
+  .post-reader-content .post-reader-hero{margin:-28px -22px 26px;width:calc(100% + 44px);border-radius:0;}
+}
+
 /* ---------- MEDIA CARDS (video/watch row) ---------- */
 .media-row{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;}
 .media-card{

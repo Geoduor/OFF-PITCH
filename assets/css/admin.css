@@ -100,6 +100,23 @@ html, body{overscroll-behavior-y: none;}
 .admin-ai-btn:disabled{opacity:0.5;cursor:default;}
 .admin-ai-note{font-size:0.72rem;color:#9aa0ad;}
 
+/* ---------- Blog post editor: body paragraphs + links list ---------- */
+.admin-field textarea.admin-body-textarea{min-height:160px;}
+.admin-links-list{display:flex;flex-direction:column;gap:8px;}
+.admin-link-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.admin-link-row input{flex:1;min-width:140px;}
+.admin-link-remove{
+  background:transparent;border:1px solid rgba(255,128,128,0.4);color:#ff8080;
+  font-size:0.72rem;padding:8px 12px;border-radius:3px;cursor:pointer;font-family:'Space Mono',monospace;flex-shrink:0;
+}
+.admin-link-remove:hover{background:rgba(255,128,128,0.12);}
+.admin-link-add{
+  background:transparent;border:1px solid var(--line);color:#9aa0ad;
+  font-size:0.72rem;padding:8px 14px;border-radius:3px;cursor:pointer;font-family:'Space Mono',monospace;
+  margin-top:10px;align-self:flex-start;
+}
+.admin-link-add:hover{border-color:var(--signal-teal);color:var(--signal-teal);}
+
 @media (max-width:600px){
   .admin-fields{grid-template-columns:1fr;}
 }

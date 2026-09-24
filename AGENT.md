@@ -340,8 +340,8 @@ responsive-image infrastructure). Don't promise the client an easy path to
 ## 9a. Admin dashboard (content management without code)
 
 As of this session, `/admin.html` is a password-protected dashboard that
-lets the client manage **Events, Gallery, Blog links, and Videos** without
-touching code. This changed how content flows through the site — read this
+lets the client manage **Events, Fixtures, Gallery, Blog posts, and Videos**
+without touching code. This changed how content flows through the site — read this
 before editing any of `index.html`'s events section or `gallery.html`
 (which now holds both the photo gallery AND the videos grid — they were
 merged into one page, see §9f).
@@ -566,6 +566,41 @@ restructured, only their page grouping.
 
 ---
 
+## 9g. Blog posts (full in-site posts, published from the dashboard)
+
+The Blog panel in the admin dashboard now lets the client **publish full
+posts directly on the site** — not just links out to Substack. Each post in
+`data/blog.json` has:
+
+- `title` (required)
+- `date` (optional, free-text publish date shown on the card and reader)
+- `image` (optional cover image — same dashboard upload pipeline as Gallery,
+  auto-compressed, committed to `assets/img/uploads/`)
+- `excerpt` (optional short teaser shown on the card; the "✨ Suggest"
+  excerpt draft still applies, see §9c)
+- `body` (optional array of plain-text paragraphs — the full post text)
+- `links` (optional array of `{label, url}` — sources, related reading,
+  videos, etc.)
+- `url` (optional — the Substack edition URL; shown as a
+  "Read the full post on Substack" button when present)
+
+Validation (in `api/admin.js`) requires at least one of `body` / `url` so a
+post is always readable somewhere. The Blog page (`blog.html`) renders one
+card per post and opens a **post reader overlay** (`.post-reader` in
+`blog.html`, styles in `style.css`, logic in `main.js`) showing the cover
+image, title, date, body paragraphs, and links. Cards are `<button>`
+elements (not links) now — they open the reader instead of navigating
+away. All post text is rendered via `textContent`/`escapeHtml`, and every
+link URL must pass `isSafeHttpsUrl` before it's used — same defense-in-depth
+pattern as the social feed.
+
+The two pre-existing Substack cross-posts in `data/blog.json` remain valid
+under the new shape (`url`-only posts) and now open in the reader with a
+Substack button — nothing was invented for them. The no-fabrication rule
+applies to dashboard-published posts exactly as it does everywhere else.
+
+---
+
 ## 10. Known deferred/pending items
 
 The client has explicitly chosen to defer these — don't build them
@@ -588,9 +623,10 @@ unprompted, but pick them back up if asked:
   offered as the "real" production upgrade, not yet built.
 - **Google reCAPTCHA v3** on the contact form — offered as a stronger
   spam-prevention layer beyond the current honeypot + bot-speed-trap.
-- **Individual Blog post links** — `blog.html` shows the Substack
-  publication generally; specific post titles/links need the client to
-  send them (Substack's post list is JS-rendered, blocking automated fetch).
+- ~~**Individual Blog post links**~~ — **resolved**: the admin dashboard now
+  publishes full posts (image, body text, links) straight onto the Blog
+  page — see §9g. Substack remains a distribution channel, not the only
+  place posts can be read.
 
 ---
 

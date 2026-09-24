@@ -99,6 +99,10 @@ function createSessionToken() {
 }
 
 function verifySessionToken(token) {
+  // Fail closed if the signing secret was never configured: with an empty
+  // secret every token would share the same predictable signature and an
+  // attacker could forge a valid session without the password.
+  if (!process.env.ADMIN_SESSION_SECRET) return false;
   if (!token || typeof token !== 'string' || !token.includes('.')) return false;
   const [payload, signature] = token.split('.');
   const expected = sign(payload);
@@ -191,6 +195,20 @@ function isNonEmptyString(v, maxLen) {
 function isOptionalString(v, maxLen) {
   return v === undefined || v === '' || (typeof v === 'string' && v.length <= maxLen);
 }
+// Blog post body: an optional list of plain-text paragraphs.
+function isOptionalBody(v) {
+  if (v === undefined || v === null) return true;
+  return Array.isArray(v) && v.length <= 60 &&
+    v.every(p => typeof p === 'string' && p.length <= 4000);
+}
+// Blog post links: an optional list of {label, url} pairs.
+function isOptionalLinks(v) {
+  if (v === undefined || v === null) return true;
+  return Array.isArray(v) && v.length <= 12 && v.every(l =>
+    l && typeof l === 'object' && !Array.isArray(l) &&
+    isNonEmptyString(l.label, 80) && isNonEmptyString(l.url, 500)
+  );
+}
 
 function validateContent(type, content) {
   if (JSON.stringify(content).length > MAX_CONTENT_BYTES) {
@@ -232,9 +250,16 @@ function validateContent(type, content) {
     blog: item =>
       isNonEmptyString(item.id, 100) &&
       isNonEmptyString(item.title, 200) &&
-      isNonEmptyString(item.url, 500) &&
-      isOptionalString(item.excerpt, 400) &&
-      isOptionalString(item.image, 300),
+      isOptionalString(item.url, 500) &&
+      isOptionalString(item.date, 100) &&
+      isOptionalString(item.excerpt, 600) &&
+      isOptionalString(item.image, 300) &&
+      isOptionalBody(item.body) &&
+      isOptionalLinks(item.links) &&
+      // A post must be readable somewhere: either in full on the site (body)
+      // or via an external URL (e.g. the Substack edition).
+      ((typeof item.url === 'string' && item.url.trim().length > 0) ||
+        (Array.isArray(item.body) && item.body.some(p => typeof p === 'string' && p.trim().length > 0))),
     videos: item =>
       isNonEmptyString(item.id, 100) &&
       isNonEmptyString(item.youtubeId, 30),
@@ -295,6 +320,10 @@ export default async function handler(req, res) {
     if (action === 'login' && req.method === 'POST') {
       if (isRateLimited(ip)) {
         res.status(429).json({ error: 'Too many attempts. Please wait a minute and try again.' });
+        return;
+      }
+      if (!process.env.ADMIN_SESSION_SECRET) {
+        res.status(500).json({ error: 'Dashboard is not fully configured: ADMIN_SESSION_SECRET is missing. See README.md section 7.' });
         return;
       }
       const password = body.password;

@@ -65,6 +65,8 @@ function sign(payload) {
   return crypto.createHmac('sha256', secret).update(payload).digest('hex');
 }
 function verifySessionToken(token) {
+  // Fail closed if the signing secret was never configured (mirrors api/admin.js).
+  if (!process.env.ADMIN_SESSION_SECRET) return false;
   if (!token || typeof token !== 'string' || !token.includes('.')) return false;
   const [payload, signature] = token.split('.');
   const expected = sign(payload);

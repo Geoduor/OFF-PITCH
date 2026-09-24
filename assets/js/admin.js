@@ -23,16 +23,19 @@ const SCHEMAS = {
     fields: [
       { key: 'src', label: 'Photo', type: 'image', required: true },
       { key: 'alt', label: 'Description (alt text)', type: 'text', aiAssist: 'altText' },
-      { key: 'category', label: 'Category', type: 'select', options: ['hockey', 'community', 'celebration'], aiAssist: 'category' }
+      { key: 'category', label: 'Category', type: 'select', options: ['event', 'hockey', 'community', 'celebration'], aiAssist: 'category' }
     ]
   },
   blog: {
     label: 'Blog',
     fields: [
       { key: 'title', label: 'Post Title', type: 'text', required: true },
-      { key: 'url', label: 'Post URL (Substack link)', type: 'url', required: true },
-      { key: 'excerpt', label: 'Short excerpt', type: 'textarea', aiAssist: 'excerpt' },
-      { key: 'image', label: 'Cover Image (optional)', type: 'image' }
+      { key: 'date', label: 'Publish Date (e.g. 24 September 2026)', type: 'text' },
+      { key: 'image', label: 'Cover Image (optional)', type: 'image' },
+      { key: 'excerpt', label: 'Short excerpt (shown on the post card)', type: 'textarea', aiAssist: 'excerpt' },
+      { key: 'body', label: 'Post Body — write the full post here. One paragraph per line (blank lines are ignored).', type: 'paragraphs' },
+      { key: 'links', label: 'Links (sources, related reading, videos, etc.)', type: 'links' },
+      { key: 'url', label: 'Substack URL (optional — only needed if the full post lives on Substack)', type: 'url' }
     ]
   },
   videos: {
@@ -79,6 +82,10 @@ const logoutBtn = document.getElementById('logoutBtn');
 function genId(type) {
   return `${type}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
 }
+
+// Singular label for each panel's item header (e.g. "Post 1" rather than
+// the broken "Blo 1" that label.slice(0, -1) produced for 'Blog').
+const SINGULAR_LABELS = { Events: 'Event', Fixtures: 'Fixture', Gallery: 'Photo', Blog: 'Post', Videos: 'Video', Live: 'Live' };
 
 /* ---------------- Auth ---------------- */
 async function checkSession() {
@@ -242,8 +249,13 @@ function initPanel(type) {
         }
       }
 
-      // 2. Strip any remaining internal-only fields before saving.
-      const cleanItems = items.map(({ _pendingUpload, _pendingPreview, ...rest }) => rest);
+      // 2. Strip internal-only fields, and drop empty blog body paragraphs /
+      //    blank link rows so the server-side validator never rejects them.
+      const cleanItems = items.map(({ _pendingUpload, _pendingPreview, ...rest }) => {
+        if (Array.isArray(rest.body)) rest.body = rest.body.filter(p => typeof p === 'string' && p.trim());
+        if (Array.isArray(rest.links)) rest.links = rest.links.filter(l => l && (l.label || '').trim() && (l.url || '').trim());
+        return rest;
+      });
       const payload = schema.singleton ? (cleanItems[0] || {}) : cleanItems;
 
       const res = await fetch('/api/admin', {
@@ -273,7 +285,7 @@ function buildItemCard(schema, item, index, hideHeader, items, rerender) {
     const header = document.createElement('div');
     header.className = 'admin-item-header';
     const label = document.createElement('span');
-    label.textContent = `${schema.label.slice(0, -1) || schema.label} ${index + 1}`;
+    label.textContent = `${SINGULAR_LABELS[schema.label] || schema.label} ${index + 1}`;
     const removeBtn = document.createElement('button');
     removeBtn.type = 'button';
     removeBtn.className = 'admin-item-remove';
@@ -301,7 +313,7 @@ function buildItemCard(schema, item, index, hideHeader, items, rerender) {
 
 function buildField(field, item) {
   const wrap = document.createElement('div');
-  wrap.className = 'admin-field' + (field.type === 'textarea' || field.type === 'image' ? ' full' : '');
+  wrap.className = 'admin-field' + (['textarea', 'image', 'paragraphs', 'links'].includes(field.type) ? ' full' : '');
 
   if (field.type === 'checkbox') {
     wrap.classList.add('admin-field-checkbox');
@@ -388,6 +400,77 @@ function buildField(field, item) {
     ta.addEventListener('input', () => { item[field.key] = ta.value; });
     wrap.appendChild(ta);
     if (field.aiAssist) wrap.appendChild(buildAiAssistButton(field, item, () => ta.value = item[field.key]));
+    return wrap;
+  }
+
+  if (field.type === 'paragraphs') {
+    // Blog post body: stored as an array of paragraph strings. The textarea
+    // shows them joined; every line becomes one paragraph on input.
+    const ta = document.createElement('textarea');
+    ta.className = 'admin-body-textarea';
+    ta.rows = 8;
+    ta.value = Array.isArray(item[field.key]) ? item[field.key].join('\n\n') : '';
+    ta.addEventListener('input', () => {
+      item[field.key] = ta.value.split('\n').map(s => s.trim()).filter(Boolean);
+    });
+    wrap.appendChild(ta);
+    return wrap;
+  }
+
+  if (field.type === 'links') {
+    // Blog post links: a repeatable list of { label, url } rows.
+    const list = document.createElement('div');
+    list.className = 'admin-links-list';
+    const links = Array.isArray(item[field.key]) ? item[field.key] : [];
+    item[field.key] = links;
+
+    function renderLinkRows() {
+      list.innerHTML = '';
+      links.forEach(link => {
+        const row = document.createElement('div');
+        row.className = 'admin-link-row';
+
+        const labelInput = document.createElement('input');
+        labelInput.type = 'text';
+        labelInput.placeholder = 'Link text (e.g. Read the recap)';
+        labelInput.value = link.label || '';
+        labelInput.addEventListener('input', () => { link.label = labelInput.value; });
+
+        const urlInput = document.createElement('input');
+        urlInput.type = 'url';
+        urlInput.placeholder = 'https://…';
+        urlInput.value = link.url || '';
+        urlInput.addEventListener('input', () => { link.url = urlInput.value; });
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'admin-link-remove';
+        removeBtn.textContent = 'Remove';
+        removeBtn.addEventListener('click', () => {
+          const idx = links.indexOf(link);
+          if (idx !== -1) links.splice(idx, 1);
+          renderLinkRows();
+        });
+
+        row.appendChild(labelInput);
+        row.appendChild(urlInput);
+        row.appendChild(removeBtn);
+        list.appendChild(row);
+      });
+    }
+    renderLinkRows();
+
+    const addLinkBtn = document.createElement('button');
+    addLinkBtn.type = 'button';
+    addLinkBtn.className = 'admin-link-add';
+    addLinkBtn.textContent = '+ Add Link';
+    addLinkBtn.addEventListener('click', () => {
+      links.push({ label: '', url: '' });
+      renderLinkRows();
+    });
+
+    wrap.appendChild(list);
+    wrap.appendChild(addLinkBtn);
     return wrap;
   }
 

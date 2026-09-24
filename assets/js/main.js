@@ -514,7 +514,7 @@ document.addEventListener('DOMContentLoaded', () => {
             row.className = 'fixture-row';
             row.dataset.category = fx.category || '';
 
-            const hasScore = fx.status !== 'upcoming' && (fx.score1 !== '' || fx.score2 !== '');
+            const hasScore = fx.status !== 'upcoming' && Boolean(fx.score1 || fx.score2);
             const scoreOrTime = fx.status === 'upcoming' || !hasScore
               ? `<span class="fx-time">${escapeHtml(fx.time || '')}</span>`
               : `<span class="fx-score">${escapeHtml(fx.score1)} – ${escapeHtml(fx.score2)}</span>`;
@@ -689,33 +689,139 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // --- Blog posts (blog.html) ---
+  // Cards are rendered from /data/blog.json (edited in the admin dashboard).
+  // Each card opens a full-post reader overlay showing the cover image, body
+  // paragraphs and links. All content is escaped via textContent/escapeHtml,
+  // and link URLs must pass isSafeHttpsUrl before they are used.
   const blogPosts = document.getElementById('blogPosts');
+  const postReader = document.getElementById('postReader');
+  const postReaderContent = document.getElementById('postReaderContent');
+
+  function hasReadablePost(p) {
+    return Boolean(p && p.title) && (
+      (typeof p.url === 'string' && p.url.trim()) ||
+      (Array.isArray(p.body) && p.body.some(b => typeof b === 'string' && b.trim()))
+    );
+  }
+
+  function closePostReader() {
+    if (!postReader) return;
+    postReader.hidden = true;
+    document.body.style.overflow = '';
+  }
+
+  function openPostReader(p) {
+    if (!postReader || !postReaderContent) return;
+    postReaderContent.innerHTML = '';
+
+    if (p.image && typeof p.image === 'string' && p.image.trim()) {
+      const hero = document.createElement('img');
+      hero.className = 'post-reader-hero';
+      hero.src = p.image;
+      hero.alt = p.title || 'Off Pitch Africa';
+      postReaderContent.appendChild(hero);
+    }
+
+    const meta = document.createElement('div');
+    meta.className = 'post-reader-meta';
+    const eyebrow = document.createElement('span');
+    eyebrow.className = 'eyebrow';
+    eyebrow.textContent = 'OFFPITCH AFRICA PLAYBOOK';
+    meta.appendChild(eyebrow);
+    if (p.date && String(p.date).trim()) {
+      const date = document.createElement('span');
+      date.className = 'post-reader-date';
+      date.textContent = p.date;
+      meta.appendChild(date);
+    }
+    postReaderContent.appendChild(meta);
+
+    const title = document.createElement('h2');
+    title.className = 'post-reader-title';
+    title.textContent = p.title;
+    postReaderContent.appendChild(title);
+
+    const paragraphs = (Array.isArray(p.body) ? p.body : []).filter(b => typeof b === 'string' && b.trim());
+    if (paragraphs.length) {
+      const body = document.createElement('div');
+      body.className = 'post-reader-body';
+      paragraphs.forEach(text => {
+        const el = document.createElement('p');
+        el.textContent = text;
+        body.appendChild(el);
+      });
+      postReaderContent.appendChild(body);
+    }
+
+    const links = [];
+    if (typeof p.url === 'string' && p.url.trim()) {
+      links.push({ label: 'Read the full post on Substack', url: p.url });
+    }
+    if (Array.isArray(p.links)) {
+      p.links.forEach(l => {
+        if (l && l.label && l.url && String(l.label).trim() && String(l.url).trim()) {
+          links.push({ label: l.label, url: l.url });
+        }
+      });
+    }
+    const safeLinks = links.filter(l => isSafeHttpsUrl(l.url));
+    if (safeLinks.length) {
+      const linksWrap = document.createElement('div');
+      linksWrap.className = 'post-reader-links';
+      safeLinks.forEach(l => {
+        const a = document.createElement('a');
+        a.href = l.url;
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.className = 'btn btn-ghost';
+        a.textContent = l.label + ' →';
+        linksWrap.appendChild(a);
+      });
+      postReaderContent.appendChild(linksWrap);
+    }
+
+    postReader.hidden = false;
+    document.body.style.overflow = 'hidden';
+    const scroll = postReader.querySelector('.post-reader-scroll');
+    if (scroll) scroll.scrollTop = 0;
+  }
+
+  if (postReader) {
+    const closeBtn = postReader.querySelector('.post-reader-close');
+    const backdrop = postReader.querySelector('.post-reader-backdrop');
+    if (closeBtn) closeBtn.addEventListener('click', closePostReader);
+    if (backdrop) backdrop.addEventListener('click', closePostReader);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !postReader.hidden) closePostReader();
+    });
+  }
+
   if (blogPosts) {
     fetch('/data/blog.json')
       .then(res => res.ok ? res.json() : Promise.reject())
       .then(data => {
-        const posts = Array.isArray(data) ? data.filter(p => p && p.title && p.url) : [];
+        const posts = Array.isArray(data) ? data.filter(hasReadablePost) : [];
         if (posts.length === 0) return; // no posts yet — Substack card below covers it
         blogPosts.innerHTML = '';
         blogPosts.style.display = '';
         posts.forEach(p => {
-          const a = document.createElement('a');
-          a.href = p.url;
-          a.target = '_blank';
-          a.rel = 'noopener';
-          a.className = 'article-card';
+          const card = document.createElement('button');
+          card.type = 'button';
+          card.className = 'article-card';
           const img = p.image ? escapeHtml(p.image) : 'assets/img/logo.webp';
-          a.innerHTML = `
+          const tagText = p.date && String(p.date).trim() ? p.date : 'Blog';
+          card.innerHTML = `
             <div class="article-img">
-              <img src="${img}" alt="${escapeHtml(p.title)}">
-              <span class="article-tag">Blog</span>
+              <img src="${img}" alt="${escapeHtml(p.title)}" loading="lazy">
+              <span class="article-tag">${escapeHtml(tagText)}</span>
             </div>
             <div class="article-body">
               <h3>${escapeHtml(p.title)}</h3>
               ${p.excerpt ? `<p>${escapeHtml(p.excerpt)}</p>` : ''}
               <span class="article-link">READ POST →</span>
             </div>`;
-          blogPosts.appendChild(a);
+          card.addEventListener('click', () => openPostReader(p));
+          blogPosts.appendChild(card);
         });
       })
       .catch(() => { /* keep Substack card as the only content */ });
