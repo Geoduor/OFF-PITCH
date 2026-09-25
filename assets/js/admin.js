@@ -123,6 +123,25 @@ if (quickAddBtn) {
   });
 }
 
+/* ---------------- Sticky-bar scroll offsets ----------------
+   The top bar is position:sticky, so anything scrolled to the top of the
+   viewport (anchor jumps, scrollIntoView) would land behind it. Measure its
+   real height — it wraps on small screens and is 0 while the login screen
+   is up — and expose it as --admin-nav-h, which the scroll-margin-top rules
+   in admin.css consume. Every scroll then stays exactly clear of the bar. */
+const adminQuicknav = document.querySelector('.admin-quicknav');
+
+function syncNavOffset() {
+  if (!adminQuicknav) return;
+  const h = adminQuicknav.offsetHeight; // 0 until the dashboard is visible
+  document.documentElement.style.setProperty('--admin-nav-h', h + 'px');
+}
+
+if (adminQuicknav) {
+  window.addEventListener('resize', syncNavOffset);
+  syncNavOffset();
+}
+
 function genId(type) {
   return `${type}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
 }
@@ -203,6 +222,7 @@ function initAllPanels() {
   panelsInitialized = true;
   Object.keys(SCHEMAS).forEach(type => initPanel(type));
   syncQuickAddBtn(); // sticky "+ Add New" now knows which sections can add items
+  syncNavOffset();   // the sticky bar is visible now — measure its real height
 }
 
 function initPanel(type) {

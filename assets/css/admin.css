@@ -55,23 +55,40 @@ html, body{overscroll-behavior-y: none;}
 }
 .admin-page-select:focus{outline:none;border-color:var(--signal-teal);}
 
-/* Always-visible actions in the sticky top bar (right side) */
+/* Always-visible actions in the sticky top bar (right side).
+   Solid white buttons with black text — high contrast on the navy bar —
+   and deliberately no hover change, so the look stays steady. */
 .admin-quicknav-actions{display:flex;gap:10px;margin-left:auto;align-items:center;flex-wrap:wrap;}
 .admin-quicknav .admin-btn-sm{padding:9px 16px !important;font-size:0.76rem !important;}
-.admin-add-sticky{border-color:var(--signal-teal) !important;color:var(--signal-teal) !important;}
-.admin-add-sticky:hover{background:rgba(79,209,217,0.12) !important;}
+.admin-add-sticky,
+.admin-logout-btn{
+  background:#fff !important;
+  border-color:#fff !important;
+  color:var(--ink) !important;
+}
+.admin-add-sticky:hover,
+.admin-logout-btn:hover{
+  background:#fff !important;
+  border-color:#fff !important;
+  color:var(--ink) !important;
+}
 .admin-add-sticky:disabled{opacity:0.45;cursor:not-allowed;}
-.admin-logout-btn{border-color:rgba(255,128,128,0.65) !important;color:#ff8080 !important;}
-.admin-logout-btn:hover{background:rgba(255,128,128,0.12) !important;}
 
-@media (max-width:600px){
-  .admin-page-select{flex:1 1 100%;}
-  .admin-quicknav-actions{width:100%;margin-left:0;}
-  .admin-quicknav-actions .btn{flex:1;justify-content:center;}
+@media (max-width:640px){
+  /* Keep the sticky bar to ONE compact row on phones so it never grows
+     into a tall block that hides content — and 16px select text stops
+     iOS from auto-zooming the page when the dropdown is tapped. */
+  .admin-quicknav{padding:10px 14px;gap:8px;}
+  .admin-page-picker{display:none;}
+  .admin-page-select{flex:1 1 auto;min-width:0;width:auto;font-size:16px;}
+  .admin-quicknav-actions{margin-left:0;gap:8px;}
+  .admin-quicknav .admin-btn-sm{padding:8px 12px !important;font-size:0.72rem !important;white-space:nowrap;}
 }
 
 .admin-main{max-width:1000px;margin:0 auto;padding:36px 24px 80px;}
-.admin-panel{margin-bottom:64px;scroll-margin-top:76px;}
+/* scroll-margin-top uses the measured sticky-bar height (--admin-nav-h,
+   set by admin.js) so no heading ever lands hidden behind the bar. */
+.admin-panel{margin-bottom:64px;scroll-margin-top:calc(var(--admin-nav-h, 76px) + 16px);}
 .admin-panel:last-child{margin-bottom:0;}
 .admin-panel-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:8px;padding-bottom:14px;border-bottom:2px solid var(--pitch-red);}
 .admin-panel-head h2{color:#fff;font-size:1.5rem;}
@@ -81,7 +98,7 @@ html, body{overscroll-behavior-y: none;}
 
 /* ---------- Item cards ---------- */
 .admin-items{display:flex;flex-direction:column;gap:18px;}
-.admin-item{background:var(--navy);border:1px solid var(--line);border-radius:5px;padding:22px;}
+.admin-item{background:var(--navy);border:1px solid var(--line);border-radius:5px;padding:22px;scroll-margin-top:calc(var(--admin-nav-h, 76px) + 16px);}
 .admin-item-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
 .admin-item-header span{font-family:'Space Mono',monospace;font-size:0.72rem;color:#9aa0ad;letter-spacing:0.05em;text-transform:uppercase;}
 .admin-item-remove{
