@@ -199,9 +199,10 @@ exploited to execute disguised scripts.
   for this project (a real, if unusual, security advantage — most sites
   accumulate dozens of dependencies, each a potential vulnerability).
 - **Secrets never touch the repository**: environment variables live only
-  in Vercel's dashboard. If you ever add a `.env` file locally for testing,
-  make sure it's listed in a `.gitignore` file so it's never accidentally
-  committed.
+  in Vercel's dashboard. A gitignored local `.env` (copied from the
+  committed `.env.example` template) may be used for `vercel dev` testing —
+  `.gitignore` covers `.env` and every `.env.*` variant, so real values
+  can't be accidentally committed or deployed.
 - **Security headers applied globally** via the new `vercel.json` — this is
   infrastructure-level configuration, not per-page code, so it can't be
   accidentally forgotten on a new page later.

@@ -110,6 +110,19 @@ five pages link to each other via the nav bar and footer. The contact form
 and chat assistant work fully once deployed; locally, the chat will show its
 fallback message since `/api/chat` only exists on a real deployment.
 
+For a full local test with the serverless functions running (admin
+dashboard, chat, social feed), use `npm run dev` — that's `vercel dev`,
+which serves the pages AND the `/api/*` functions locally. `vercel dev`
+automatically reads a `.env` file in the project root, so:
+
+1. Copy the template: `Copy-Item .env.example .env` (PowerShell)
+2. Fill in your real values (admin password, session secret, GitHub token,
+   API keys) in `.env`
+3. Run `npm run dev` — the dashboard at `/admin.html` logs in with the
+   password from `.env`
+
+`.env` is gitignored, so your secrets never get committed or deployed.
+
 ---
 
 ## 5. What's real vs. what you can still add
@@ -274,6 +287,14 @@ openssl rand -hex 32
 | `ADMIN_SESSION_SECRET` | the random string from step 3 |
 
 **5. Redeploy** (`vercel --prod`) so the new environment variables take effect.
+
+**Prefer working with files?** Copy `.env.example` to `.env` and fill in
+your values there — `vercel dev` loads `.env` automatically for local
+testing. Note that `.env` is local-only: the live site's functions read the
+variables from Vercel (the dashboard above, or `vercel env add
+ADMIN_PASSWORD production` and the same for the other two), never from
+files — so the three variables still need to be set in Vercel for
+production.
 
 ### Using it day-to-day
 

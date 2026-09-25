@@ -275,6 +275,13 @@ client ever adds a custom domain**, or the API endpoints will reject
 requests from the new domain. `sitemap.xml` and `robots.txt` also hardcode
 this domain and would need the same update.
 
+**Environment files**: `.env.example` (committed) documents every env var;
+a local `.env` (gitignored — `.gitignore` covers `.env` and every `.env.*`
+variant except `.env.example`) holds the real values and is auto-loaded by
+`vercel dev` for local testing only. Vercel Functions never read `.env`
+files in production — production values must be set in the Vercel dashboard
+(or via `vercel env add`), never committed.
+
 ### Recurring workflow gotcha worth knowing up front
 Files get generated/edited in an isolated sandbox, not directly in the
 client's real project folder. **Every time a new binary asset (image,
