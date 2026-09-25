@@ -38,18 +38,25 @@
       </div>
       <div class="admin-header-actions">
         <a href="index.html" target="_blank" rel="noopener" class="btn btn-ghost admin-btn-sm">View Site →</a>
-        <button id="logoutBtn" class="btn btn-ghost admin-btn-sm">Log Out</button>
       </div>
     </div>
   </header>
 
   <nav class="admin-quicknav">
-    <a href="#panel-events">Events</a>
-    <a href="#panel-fixtures">Fixtures</a>
-    <a href="#panel-gallery">Gallery</a>
-    <a href="#panel-blog">Blog</a>
-    <a href="#panel-videos">Videos</a>
-    <a href="#panel-live">Live</a>
+    <label class="admin-page-picker" for="adminPageSelect">Editing</label>
+    <select id="adminPageSelect" class="admin-page-select" aria-label="Choose which section to edit">
+      <option value="all">All Sections</option>
+      <option value="events">Events (events.html)</option>
+      <option value="fixtures">Fixtures &amp; Results (events.html)</option>
+      <option value="gallery">Gallery (gallery.html)</option>
+      <option value="blog">Blog (blog.html)</option>
+      <option value="videos">Videos (gallery.html)</option>
+      <option value="live">Live Banner (home)</option>
+    </select>
+    <div class="admin-quicknav-actions">
+      <button type="button" id="quickAddBtn" class="btn btn-ghost admin-btn-sm admin-add-sticky" title="Choose a section above to add a new item" disabled>+ Add New</button>
+      <button id="logoutBtn" class="btn btn-ghost admin-btn-sm admin-logout-btn">Log Out</button>
+    </div>
   </nav>
 
   <main class="admin-main">

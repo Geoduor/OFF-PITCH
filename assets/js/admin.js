@@ -79,6 +79,50 @@ const loginError = document.getElementById('loginError');
 const passwordInput = document.getElementById('passwordInput');
 const logoutBtn = document.getElementById('logoutBtn');
 
+// Populated by initPanel(): type -> function that adds a new item to that
+// panel. Lets the sticky "+ Add New" button in the top bar trigger the
+// right panel's own add button, wherever the user has scrolled to.
+const panelAddActions = {};
+
+/* ---------------- Section picker (dropdown) ----------------
+   Shows only the selected content section (matching the option values to
+   each panel's [data-type]), or everything on "All Sections". Panels are
+   only hidden — their state and any unsaved edits stay intact. */
+const adminPageSelect = document.getElementById('adminPageSelect');
+if (adminPageSelect) {
+  adminPageSelect.addEventListener('change', () => {
+    const value = adminPageSelect.value;
+    document.querySelectorAll('.admin-panel').forEach(panel => {
+      panel.hidden = value !== 'all' && panel.dataset.type !== value;
+    });
+    window.scrollTo(0, 0); // land at the top of the chosen section
+    syncQuickAddBtn();
+  });
+}
+
+/* ---------------- Sticky "+ Add New" (top bar) ---------------- */
+const quickAddBtn = document.getElementById('quickAddBtn');
+
+function syncQuickAddBtn() {
+  if (!quickAddBtn || !adminPageSelect) return;
+  const value = adminPageSelect.value;
+  const enabled = value !== 'all' && typeof panelAddActions[value] === 'function';
+  quickAddBtn.disabled = !enabled;
+  quickAddBtn.title = enabled
+    ? 'Add a new item to the selected section'
+    : 'Choose a section above to add a new item';
+}
+
+if (quickAddBtn) {
+  quickAddBtn.addEventListener('click', () => {
+    if (!adminPageSelect) return;
+    const value = adminPageSelect.value;
+    if (value !== 'all' && typeof panelAddActions[value] === 'function') {
+      panelAddActions[value]();
+    }
+  });
+}
+
 function genId(type) {
   return `${type}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
 }
@@ -158,6 +202,7 @@ function initAllPanels() {
   if (panelsInitialized) return; // avoid double-binding on repeat logins in the same page load
   panelsInitialized = true;
   Object.keys(SCHEMAS).forEach(type => initPanel(type));
+  syncQuickAddBtn(); // sticky "+ Add New" now knows which sections can add items
 }
 
 function initPanel(type) {
@@ -213,16 +258,19 @@ function initPanel(type) {
     }
   }
 
-  if (addBtn) {
-    addBtn.addEventListener('click', () => {
-      const newItem = { id: genId(type) };
-      schema.fields.forEach(f => {
-        if (f.type === 'checkbox') newItem[f.key] = Boolean(f.default);
-      });
-      items.push(newItem);
-      renderItems();
-      itemsList.lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  function addItem() {
+    const newItem = { id: genId(type) };
+    schema.fields.forEach(f => {
+      if (f.type === 'checkbox') newItem[f.key] = Boolean(f.default);
     });
+    items.push(newItem);
+    renderItems();
+    itemsList.lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  if (addBtn) {
+    addBtn.addEventListener('click', addItem);
+    panelAddActions[type] = addItem; // exposed for the sticky "+ Add New"
   }
 
   saveBtn.addEventListener('click', async () => {
