@@ -69,7 +69,7 @@ function opaRenderCookieBanner() {
   banner.innerHTML = `
     <div class="cookie-banner-inner">
       <p class="cookie-banner-text">
-        We use cookies for analytics. <a href="privacy.html">Privacy Policy</a>
+        We use cookies for analytics. <a href="/privacy">Privacy Policy</a>
       </p>
       <div class="cookie-banner-actions">
         <button type="button" class="btn btn-ghost cookie-btn-manage">Manage</button>
