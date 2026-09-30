@@ -132,14 +132,107 @@
     </div>
   </section>
 
-  <!-- EVENTS -->
-  <section class="events" id="events" style="padding:40px 0 100px;scroll-margin-top:90px;">
-    <div class="wrap">
-      <div class="sec-head" style="margin-bottom:36px;">
-        <div class="eyebrow">UPCOMING EVENTS</div>
-        <h2 style="font-size:clamp(1.8rem,4vw,2.4rem);">What's Next</h2>
-      </div>
-      <div id="eventsList" data-fallback="true">
+  <!-- EVENTS DYNAMIC LOADING -->
+  <div id="dynamicEvents" class="events-dynamic" style="display:none;">
+    <div class="events-grid" id="dynamicEventsGrid"></div>
+  </div>
+
+  <script>
+    // Dynamic events loader for events.html
+    document.addEventListener('DOMContentLoaded', () => {
+      const dynamicEvents = document.getElementById('dynamicEvents');
+      const dynamicEventsGrid = document.getElementById('dynamicEventsGrid');
+      
+      if (!dynamicEvents || !dynamicEventsGrid) return;
+      
+      // Simple HTML escape
+      const escapeHtml = (str) => {
+        const div = document.createElement('div');
+        div.textContent = str == null ? '' : String(str);
+        return div.innerHTML;
+      };
+      
+      fetch('/data/events.json')
+        .then(res => res.ok ? res.json() : [])
+        .then(data => {
+          const events = Array.isArray(data) ? data.filter(e => e && e.active !== false && e.title && e.date) : [];
+          
+          // Parse dates and filter future events
+          const parseEventDate = (str) => {
+            if (!str) return null;
+            const m = str.match(/(\d{1,2})(?:st|nd|rd|th)?\s+([A-Za-z]+)\s+(\d{4})/);
+            if (!m) return null;
+            const day = parseInt(m[1], 10);
+            const monthAbbr = m[2].slice(0, 3).toLowerCase();
+            const monthIdx = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'].indexOf(monthAbbr);
+            if (monthIdx === -1) return null;
+            const year = m[3];
+            return { day, monthIdx, year };
+          };
+          
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          
+          const futureEvents = events.filter(e => {
+            const parsed = parseEventDate(e.date);
+            if (!parsed) return false;
+            const eventDate = new Date(parsed.year, parsed.monthIdx, parsed.day);
+            return eventDate >= today;
+          });
+          
+          if (futureEvents.length === 0) {
+            dynamicEvents.style.display = 'none';
+            return;
+          }
+          
+          dynamicEvents.style.display = '';
+          
+          // Render events grid
+          dynamicEventsGrid.innerHTML = '';
+          
+          futureEvents.forEach(ev => {
+            const card = document.createElement('div');
+            card.className = 'events-card';
+            
+            const imgSrc = ev.image ? ev.image : 'assets/img/logo.webp';
+            const tel = ev.phone ? `<a href="tel:${ev.phone}" class="btn btn-primary">Call To Register →</a>` : '';
+            const mail = ev.email ? `<a href="mailto:${ev.email}" class="btn btn-ghost">Email Us</a>` : '';
+            const registerBtn = ev.registerLink
+              ? `<a href="${ev.registerLink}" target="_blank" rel="noopener" class="btn btn-primary">Register →</a>`
+              : tel;
+            
+            // Parse date for display
+            const parsed = parseEventDate(ev.date);
+            const displayDate = parsed ? `${parsed.day}${parsed.monthIdx === 11 ? 'Dec' : parsed.monthIdx < 1 ? 'Jan' : ''} ${parsed.year}` : ev.date;
+            
+            card.innerHTML = `
+              <img src="${imgSrc}" alt="${escapeHtml(ev.title)} event poster" loading="lazy">
+              <div class="ev-body">
+                <h3 class="ev-title">${escapeHtml(ev.title)}</h3>
+                ${ev.theme ? `<p class="ev-theme">${escapeHtml(ev.theme)}</p>` : ''}
+                <ul class="ev-list">
+                  <li><strong>Date:</strong> ${escapeHtml(displayDate)}</li>
+                  ${ev.time ? `<li><strong>Time:</strong> ${escapeHtml(ev.time)}</li>` : ''}
+                  ${ev.venue ? `<li><strong>Venue:</strong> ${escapeHtml(ev.venue)}</li>` : ''}
+                </ul>
+                <div class="ev-ctas">${registerBtn}${ev.registerLink ? '' : mail}</div>
+              </div>
+            `;
+            
+            dynamicEventsGrid.appendChild(card);
+          });
+          
+          // Apply CSS grid
+          dynamicEventsGrid.style.display = 'grid';
+          dynamicEventsGrid.style.gridTemplateColumns = 'repeat(auto-fit, minmax(280px, 1fr))';
+          dynamicEventsGrid.style.gap = '22px';
+          dynamicEventsGrid.style.alignItems = 'start';
+        })
+        .catch(() => {
+          dynamicEvents.style.display = 'none';
+        });
+    });
+  </script>
         <div class="events-card featured">
           <img src="assets/img/events/off-the-pitch-on-the-record.webp" width="1200" height="800" alt="Off The Pitch, On The Record — NCHA Forum: Mapping Kenya Hockey's Future From the Ground Up. Saturday 29th August 2026, Baraza Media Lab, Riverside Drive, Nairobi." loading="lazy">
           <div class="ev-body">
