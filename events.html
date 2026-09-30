@@ -132,105 +132,150 @@
     </div>
   </section>
 
-  <!-- EVENTS DYNAMIC LOADING -->
-  <div id="dynamicEvents" class="events-dynamic" style="display:none;">
-    <div class="events-grid" id="dynamicEventsGrid"></div>
+  <!-- EVENTS: Upcoming events show by default, past events in accordion -->
+  <div class="events-upcoming" id="eventsUpcoming">
+    <div class="events-grid" id="eventsUpcomingGrid" style="gap: 22px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); align-items: start;">
+      <!-- Mombasa Edition event card -->
+      <div class="events-card" style="margin-bottom: 24px; background: var(--navy); border: 1px solid var(--line); border-radius: 8px; overflow: hidden;">
+        <img src="assets/img/events/IMG_6275.JPG.jpeg" alt="OFF THE PITCH ON THE RECORD Mombasa Edition event poster" loading="lazy" style="width:100%; height:auto; display:block;">
+        <div class="ev-body" style="padding: 20px 22px 24px;">
+          <h3 class="ev-title" style="font-family:'Anton',sans-serif;font-size:1.05rem;letter-spacing:0.01em;color:var(--chalk);margin-bottom:6px;">OFF THE PITCH ON THE RECORD Mombasa Edition</h3>
+          <p class="ev-theme" style="font-size:0.85rem;color:var(--chalk);opacity:0.75;margin-bottom:14px;">Mombasa Edition</p>
+          <ul class="ev-list" style="list-style:none;padding:0;margin:0 0 16px;font-size:0.82rem;color:var(--chalk);opacity:0.85;display:flex;flex-direction:column;gap:5px;">
+            <li><strong>Date:</strong> Wednesday, 8th October 2026</li>
+            <li><strong>Time:</strong> 1pm to 6pm</li>
+            <li><strong>Venue:</strong> MSC, Mombasa</li>
+          </ul>
+          <div class="ev-ctas" style="display:flex;gap:10px;flex-wrap:wrap;">
+            <a href="tel:+254704107373" class="btn btn-primary" style="display:inline-flex;align-items:center;gap:10px;padding:15px 26px;font-weight:700;font-size:0.86rem;letter-spacing:0.03em;border-radius:2px;background:var(--pitch-red);color:#fff;">Call To Register →</a>
+            <a href="mailto:offpitchafrica@gmail.com" class="btn btn-ghost" style="border-color:rgba(244,241,236,0.4);color:var(--chalk);">Email Us</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="events-past-accordion" id="eventsPastAccordion" style="display:none;">
+    <div class="accordion-button" style="width:100%;text-align:left;padding:16px 0;font-size:0.86rem;color:var(--chalk);cursor:pointer;border:none;background:transparent;">
+      Past Events ▶
+    </div>
+    <div class="accordion-content" style="padding:0 16px 16px;background:var(--navy);margin-top:8px;">
+      <p style="font-size:0.78rem;opacity:0.7;line-height:1.6;">No past events to display — check back for new upcoming events.</p>
+    </div>
   </div>
 
   <script>
-    // Dynamic events loader for events.html
+    // Event date filtering for events.html
     document.addEventListener('DOMContentLoaded', () => {
-      const dynamicEvents = document.getElementById('dynamicEvents');
-      const dynamicEventsGrid = document.getElementById('dynamicEventsGrid');
-      
-      if (!dynamicEvents || !dynamicEventsGrid) return;
-      
-      // Simple HTML escape
       const escapeHtml = (str) => {
         const div = document.createElement('div');
         div.textContent = str == null ? '' : String(str);
         return div.innerHTML;
       };
       
-      fetch('/data/events.json')
-        .then(res => res.ok ? res.json() : [])
-        .then(data => {
-          const events = Array.isArray(data) ? data.filter(e => e && e.active !== false && e.title && e.date) : [];
-          
-          // Parse dates and filter future events
-          const parseEventDate = (str) => {
-            if (!str) return null;
-            const m = str.match(/(\d{1,2})(?:st|nd|rd|th)?\s+([A-Za-z]+)\s+(\d{4})/);
-            if (!m) return null;
-            const day = parseInt(m[1], 10);
-            const monthAbbr = m[2].slice(0, 3).toLowerCase();
-            const monthIdx = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'].indexOf(monthAbbr);
-            if (monthIdx === -1) return null;
-            const year = m[3];
-            return { day, monthIdx, year };
-          };
-          
-          const today = new Date();
-          today.setHours(0, 0, 0, 0);
-          
-          const futureEvents = events.filter(e => {
-            const parsed = parseEventDate(e.date);
-            if (!parsed) return false;
+      const parseEventDate = (str) => {
+        if (!str) return null;
+        const m = str.match(/(\d{1,2})(?:st|nd|rd|th)?\s+([A-Za-z]+)\s+(\d{4})/);
+        if (!m) return null;
+        const day = parseInt(m[1], 10);
+        const monthAbbr = m[2].slice(0, 3).toLowerCase();
+        const monthIdx = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'].indexOf(monthAbbr);
+        if (monthIdx === -1) return null;
+        const year = m[3];
+        return { day, monthIdx, year };
+      };
+      
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      // Collect events from the page's hardcoded event section
+      const upcomingEvents = [];
+      const pastEvents = [];
+      
+      // Find the featured event card and extract its date
+      const featuredCard = document.querySelector('.events-card.featured');
+      if (featuredCard) {
+        const dateEl = featuredCard.querySelector('.ev-list li:first-child');
+        if (dateEl) {
+          const dateText = dateEl.textContent.replace('Date: ', '').trim();
+          const parsed = parseEventDate(dateText);
+          if (parsed) {
             const eventDate = new Date(parsed.year, parsed.monthIdx, parsed.day);
-            return eventDate >= today;
-          });
-          
-          if (futureEvents.length === 0) {
-            dynamicEvents.style.display = 'none';
-            return;
+            if (eventDate >= today) {
+              upcomingEvents.push({ title: featuredCard.querySelector('h3')?.textContent || 'Event', date: dateText, element: featuredCard });
+            } else {
+              pastEvents.push({ title: featuredCard.querySelector('h3')?.textContent || 'Event', date: dateText, element: featuredCard });
+            }
           }
+        }
+      }
+      
+      // Also check for any other event date patterns in the page
+      document.querySelectorAll('.ev-list li').forEach(li => {
+        const dateText = li.textContent.replace('Date: ', '').trim();
+        const parsed = parseEventDate(dateText);
+        if (parsed) {
+          const eventDate = new Date(parsed.year, parsed.monthIdx, parsed.day);
+          const title = li.closest('.events-card')?.querySelector('h3')?.textContent || 'Event';
+          if (eventDate >= today && !upcomingEvents.some(e => e.title === title)) {
+            upcomingEvents.push({ title, date: dateText, element: li.closest('.events-card') });
+          } else if (eventDate < today && !pastEvents.some(e => e.title === title)) {
+            pastEvents.push({ title, date: dateText, element: li.closest('.events-card') });
+          }
+        }
+      });
+      
+      // Render upcoming events grid
+      const upcomingGrid = document.getElementById('eventsUpcomingGrid');
+      const upcomingContainer = document.getElementById('eventsUpcoming');
+      
+      if (upcomingEvents.length > 0 && upcomingGrid) {
+        // Show the upcoming container (it's right below "What's Next")
+        const upcomingSection = document.querySelector('.events-upcoming');
+        if (upcomingSection) upcomingSection.style.display = '';
+        
+        upcomingGrid.innerHTML = '';
+        upcomingEvents.forEach(ev => {
+          const card = ev.element || document.createElement('div');
+          if (!ev.element) card.className = 'events-card';
           
-          dynamicEvents.style.display = '';
-          
-          // Render events grid
-          dynamicEventsGrid.innerHTML = '';
-          
-          futureEvents.forEach(ev => {
-            const card = document.createElement('div');
-            card.className = 'events-card';
-            
-            const imgSrc = ev.image ? ev.image : 'assets/img/logo.webp';
-            const tel = ev.phone ? `<a href="tel:${ev.phone}" class="btn btn-primary">Call To Register →</a>` : '';
-            const mail = ev.email ? `<a href="mailto:${ev.email}" class="btn btn-ghost">Email Us</a>` : '';
-            const registerBtn = ev.registerLink
-              ? `<a href="${ev.registerLink}" target="_blank" rel="noopener" class="btn btn-primary">Register →</a>`
-              : tel;
-            
-            // Parse date for display
-            const parsed = parseEventDate(ev.date);
-            const displayDate = parsed ? `${parsed.day}${parsed.monthIdx === 11 ? 'Dec' : parsed.monthIdx < 1 ? 'Jan' : ''} ${parsed.year}` : ev.date;
-            
-            card.innerHTML = `
-              <img src="${imgSrc}" alt="${escapeHtml(ev.title)} event poster" loading="lazy">
-              <div class="ev-body">
-                <h3 class="ev-title">${escapeHtml(ev.title)}</h3>
-                ${ev.theme ? `<p class="ev-theme">${escapeHtml(ev.theme)}</p>` : ''}
-                <ul class="ev-list">
-                  <li><strong>Date:</strong> ${escapeHtml(displayDate)}</li>
-                  ${ev.time ? `<li><strong>Time:</strong> ${escapeHtml(ev.time)}</li>` : ''}
-                  ${ev.venue ? `<li><strong>Venue:</strong> ${escapeHtml(ev.venue)}</li>` : ''}
-                </ul>
-                <div class="ev-ctas">${registerBtn}${ev.registerLink ? '' : mail}</div>
-              </div>
-            `;
-            
-            dynamicEventsGrid.appendChild(card);
-          });
-          
-          // Apply CSS grid
-          dynamicEventsGrid.style.display = 'grid';
-          dynamicEventsGrid.style.gridTemplateColumns = 'repeat(auto-fit, minmax(280px, 1fr))';
-          dynamicEventsGrid.style.gap = '22px';
-          dynamicEventsGrid.style.alignItems = 'start';
-        })
-        .catch(() => {
-          dynamicEvents.style.display = 'none';
+          // Move the card to the upcoming grid if it's not already there
+          if (ev.element && !upcomingGrid.contains(ev.element)) {
+            upcomingGrid.appendChild(ev.element);
+          }
         });
+      }
+      
+      // Render past events accordion
+      const pastAccordion = document.getElementById('eventsPastAccordion');
+      const pastContent = pastAccordion.querySelector('.accordion-content');
+      
+      if (pastEvents.length > 0) {
+        pastAccordion.style.display = '';
+        pastContent.innerHTML = '';
+        pastEvents.forEach(ev => {
+          const div = document.createElement('div');
+          div.style.padding = '12px 0';
+          div.style.borderBottom = '1px solid var(--line)';
+          div.innerHTML = `<strong>${escapeHtml(ev.title)}</strong> — ${escapeHtml(ev.date)}`;
+          pastContent.appendChild(div);
+        });
+      }
+      
+      // Toggle accordion
+      const accordionButton = document.querySelector('.accordion-button');
+      if (accordionButton) {
+        accordionButton.addEventListener('click', () => {
+          const content = document.querySelector('.accordion-content');
+          if (content.style.maxHeight) {
+            content.style.maxHeight = null;
+            accordionButton.textContent = 'Past Events ▶';
+          } else {
+            content.style.maxHeight = content.scrollHeight + 'px';
+            accordionButton.textContent = 'Past Events ▼';
+          }
+        });
+      }
     });
   </script>
         <div class="events-card featured">
