@@ -301,14 +301,36 @@ document.addEventListener('DOMContentLoaded', () => {
     return div.innerHTML;
   }
 
-  // --- Events (index.html) ---
+// Parses event date strings like "Saturday, 29th August 2026" or "Wednesday, 8th October 2026"
+function parseEventDate(str) {
+  if (!str) return null;
+  const m = str.match(/(\d{1,2})(?:st|nd|rd|th)?\s+([A-Za-z]+)\s+(\d{4})/);
+  if (!m) return null;
+  const day = parseInt(m[1], 10);
+  const monthAbbr = m[2].slice(0, 3).toLowerCase();
+  const monthIdx = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'].indexOf(monthAbbr);
+  if (monthIdx === -1) return null;
+  const year = m[3];
+  return { day, monthIdx, year };
+}
+
+// --- Events (index.html) ---
   const eventsList = document.getElementById('eventsList');
   if (eventsList && eventsList.dataset.staticOnly !== 'true') {
     fetch('/data/events.json')
       .then(res => res.ok ? res.json() : Promise.reject())
       .then(data => {
         const events = Array.isArray(data)
-          ? data.filter(e => e && e.active !== false && e.title && e.date)
+          ? data.filter(e => {
+              if (!e || e.active === false) return false;
+              if (!e.title || !e.date) return false;
+              const parsed = parseEventDate(e.date);
+              if (!parsed) return false; // No parseable date → exclude (show static fallback)
+              const eventDate = new Date(parsed.year, parsed.monthIdx, parsed.day);
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+              return eventDate >= today; // Only show future-dated events
+            })
           : [];
         const section = document.getElementById('events');
         if (events.length === 0) {
