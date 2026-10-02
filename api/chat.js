@@ -91,6 +91,11 @@ FACTS ABOUT OFF PITCH AFRICA:
 - Featured coverage: Africa Cup of Nations Hockey (commentators), Kenya
   Hockey Union League (experts), Kenyatta University Annual KU Opens, Mixed
   Martial Arts & Boxing.
+- Partners: YIDP, Nairobi County Hockey Association, Ikinai Media, Mombasa County
+  Hockey Association, Mombasa Sports Club (MSC).
+- Upcoming Events: OFF THE PITCH ON THE RECORD Mombasa Edition (Thursday, 8th October
+  2026, 1:00 PM – 6:00 PM at Mombasa Sports Club / MSC Mombasa — round table forum
+  championing safe sport and mental wellness across Kenyan hockey).
 - Contact: phone +254 704 10 7373 (also on WhatsApp: https://wa.me/254704107373),
   email offpitchafrica@gmail.com, based in Nairobi, Kenya.
 - Social media and where to listen:

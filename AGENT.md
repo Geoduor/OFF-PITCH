@@ -217,6 +217,10 @@ nearly unreadable — fixed by switching to dark text on that same green).
 - **4 core values**: Authenticity, Excellence, Community, Innovation
 - **Real featured coverage**: AFCON Hockey (commentators), Kenya Hockey
   Union League (experts), Kenyatta University Annual KU Opens, MMA & Boxing
+- **Partners**: YIDP, Nairobi County Hockey Association, Ikinai Media, Mombasa County
+  Hockey Association, Mombasa Sports Club (MSC)
+- **Events**: Off The Pitch, On The Record (Nairobi Edition recap, Aug 29, 2026;
+  Mombasa Edition upcoming, Oct 8, 2026 at MSC Mombasa)
 - **4 real YouTube video IDs** in use: `onYddyoXVA8`, `DPB-AwIypSI`,
   `plkNXmQ96tk`, `ikjlL1JYTzw` (client-provided, used on Home's Watch row
   and the Videos page; thumbnails pulled live from `img.youtube.com`)

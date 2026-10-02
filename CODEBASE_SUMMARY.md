@@ -5,23 +5,22 @@ A 9-page, plain HTML/CSS/JS marketing website for **Off Pitch Africa** — a Ken
 
 ## Key Changes This Session
 
-### events.html — Upcoming/Past Event Filtering
-- **Removed** broken dynamic loading script that was disrupting page layout
-- **Added** upcoming/past event filtering system:
-  - "What's Next" heading now shows upcoming events in a responsive grid immediately below
-  - "Past Events" accordion at bottom (hidden by default, toggleable ▶/▼)
-  - JavaScript automatically categorizes events by date (future vs past)
-- **New Mombasa event** displayed: "OFF THE PITCH ON THE RECORD Mombasa Edition" — Oct 8, 2026
-- **Past event auto-moved**: "Off The Pitch, On The Record" (Aug 29, 2026) goes to accordion
-- Original detailed event section preserved (full program, speakers, etc.)
+### Partner Logos Added
+- Added **Mombasa County Hockey Association** (`assets/img/Mombasa.jpeg`) and **Mombasa Sports Club** (`assets/img/MSC Logo.png`) to the partners div across all 8 site pages (`about.html`, `blog.html`, `contact.html`, `events.html`, `gallery.html`, `index.html`, `merch.html`, `privacy.html`).
+- Updated `.foot-partners-grid` in `assets/css/style.css` (`max-width: 960px`) so all 5 partner tiles display cleanly on desktop and wrap smoothly on mobile.
+- Also placed copies in `assets/img/partners/` for directory consistency.
 
-### Data Updates
-- **data/events.json**: Added "off-the-pitch-mombasa-2026" event entry
-- **assets/js/main.js**: Added `parseEventDate()` function for date filtering (used by index.html events section)
+### Image & Event Updates
+- Replaced deleted `IMG_6275.JPG.jpeg` with `assets/img/events/OFFPITCH Mombasa.jpeg` across `events.html` and `data/events.json`.
+- Updated Mombasa Edition event details in `data/events.json` and `events.html` (Thursday, 8th October 2026, 1:00 PM – 6:00 PM at Mombasa Sports Club).
+- Updated `index.html` events teaser card to spotlight the upcoming Mombasa Edition event on 8 October.
 
-### Deployment
-- Production: https://offpitchafrica.com (aliased)
-- All changes live via `vercel --prod`
+### Bug Fixes & Codebase Health
+- **Fixed HTML tag mismatch**: Resolved broken unclosed tags in `events.html` where sections and wrappers were mismatched.
+- **Removed CSP-violating inline script**: Removed inline script from `events.html` to strictly conform to Vercel CSP rules (`script-src 'self'`).
+- **Fixed 404 Favicons**: Generated missing favicon assets (`favicon-16.png`, `favicon-180.png`, `favicon-192.png`) from high-res logo.
+- **Fixed Clean URLs**: Standardized `contact.html#partner` to `/contact#partner` in `merch.html` and `privacy.html`.
+- **Updated Reference Facts**: Added new partners and Mombasa Edition event to `AGENT.md` and `api/chat.js` assistant system prompt.
 
 ## Codebase Rules Observed
 - ✅ No fabrication — all events from real sources or JSON

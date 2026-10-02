@@ -132,153 +132,43 @@
     </div>
   </section>
 
-  <!-- EVENTS: Upcoming events show by default, past events in accordion -->
-  <div class="events-upcoming" id="eventsUpcoming" style="max-width: 1180px; margin: 0 auto; padding: 0 32px;">
-    <div class="events-grid" id="eventsUpcomingGrid" style="gap: 22px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); align-items: start; justify-content: center;">
-      <!-- Mombasa Edition event card -->
-      <div class="events-card" style="margin-bottom: 24px; background: var(--navy); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; max-width: 320px;">
-        <img src="assets/img/events/IMG_6275.JPG.jpeg" alt="OFF THE PITCH ON THE RECORD Mombasa Edition event poster" loading="lazy" style="width:100%; height:auto; display:block; object-fit: contain; max-width: 320px; max-height: 400px;">
-        <div class="ev-body" style="padding: 20px 22px 24px;">
-          <h3 class="ev-title" style="font-family:'Anton',sans-serif;font-size:1.05rem;letter-spacing:0.01em;color:var(--chalk);margin-bottom:6px;">OFF THE PITCH ON THE RECORD Mombasa Edition</h3>
-          <p class="ev-theme" style="font-size:0.85rem;color:var(--chalk);opacity:0.75;margin-bottom:14px;">Mombasa Edition</p>
-          <ul class="ev-list" style="list-style:none;padding:0;margin:0 0 16px;font-size:0.82rem;color:var(--chalk);opacity:0.85;display:flex;flex-direction:column;gap:5px;">
-            <li><strong>Date:</strong> Wednesday, 8th October 2026</li>
-            <li><strong>Time:</strong> 1pm to 6pm</li>
-            <li><strong>Venue:</strong> MSC, Mombasa</li>
-          </ul>
-          <div class="ev-ctas" style="display:flex;gap:10px;flex-wrap:wrap;">
-            <a href="tel:+254704107373" class="btn btn-primary" style="display:inline-flex;align-items:center;gap:10px;padding:15px 26px;font-weight:700;font-size:0.86rem;letter-spacing:0.03em;border-radius:2px;background:var(--pitch-red);color:#fff;">Call To Register →</a>
-            <a href="mailto:offpitchafrica@gmail.com" class="btn btn-ghost" style="border-color:rgba(244,241,236,0.4);color:var(--chalk);">Email Us</a>
+  <!-- UPCOMING EVENTS -->
+  <section class="events" id="events" style="padding:40px 0 60px;scroll-margin-top:90px;">
+    <div class="wrap">
+      <div class="sec-head" style="margin-bottom:36px;">
+        <div class="eyebrow">UPCOMING EVENTS</div>
+        <h2 style="font-size:clamp(1.8rem,4vw,2.4rem);">What's Next</h2>
+      </div>
+      <div id="eventsList" class="events-grid" data-fallback="true" style="display:flex; justify-content:flex-start; flex-wrap:wrap; gap:22px;">
+        <!-- Mombasa Edition event card -->
+        <div class="events-card" style="margin-bottom:24px; background:var(--navy); border:1px solid var(--line); border-radius:8px; overflow:hidden; max-width:360px;">
+          <img src="assets/img/events/OFFPITCH Mombasa.jpeg" alt="OFF THE PITCH ON THE RECORD Mombasa Edition event poster" width="793" height="1122" loading="lazy" style="width:100%; height:auto; display:block; object-fit:contain; max-height:440px; background:#000;">
+          <div class="ev-body" style="padding:20px 22px 24px;">
+            <h3 class="ev-title" style="font-family:'Anton',sans-serif;font-size:1.15rem;letter-spacing:0.01em;color:var(--chalk);margin-bottom:6px;">OFF THE PITCH ON THE RECORD Mombasa Edition</h3>
+            <p class="ev-theme" style="font-size:0.85rem;color:var(--signal-teal);font-family:'Space Mono',monospace;text-transform:uppercase;margin-bottom:14px;">Mombasa Edition</p>
+            <ul class="ev-list" style="list-style:none;padding:0;margin:0 0 16px;font-size:0.85rem;color:var(--chalk);opacity:0.85;display:flex;flex-direction:column;gap:6px;">
+              <li><strong style="color:#fff;">Date:</strong> Thursday, 8th October 2026</li>
+              <li><strong style="color:#fff;">Time:</strong> 1:00 PM – 6:00 PM</li>
+              <li><strong style="color:#fff;">Venue:</strong> Mombasa Sports Club (MSC), Mombasa</li>
+            </ul>
+            <div class="ev-ctas" style="display:flex;gap:10px;flex-wrap:wrap;">
+              <a href="tel:+254704107373" class="btn btn-primary" style="padding:10px 18px;font-size:0.82rem;">Call To Register →</a>
+              <a href="mailto:offpitchafrica@gmail.com" class="btn btn-ghost" style="padding:10px 18px;font-size:0.82rem;">Email Us</a>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-  
-  <div class="events-past-accordion" id="eventsPastAccordion" style="display:none;">
-    <div class="accordion-button" style="width:100%;text-align:left;padding:16px 0;font-size:0.86rem;color:var(--chalk);cursor:pointer;border:none;background:transparent;">
-      Past Events ▶
-    </div>
-    <div class="accordion-content" style="padding:0 16px 16px;background:var(--navy);margin-top:8px;">
-      <p style="font-size:0.78rem;opacity:0.7;line-height:1.6;">No past events to display — check back for new upcoming events.</p>
-    </div>
-  </div>
+  </section>
 
-  <script>
-    // Event date filtering for events.html
-    document.addEventListener('DOMContentLoaded', () => {
-      const escapeHtml = (str) => {
-        const div = document.createElement('div');
-        div.textContent = str == null ? '' : String(str);
-        return div.innerHTML;
-      };
-      
-      const parseEventDate = (str) => {
-        if (!str) return null;
-        const m = str.match(/(\d{1,2})(?:st|nd|rd|th)?\s+([A-Za-z]+)\s+(\d{4})/);
-        if (!m) return null;
-        const day = parseInt(m[1], 10);
-        const monthAbbr = m[2].slice(0, 3).toLowerCase();
-        const monthIdx = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'].indexOf(monthAbbr);
-        if (monthIdx === -1) return null;
-        const year = m[3];
-        return { day, monthIdx, year };
-      };
-      
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      // Collect events from the page's hardcoded event section
-      const upcomingEvents = [];
-      const pastEvents = [];
-      
-      // Find the featured event card and extract its date
-      const featuredCard = document.querySelector('.events-card.featured');
-      if (featuredCard) {
-        const dateEl = featuredCard.querySelector('.ev-list li:first-child');
-        if (dateEl) {
-          const dateText = dateEl.textContent.replace('Date: ', '').trim();
-          const parsed = parseEventDate(dateText);
-          if (parsed) {
-            const eventDate = new Date(parsed.year, parsed.monthIdx, parsed.day);
-            if (eventDate >= today) {
-              upcomingEvents.push({ title: featuredCard.querySelector('h3')?.textContent || 'Event', date: dateText, element: featuredCard });
-            } else {
-              pastEvents.push({ title: featuredCard.querySelector('h3')?.textContent || 'Event', date: dateText, element: featuredCard });
-            }
-          }
-        }
-      }
-      
-      // Also check for any other event date patterns in the page
-      document.querySelectorAll('.ev-list li').forEach(li => {
-        const dateText = li.textContent.replace('Date: ', '').trim();
-        const parsed = parseEventDate(dateText);
-        if (parsed) {
-          const eventDate = new Date(parsed.year, parsed.monthIdx, parsed.day);
-          const title = li.closest('.events-card')?.querySelector('h3')?.textContent || 'Event';
-          if (eventDate >= today && !upcomingEvents.some(e => e.title === title)) {
-            upcomingEvents.push({ title, date: dateText, element: li.closest('.events-card') });
-          } else if (eventDate < today && !pastEvents.some(e => e.title === title)) {
-            pastEvents.push({ title, date: dateText, element: li.closest('.events-card') });
-          }
-        }
-      });
-      
-      // Render upcoming events grid
-      const upcomingGrid = document.getElementById('eventsUpcomingGrid');
-      const upcomingContainer = document.getElementById('eventsUpcoming');
-      
-      if (upcomingEvents.length > 0 && upcomingGrid) {
-        // Show the upcoming container (it's right below "What's Next")
-        const upcomingSection = document.querySelector('.events-upcoming');
-        if (upcomingSection) upcomingSection.style.display = '';
-        
-        upcomingGrid.innerHTML = '';
-        upcomingEvents.forEach(ev => {
-          const card = ev.element || document.createElement('div');
-          if (!ev.element) card.className = 'events-card';
-          
-          // Move the card to the upcoming grid if it's not already there
-          if (ev.element && !upcomingGrid.contains(ev.element)) {
-            upcomingGrid.appendChild(ev.element);
-          }
-        });
-      }
-      
-      // Render past events accordion
-      const pastAccordion = document.getElementById('eventsPastAccordion');
-      const pastContent = pastAccordion.querySelector('.accordion-content');
-      
-      if (pastEvents.length > 0) {
-        pastAccordion.style.display = '';
-        pastContent.innerHTML = '';
-        pastEvents.forEach(ev => {
-          const div = document.createElement('div');
-          div.style.padding = '12px 0';
-          div.style.borderBottom = '1px solid var(--line)';
-          div.innerHTML = `<strong>${escapeHtml(ev.title)}</strong> — ${escapeHtml(ev.date)}`;
-          pastContent.appendChild(div);
-        });
-      }
-      
-      // Toggle accordion
-      const accordionButton = document.querySelector('.accordion-button');
-      if (accordionButton) {
-        accordionButton.addEventListener('click', () => {
-          const content = document.querySelector('.accordion-content');
-          if (content.style.maxHeight) {
-            content.style.maxHeight = null;
-            accordionButton.textContent = 'Past Events ▶';
-          } else {
-            content.style.maxHeight = content.scrollHeight + 'px';
-            accordionButton.textContent = 'Past Events ▼';
-          }
-        });
-      }
-    });
-  </script>
-        <div class="events-card featured">
+  <!-- PAST EVENT RECAP -->
+  <section class="events-recap" id="pastEvents" style="padding:0 0 90px;">
+    <div class="wrap">
+      <div class="sec-head" style="margin-bottom:36px;">
+        <div class="eyebrow">EVENT RECAP</div>
+        <h2 style="font-size:clamp(1.8rem,4vw,2.4rem);">Previous Editions</h2>
+      </div>
+      <div class="events-card featured">
           <img src="assets/img/events/off-the-pitch-on-the-record.webp" width="1200" height="800" alt="Off The Pitch, On The Record — NCHA Forum: Mapping Kenya Hockey's Future From the Ground Up. Saturday 29th August 2026, Baraza Media Lab, Riverside Drive, Nairobi." loading="lazy">
           <div class="ev-body">
             <span class="ev-recap-tag">EVENT RECAP</span>
@@ -463,7 +353,6 @@
           </div>
         </div>
       </div>
-    </div>
   </section>
 </main>
 
@@ -520,6 +409,12 @@
         </div>
         <div class="partner-tile">
           <img src="assets/img/partners/ikinai-media.webp" width="480" height="433" alt="Ikinai Media" loading="lazy">
+        </div>
+        <div class="partner-tile">
+          <img src="assets/img/Mombasa.jpeg" width="720" height="707" alt="Mombasa County Hockey Association" loading="lazy">
+        </div>
+        <div class="partner-tile">
+          <img src="assets/img/MSC Logo.png" width="144" height="144" alt="Mombasa Sports Club" loading="lazy">
         </div>
       </div>
     </div>

@@ -326,6 +326,7 @@ nav{
 /* Events (Off Pitch's own events + KHU tournament calendar entries) */
 .events-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:22px;align-items:start;}
 .events-card{background:var(--navy);border:1px solid var(--line);border-radius:12px;overflow:hidden;}
+.events-card img{width:100%;height:auto;display:block;object-fit:contain;max-height:440px;background:#000;}
 .events-card.featured{grid-column:1/-1;max-width:820px;margin:0 auto;}
 .events-card.featured img{width:100%;height:auto;display:block;}
 .events-card.compact{padding:0;}
@@ -773,7 +774,7 @@ button.article-card{
   color:#5c606b;text-transform:uppercase;margin-bottom:24px;
 }
 .foot-partners-grid{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;max-width:760px;margin:0 auto;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;max-width:960px;margin:0 auto;
 }
 .partner-tile{
   background:#fff;border:1px solid rgba(11,11,13,0.08);border-radius:8px;
