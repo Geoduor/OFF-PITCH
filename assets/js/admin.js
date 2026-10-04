@@ -15,6 +15,7 @@ const SCHEMAS = {
       { key: 'registerLink', label: 'Registration Link (optional — overrides Call/Email buttons)', type: 'url' },
       { key: 'phone', label: 'Contact Phone', type: 'text' },
       { key: 'email', label: 'Contact Email', type: 'text' },
+      { key: 'spotlight', label: 'Feature in "What\'s Next" (flagship events with a poster only)', type: 'checkbox', default: false },
       { key: 'active', label: 'Show on site', type: 'checkbox', default: true }
     ]
   },
