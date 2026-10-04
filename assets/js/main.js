@@ -323,6 +323,10 @@ function parseEventDate(str) {
         const events = Array.isArray(data)
           ? data.filter(e => {
               if (!e || e.active === false) return false;
+              // "What's Next" is for flagship events only. Season-calendar
+              // placeholders (KHU tournaments etc.) have no poster/time and
+              // must not render here — they're opted in via "spotlight".
+              if (e.spotlight !== true) return false;
               if (!e.title || !e.date) return false;
               const parsed = parseEventDate(e.date);
               if (!parsed) return false; // No parseable date → exclude (show static fallback)

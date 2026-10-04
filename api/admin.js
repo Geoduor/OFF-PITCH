@@ -241,6 +241,7 @@ function validateContent(type, content) {
       isOptionalString(item.registerLink, 500) &&
       isOptionalString(item.phone, 40) &&
       isOptionalString(item.email, 120) &&
+      (item.spotlight === undefined || typeof item.spotlight === 'boolean') &&
       typeof item.active === 'boolean',
     gallery: item =>
       isNonEmptyString(item.id, 100) &&
