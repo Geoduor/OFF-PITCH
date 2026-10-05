@@ -942,3 +942,27 @@ footer{background:var(--ink);padding:90px 0 0;border-top:1px solid var(--line);}
   .cookie-banner-actions{flex-basis:100%;justify-content:flex-end;}
 }
 
+
+/* ---------- Contact page mobile fixes ---------- */
+.contact-page-grid>*{min-width:0;}
+.contact-item>div,.contact-item a,.contact-item span.val{min-width:0;overflow-wrap:anywhere;}
+.field input,.field textarea,.field select{width:100%;min-width:0;max-width:100%;}
+.form-row .field{min-width:0;}
+@media (max-width:900px){.contact-page{padding:70px 0;}}
+@media (max-width:640px){
+  .form-row{flex-direction:column;gap:0;}
+  .contact-item{flex-direction:column;gap:6px;}
+  .contact-item .label{width:auto;}
+  .contact-item a,.contact-item span.val{font-size:0.98rem;}
+  .support-us-body{padding:22px 20px;}
+  .contact-page .btn{padding:14px 16px;}
+}
+
+/* Cookie banner buttons: <button> elements need an explicit background/colour
+   or browsers paint them white, hiding the ghost-button text. */
+.cookie-banner .btn{font-family:'Inter',sans-serif;cursor:pointer;line-height:1.2;}
+.cookie-banner .btn-ghost{background:transparent;color:var(--chalk);border:1px solid rgba(244,241,236,0.4);}
+.cookie-banner .btn-ghost:hover{border-color:var(--signal-teal);color:var(--signal-teal);}
+.cookie-banner .btn-primary{background:var(--pitch-red);color:#fff;border:1px solid var(--pitch-red);}
+.cookie-banner input[type=checkbox]{accent-color:var(--pitch-red);width:16px;height:16px;}
+.cookie-banner{max-height:80vh;overflow-y:auto;}
