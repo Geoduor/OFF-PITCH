@@ -968,4 +968,4 @@ footer{background:var(--ink);padding:90px 0 0;border-top:1px solid var(--line);}
 .cookie-banner{max-height:80vh;overflow-y:auto;}
 
 /* Event promo video */
-.ev-video{display:block;width:100%;height:auto;aspect-ratio:16/9;background:#000;border-top:1px solid var(--line);}
+.ev-video{display:block;width:calc(100% - 44px);margin:22px 22px 0;height:auto;aspect-ratio:16/9;background:#000;border:1px solid var(--line);border-radius:6px;}

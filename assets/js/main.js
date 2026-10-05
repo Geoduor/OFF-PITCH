@@ -352,7 +352,7 @@ function parseEventDate(str) {
             ? `<a href="${escapeHtml(ev.registerLink)}" target="_blank" rel="noopener" class="btn btn-primary">Register →</a>`
             : tel;
           const videoBlock = ev.video
-            ? `<video class="ev-video" controls preload="metadata" playsinline${ev.videoPoster ? ` poster="${escapeHtml(ev.videoPoster)}"` : ''}><source src="${escapeHtml(ev.video)}" type="video/mp4">Your browser doesn't support video playback.</video>`
+            ? `<video class="ev-video" controls autoplay muted loop preload="auto" playsinline${ev.videoPoster ? ` poster="${escapeHtml(ev.videoPoster)}"` : ''}><source src="${escapeHtml(ev.video)}" type="video/mp4">Your browser doesn't support video playback.</video>`
             : '';
           card.innerHTML = `
             <img src="${imgSrc}" alt="${escapeHtml(ev.title)} event poster" loading="lazy">
@@ -368,6 +368,10 @@ function parseEventDate(str) {
               <div class="ev-ctas">${registerBtn}${ev.registerLink ? '' : mail}</div>
             </div>`;
           eventsList.appendChild(card);
+          // Browsers only autoplay muted video; set the property explicitly since
+          // markup injected via innerHTML doesn't always register the attribute.
+          const vid = card.querySelector('video.ev-video');
+          if (vid) { vid.muted = true; const p = vid.play(); if (p && p.catch) p.catch(() => {}); }
         });
       })
       .catch(() => { /* keep static fallback */ });
