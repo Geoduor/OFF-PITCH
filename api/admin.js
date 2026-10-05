@@ -238,6 +238,8 @@ function validateContent(type, content) {
       isOptionalString(item.time, 80) &&
       isOptionalString(item.venue, 200) &&
       isOptionalString(item.image, 300) &&
+      isOptionalString(item.video, 300) &&
+      isOptionalString(item.videoPoster, 300) &&
       isOptionalString(item.registerLink, 500) &&
       isOptionalString(item.phone, 40) &&
       isOptionalString(item.email, 120) &&

@@ -12,6 +12,8 @@ const SCHEMAS = {
       { key: 'time', label: 'Time (e.g. 2:00 PM – 5:00 PM)', type: 'text' },
       { key: 'venue', label: 'Venue', type: 'text' },
       { key: 'image', label: 'Poster Image', type: 'image' },
+      { key: 'video', label: 'Promo Video path (optional, e.g. assets/video/clip.mp4)', type: 'text' },
+      { key: 'videoPoster', label: 'Video preview image path (optional)', type: 'text' },
       { key: 'registerLink', label: 'Registration Link (optional — overrides Call/Email buttons)', type: 'url' },
       { key: 'phone', label: 'Contact Phone', type: 'text' },
       { key: 'email', label: 'Contact Email', type: 'text' },

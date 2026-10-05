@@ -351,8 +351,12 @@ function parseEventDate(str) {
           const registerBtn = ev.registerLink
             ? `<a href="${escapeHtml(ev.registerLink)}" target="_blank" rel="noopener" class="btn btn-primary">Register →</a>`
             : tel;
+          const videoBlock = ev.video
+            ? `<video class="ev-video" controls preload="metadata" playsinline${ev.videoPoster ? ` poster="${escapeHtml(ev.videoPoster)}"` : ''}><source src="${escapeHtml(ev.video)}" type="video/mp4">Your browser doesn't support video playback.</video>`
+            : '';
           card.innerHTML = `
             <img src="${imgSrc}" alt="${escapeHtml(ev.title)} event poster" loading="lazy">
+            ${videoBlock}
             <div class="ev-body">
               <h3 class="ev-title">${escapeHtml(ev.title)}</h3>
               ${ev.theme ? `<p class="ev-theme">${escapeHtml(ev.theme)}</p>` : ''}
