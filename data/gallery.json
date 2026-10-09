@@ -1,5 +1,83 @@
 [
   {
+    "id": "mombasa-2026-group-photo-lawn",
+    "src": "assets/img/events/mombasa/group-photo-lawn.webp",
+    "alt": "Group photo of Off Pitch Africa, Mombasa County Hockey Association and guests on the lawn at Mombasa Sports Club",
+    "category": "mombasa"
+  },
+  {
+    "id": "mombasa-2026-panel-table-aerial",
+    "src": "assets/img/events/mombasa/panel-table-aerial.webp",
+    "alt": "Panel table seen from above, with Off Pitch Africa and Mombasa Sports Club banners behind it",
+    "category": "mombasa"
+  },
+  {
+    "id": "mombasa-2026-panel-speaker-with-microphone",
+    "src": "assets/img/events/mombasa/panel-speaker-with-microphone.webp",
+    "alt": "A panelist speaking into a microphone at the Off The Pitch, On The Record Mombasa Edition",
+    "category": "mombasa"
+  },
+  {
+    "id": "mombasa-2026-panel-discussion-orange-table",
+    "src": "assets/img/events/mombasa/panel-discussion-orange-table.webp",
+    "alt": "Panelists and moderator seated at the discussion table during the Mombasa Edition",
+    "category": "mombasa"
+  },
+  {
+    "id": "mombasa-2026-group-photo-banners-field",
+    "src": "assets/img/events/mombasa/group-photo-banners-field.webp",
+    "alt": "Group photo in front of the Off The Pitch, On The Record and Mombasa Sports Club banners",
+    "category": "mombasa"
+  },
+  {
+    "id": "mombasa-2026-guests-with-banners-court",
+    "src": "assets/img/events/mombasa/guests-with-banners-court.webp",
+    "alt": "Guests and the Off Pitch Africa host standing in front of event banners",
+    "category": "mombasa"
+  },
+  {
+    "id": "mombasa-2026-panelists-seated-banners",
+    "src": "assets/img/events/mombasa/panelists-seated-banners.webp",
+    "alt": "Panelists seated at the table in front of the event banners",
+    "category": "mombasa"
+  },
+  {
+    "id": "mombasa-2026-venue-setup-aerial",
+    "src": "assets/img/events/mombasa/venue-setup-aerial.webp",
+    "alt": "The Mombasa Edition venue set up with banners, a lectern and cameras before the forum",
+    "category": "mombasa"
+  },
+  {
+    "id": "mombasa-2026-crew-with-camera-and-monitor",
+    "src": "assets/img/events/mombasa/crew-with-camera-and-monitor.webp",
+    "alt": "The Off Pitch Africa broadcast crew at their production table",
+    "category": "mombasa"
+  },
+  {
+    "id": "mombasa-2026-cameraman-msc-entrance",
+    "src": "assets/img/events/mombasa/cameraman-msc-entrance.webp",
+    "alt": "Off Pitch Africa camera operator filming at the Mombasa Sports Club entrance",
+    "category": "mombasa"
+  },
+  {
+    "id": "mombasa-2026-crew-member-at-tripod",
+    "src": "assets/img/events/mombasa/crew-member-at-tripod.webp",
+    "alt": "Off Pitch Africa crew member operating a camera on a tripod",
+    "category": "mombasa"
+  },
+  {
+    "id": "mombasa-2026-msc-clubhouse-facade",
+    "src": "assets/img/events/mombasa/msc-clubhouse-facade.webp",
+    "alt": "The Mombasa Sports Club clubhouse, founded 1896",
+    "category": "mombasa"
+  },
+  {
+    "id": "mombasa-2026-msc-signboard",
+    "src": "assets/img/events/mombasa/msc-signboard.webp",
+    "alt": "The Mombasa Sports Club signboard",
+    "category": "mombasa"
+  },
+  {
     "id": "forum-2026-program",
     "src": "assets/img/events/aug-29-client/event-program.jpeg",
     "alt": "Event program for Off The Pitch, On The Record on 29 August 2026",
@@ -112,10 +190,40 @@
     "category": "event",
     "caption": "James Juma"
   },
-  { "id": "g1", "src": "assets/img/host_studio.webp", "alt": "Off Pitch Africa host in the broadcast studio", "category": "community" },
-  { "id": "g2", "src": "assets/img/banner_hold.webp", "alt": "Off Pitch Africa banner at a hockey event", "category": "community" },
-  { "id": "g3", "src": "assets/img/trophy_handshake.webp", "alt": "Trophy handover at a hockey tournament", "category": "hockey" },
-  { "id": "g4", "src": "assets/img/team_partners_group.webp", "alt": "Off Pitch Africa team with brand partners", "category": "community" },
-  { "id": "g5", "src": "assets/img/performance_hockey_giftbag.webp", "alt": "Off Pitch Africa with Performance Hockey partners", "category": "celebration" },
-  { "id": "g6", "src": "assets/img/merch_pins.webp", "alt": "Off Pitch Africa branded merchandise pins", "category": "community" }
+  {
+    "id": "g1",
+    "src": "assets/img/host_studio.webp",
+    "alt": "Off Pitch Africa host in the broadcast studio",
+    "category": "community"
+  },
+  {
+    "id": "g2",
+    "src": "assets/img/banner_hold.webp",
+    "alt": "Off Pitch Africa banner at a hockey event",
+    "category": "community"
+  },
+  {
+    "id": "g3",
+    "src": "assets/img/trophy_handshake.webp",
+    "alt": "Trophy handover at a hockey tournament",
+    "category": "hockey"
+  },
+  {
+    "id": "g4",
+    "src": "assets/img/team_partners_group.webp",
+    "alt": "Off Pitch Africa team with brand partners",
+    "category": "community"
+  },
+  {
+    "id": "g5",
+    "src": "assets/img/performance_hockey_giftbag.webp",
+    "alt": "Off Pitch Africa with Performance Hockey partners",
+    "category": "celebration"
+  },
+  {
+    "id": "g6",
+    "src": "assets/img/merch_pins.webp",
+    "alt": "Off Pitch Africa branded merchandise pins",
+    "category": "community"
+  }
 ]
