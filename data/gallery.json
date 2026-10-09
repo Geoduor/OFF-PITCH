@@ -3,79 +3,105 @@
     "id": "mombasa-2026-group-photo-lawn",
     "src": "assets/img/events/mombasa/group-photo-lawn.webp",
     "alt": "Group photo of Off Pitch Africa, Mombasa County Hockey Association and guests on the lawn at Mombasa Sports Club",
-    "category": "mombasa"
+    "category": "mombasa",
+    "width": 1600,
+    "height": 1191
   },
   {
     "id": "mombasa-2026-panel-table-aerial",
     "src": "assets/img/events/mombasa/panel-table-aerial.webp",
     "alt": "Panel table seen from above, with Off Pitch Africa and Mombasa Sports Club banners behind it",
-    "category": "mombasa"
+    "category": "mombasa",
+    "width": 1600,
+    "height": 1112
   },
   {
     "id": "mombasa-2026-panel-speaker-with-microphone",
     "src": "assets/img/events/mombasa/panel-speaker-with-microphone.webp",
     "alt": "A panelist speaking into a microphone at the Off The Pitch, On The Record Mombasa Edition",
-    "category": "mombasa"
+    "category": "mombasa",
+    "width": 1600,
+    "height": 1066
   },
   {
     "id": "mombasa-2026-panel-discussion-orange-table",
     "src": "assets/img/events/mombasa/panel-discussion-orange-table.webp",
     "alt": "Panelists and moderator seated at the discussion table during the Mombasa Edition",
-    "category": "mombasa"
+    "category": "mombasa",
+    "width": 1600,
+    "height": 1089
   },
   {
     "id": "mombasa-2026-group-photo-banners-field",
     "src": "assets/img/events/mombasa/group-photo-banners-field.webp",
     "alt": "Group photo in front of the Off The Pitch, On The Record and Mombasa Sports Club banners",
-    "category": "mombasa"
+    "category": "mombasa",
+    "width": 1600,
+    "height": 1066
   },
   {
     "id": "mombasa-2026-guests-with-banners-court",
     "src": "assets/img/events/mombasa/guests-with-banners-court.webp",
     "alt": "Guests and the Off Pitch Africa host standing in front of event banners",
-    "category": "mombasa"
+    "category": "mombasa",
+    "width": 1600,
+    "height": 1560
   },
   {
     "id": "mombasa-2026-panelists-seated-banners",
     "src": "assets/img/events/mombasa/panelists-seated-banners.webp",
     "alt": "Panelists seated at the table in front of the event banners",
-    "category": "mombasa"
+    "category": "mombasa",
+    "width": 1600,
+    "height": 1161
   },
   {
     "id": "mombasa-2026-venue-setup-aerial",
     "src": "assets/img/events/mombasa/venue-setup-aerial.webp",
     "alt": "The Mombasa Edition venue set up with banners, a lectern and cameras before the forum",
-    "category": "mombasa"
+    "category": "mombasa",
+    "width": 1600,
+    "height": 1066
   },
   {
     "id": "mombasa-2026-crew-with-camera-and-monitor",
     "src": "assets/img/events/mombasa/crew-with-camera-and-monitor.webp",
     "alt": "The Off Pitch Africa broadcast crew at their production table",
-    "category": "mombasa"
+    "category": "mombasa",
+    "width": 1600,
+    "height": 1168
   },
   {
     "id": "mombasa-2026-cameraman-msc-entrance",
     "src": "assets/img/events/mombasa/cameraman-msc-entrance.webp",
     "alt": "Off Pitch Africa camera operator filming at the Mombasa Sports Club entrance",
-    "category": "mombasa"
+    "category": "mombasa",
+    "width": 1600,
+    "height": 1066
   },
   {
     "id": "mombasa-2026-crew-member-at-tripod",
     "src": "assets/img/events/mombasa/crew-member-at-tripod.webp",
     "alt": "Off Pitch Africa crew member operating a camera on a tripod",
-    "category": "mombasa"
+    "category": "mombasa",
+    "width": 1600,
+    "height": 1099
   },
   {
     "id": "mombasa-2026-msc-clubhouse-facade",
     "src": "assets/img/events/mombasa/msc-clubhouse-facade.webp",
     "alt": "The Mombasa Sports Club clubhouse, founded 1896",
-    "category": "mombasa"
+    "category": "mombasa",
+    "width": 1600,
+    "height": 1066
   },
   {
     "id": "mombasa-2026-msc-signboard",
     "src": "assets/img/events/mombasa/msc-signboard.webp",
     "alt": "The Mombasa Sports Club signboard",
-    "category": "mombasa"
+    "category": "mombasa",
+    "width": 1600,
+    "height": 1066
   },
   {
     "id": "forum-2026-program",
@@ -83,147 +109,191 @@
     "alt": "Event program for Off The Pitch, On The Record on 29 August 2026",
     "category": "event",
     "caption": "Event Program",
-    "link": "https://www.youtube.com/live/sGp2oC8h4o8?si=UEeuPrzZ46nUWYR6"
+    "link": "https://www.youtube.com/live/sGp2oC8h4o8?si=UEeuPrzZ46nUWYR6",
+    "width": 904,
+    "height": 1278
   },
   {
     "id": "forum-2026-panel-state-of-hockey",
     "src": "assets/img/events/aug-29-client/panel-overview-state-of-hockey.jpeg",
     "alt": "Panel overview card for The State of Hockey in Nairobi",
     "category": "event",
-    "caption": "State Of Hockey"
+    "caption": "State Of Hockey",
+    "width": 1200,
+    "height": 1200
   },
   {
     "id": "forum-2026-panel-athletes",
     "src": "assets/img/events/aug-29-client/panel-overview-athletes-officials-coaches.jpeg",
     "alt": "Panel overview card for building a safer healthier hockey community",
     "category": "event",
-    "caption": "Athletes & Coaches"
+    "caption": "Athletes & Coaches",
+    "width": 1200,
+    "height": 1200
   },
   {
     "id": "forum-2026-panel-growing-game",
     "src": "assets/img/events/aug-29-client/panel-overview-growing-game.jpeg",
     "alt": "Panel overview card for growing the game",
     "category": "event",
-    "caption": "Growing The Game"
+    "caption": "Growing The Game",
+    "width": 1200,
+    "height": 1200
   },
   {
     "id": "forum-2026-bonface",
     "src": "assets/img/events/aug-29-client/speaker-bonface-otieno.jpeg",
     "alt": "Bonface Otieno speaker card for Off The Pitch, On The Record",
     "category": "event",
-    "caption": "Bonface Otieno"
+    "caption": "Bonface Otieno",
+    "width": 1200,
+    "height": 1200
   },
   {
     "id": "forum-2026-meshack",
     "src": "assets/img/events/aug-29-client/speaker-meshack-senge.jpeg",
     "alt": "Meshack Senge speaker card for Off The Pitch, On The Record",
     "category": "event",
-    "caption": "Meshack Senge"
+    "caption": "Meshack Senge",
+    "width": 1200,
+    "height": 1200
   },
   {
     "id": "forum-2026-carren",
     "src": "assets/img/events/aug-29-client/speaker-carren-koloni.jpeg",
     "alt": "Carren Koloni speaker card for Off The Pitch, On The Record",
     "category": "event",
-    "caption": "Carren Koloni"
+    "caption": "Carren Koloni",
+    "width": 1200,
+    "height": 1200
   },
   {
     "id": "forum-2026-collince",
     "src": "assets/img/events/aug-29-client/speaker-collince-dundo.jpeg",
     "alt": "Collince Dundo speaker card for Off The Pitch, On The Record",
     "category": "event",
-    "caption": "Collince Dundo"
+    "caption": "Collince Dundo",
+    "width": 1200,
+    "height": 1200
   },
   {
     "id": "forum-2026-brigid",
     "src": "assets/img/events/aug-29-client/speaker-brigid-siantei.jpeg",
     "alt": "Brigid Siantei speaker card for Off The Pitch, On The Record",
     "category": "event",
-    "caption": "Brigid Siantei"
+    "caption": "Brigid Siantei",
+    "width": 1200,
+    "height": 1200
   },
   {
     "id": "forum-2026-duncan",
     "src": "assets/img/events/aug-29-client/speaker-duncan-murunga.jpeg",
     "alt": "Duncan Murunga speaker card for Off The Pitch, On The Record",
     "category": "event",
-    "caption": "Duncan Murunga"
+    "caption": "Duncan Murunga",
+    "width": 1200,
+    "height": 1200
   },
   {
     "id": "forum-2026-maureen",
     "src": "assets/img/events/aug-29-client/speaker-maureen-okumu.jpeg",
     "alt": "Maureen Okumu speaker card for Off The Pitch, On The Record",
     "category": "event",
-    "caption": "Maureen Okumu"
+    "caption": "Maureen Okumu",
+    "width": 1200,
+    "height": 1200
   },
   {
     "id": "forum-2026-mark",
     "src": "assets/img/events/aug-29-client/speaker-mark-simiyu.jpeg",
     "alt": "Mark Simiyu speaker card for Off The Pitch, On The Record",
     "category": "event",
-    "caption": "Mark Simiyu"
+    "caption": "Mark Simiyu",
+    "width": 1200,
+    "height": 1200
   },
   {
     "id": "forum-2026-peter-njoroge",
     "src": "assets/img/events/aug-29-client/speaker-peter-njoroge.jpeg",
     "alt": "Peter Njoroge speaker card for Off The Pitch, On The Record",
     "category": "event",
-    "caption": "Peter Njoroge"
+    "caption": "Peter Njoroge",
+    "width": 1200,
+    "height": 1200
   },
   {
     "id": "forum-2026-peter-pinchez",
     "src": "assets/img/events/aug-29-client/speaker-peter-pinchez.jpeg",
     "alt": "Peter Pinchez speaker card for Off The Pitch, On The Record",
     "category": "event",
-    "caption": "Peter Pinchez"
+    "caption": "Peter Pinchez",
+    "width": 1200,
+    "height": 1200
   },
   {
     "id": "forum-2026-jedida",
     "src": "assets/img/events/aug-29-client/speaker-jedida-zawadi.jpeg",
     "alt": "Jedida Zawadi speaker card for Off The Pitch, On The Record",
     "category": "event",
-    "caption": "Jedida Zawadi"
+    "caption": "Jedida Zawadi",
+    "width": 1200,
+    "height": 1200
   },
   {
     "id": "forum-2026-james",
     "src": "assets/img/events/aug-29-client/speaker-james-juma.jpeg",
     "alt": "James Juma speaker card for Off The Pitch, On The Record",
     "category": "event",
-    "caption": "James Juma"
+    "caption": "James Juma",
+    "width": 1200,
+    "height": 1200
   },
   {
     "id": "g1",
     "src": "assets/img/host_studio.webp",
     "alt": "Off Pitch Africa host in the broadcast studio",
-    "category": "community"
+    "category": "community",
+    "width": 960,
+    "height": 1280
   },
   {
     "id": "g2",
     "src": "assets/img/banner_hold.webp",
     "alt": "Off Pitch Africa banner at a hockey event",
-    "category": "community"
+    "category": "community",
+    "width": 1280,
+    "height": 853
   },
   {
     "id": "g3",
     "src": "assets/img/trophy_handshake.webp",
     "alt": "Trophy handover at a hockey tournament",
-    "category": "hockey"
+    "category": "hockey",
+    "width": 1280,
+    "height": 962
   },
   {
     "id": "g4",
     "src": "assets/img/team_partners_group.webp",
     "alt": "Off Pitch Africa team with brand partners",
-    "category": "community"
+    "category": "community",
+    "width": 1600,
+    "height": 1066
   },
   {
     "id": "g5",
     "src": "assets/img/performance_hockey_giftbag.webp",
     "alt": "Off Pitch Africa with Performance Hockey partners",
-    "category": "celebration"
+    "category": "celebration",
+    "width": 1280,
+    "height": 1030
   },
   {
     "id": "g6",
     "src": "assets/img/merch_pins.webp",
     "alt": "Off Pitch Africa branded merchandise pins",
-    "category": "community"
+    "category": "community",
+    "width": 1200,
+    "height": 1600
   }
 ]

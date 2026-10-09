@@ -663,7 +663,7 @@ function parseEventDate(str) {
         hexGrid.innerHTML = '';
         photos.forEach((p, i) => {
           const cell = document.createElement(p.link ? 'a' : 'div');
-          cell.className = 'gallery-item' + ((p.category || 'community') === 'event' ? ' event-item' : '');
+          cell.className = 'gallery-item';
           cell.dataset.category = p.category || 'community';
           if (p.link) {
             cell.href = p.link;
@@ -674,6 +674,9 @@ function parseEventDate(str) {
           const img = document.createElement('img');
           img.src = p.src;
           img.alt = p.alt || 'Off Pitch Africa';
+          img.loading = 'lazy';
+          img.decoding = 'async';
+          if (p.width && p.height) { img.width = p.width; img.height = p.height; }
           cell.appendChild(img);
           if (p.caption) {
             const caption = document.createElement('span');
@@ -694,6 +697,88 @@ function parseEventDate(str) {
         });
       })
       .catch(() => { /* keep static fallback */ });
+  }
+
+  // --- Gallery lightbox + photo count (gallery.html) ---
+  if (hexGrid) {
+    const lb = document.createElement('div');
+    lb.className = 'opa-lb';
+    lb.hidden = true;
+    lb.setAttribute('role', 'dialog');
+    lb.setAttribute('aria-modal', 'true');
+    lb.setAttribute('aria-label', 'Photo viewer');
+    lb.innerHTML = '<span class="lb-pos"></span><button type="button" class="lb-close" aria-label="Close">&times;</button><button type="button" class="lb-prev" aria-label="Previous photo">&#8249;</button><figure><img alt=""><figcaption></figcaption></figure><button type="button" class="lb-next" aria-label="Next photo">&#8250;</button>';
+    document.body.appendChild(lb);
+    const lbImg = lb.querySelector('img');
+    const lbCap = lb.querySelector('figcaption');
+    const lbPos = lb.querySelector('.lb-pos');
+    let current = [];
+    let idx = 0;
+    let lastFocus = null;
+
+    const visibleCells = () => [...hexGrid.querySelectorAll('.gallery-item')]
+      .filter(c => c.tagName !== 'A' && c.style.display !== 'none');
+    function show(i) {
+      idx = (i + current.length) % current.length;
+      const img = current[idx].querySelector('img');
+      lbImg.src = img.currentSrc || img.src;
+      lbImg.alt = img.alt;
+      lbCap.textContent = img.alt;
+      lbPos.textContent = (idx + 1) + ' / ' + current.length;
+    }
+    function open(cell) {
+      current = visibleCells();
+      const i = current.indexOf(cell);
+      if (i < 0) return;
+      lastFocus = document.activeElement;
+      lb.hidden = false;
+      document.body.style.overflow = 'hidden';
+      show(i);
+      lb.querySelector('.lb-close').focus();
+    }
+    function close() {
+      lb.hidden = true;
+      document.body.style.overflow = '';
+      lbImg.removeAttribute('src');
+      if (lastFocus && lastFocus.focus) lastFocus.focus();
+    }
+    hexGrid.addEventListener('click', e => {
+      const cell = e.target.closest('.gallery-item');
+      if (!cell || cell.tagName === 'A') return;
+      open(cell);
+    });
+    hexGrid.addEventListener('keydown', e => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      const cell = e.target.closest('.gallery-item');
+      if (!cell || cell.tagName === 'A') return;
+      e.preventDefault();
+      open(cell);
+    });
+    lb.querySelector('.lb-close').addEventListener('click', close);
+    lb.querySelector('.lb-prev').addEventListener('click', () => show(idx - 1));
+    lb.querySelector('.lb-next').addEventListener('click', () => show(idx + 1));
+    lb.addEventListener('click', e => { if (e.target === lb) close(); });
+    document.addEventListener('keydown', e => {
+      if (lb.hidden) return;
+      if (e.key === 'Escape') close();
+      else if (e.key === 'ArrowLeft') show(idx - 1);
+      else if (e.key === 'ArrowRight') show(idx + 1);
+    });
+    let touchX = null;
+    lb.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; }, { passive: true });
+    lb.addEventListener('touchend', e => {
+      if (touchX === null) return;
+      const dx = e.changedTouches[0].clientX - touchX;
+      if (Math.abs(dx) > 50) show(idx + (dx < 0 ? 1 : -1));
+      touchX = null;
+    });
+
+    // Make photo cells keyboard-focusable once they exist (also after the JSON render).
+    const makeFocusable = () => hexGrid.querySelectorAll('.gallery-item').forEach(c => {
+      if (c.tagName !== 'A') { c.tabIndex = 0; c.setAttribute('role', 'button'); }
+    });
+    makeFocusable();
+    new MutationObserver(makeFocusable).observe(hexGrid, { childList: true });
   }
 
   // --- Videos (videos.html) ---
