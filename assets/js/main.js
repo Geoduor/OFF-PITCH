@@ -686,15 +686,6 @@ function parseEventDate(str) {
           }
           hexGrid.appendChild(cell);
         });
-        // Apply whichever filter is currently active to the freshly rendered cells.
-        const filterPills = document.querySelectorAll('.filter-pill');
-        filterPills.forEach(pill => {
-          if (!pill.classList.contains('active')) return;
-          document.querySelectorAll('.gallery-item').forEach(cell => {
-            const show = pill.dataset.filter === 'all' || cell.dataset.category === pill.dataset.filter;
-            cell.style.display = show ? '' : 'none';
-          });
-        });
       })
       .catch(() => { /* keep static fallback */ });
   }
@@ -779,6 +770,78 @@ function parseEventDate(str) {
     });
     makeFocusable();
     new MutationObserver(makeFocusable).observe(hexGrid, { childList: true });
+  }
+
+  // --- Gallery albums (gallery.html): one album per event, built from the photo cells ---
+  if (hexGrid) {
+    const ALBUMS = [
+      { key: 'mombasa', cats: ['mombasa'], title: 'Mombasa Edition', sub: 'Off The Pitch, On The Record · 8 October 2026 · Mombasa Sports Club' },
+      { key: 'nairobi', cats: ['event'], cover: 'assets/img/events/off-the-pitch-on-the-record.webp', title: 'Nairobi Forum', sub: 'Off The Pitch, On The Record · 29 August 2026 · Baraza Media Lab, Nairobi' },
+      { key: 'moments', cats: ['hockey', 'community', 'celebration'], title: 'Off Pitch Moments', sub: 'Hockey, community and celebrations' }
+    ];
+    const albumGrid = document.getElementById('albumGrid');
+    const albumHead = document.getElementById('albumHead');
+    const cellsOf = album => [...hexGrid.querySelectorAll('.gallery-item')]
+      .filter(c => album.cats.includes(c.dataset.category));
+
+    function showAlbum(key) {
+      const album = ALBUMS.find(a => a.key === key);
+      if (!album) { showAlbums(); return; }
+      hexGrid.querySelectorAll('.gallery-item').forEach(c => {
+        c.style.display = album.cats.includes(c.dataset.category) ? '' : 'none';
+      });
+      document.getElementById('albumTitle').textContent = album.title;
+      document.getElementById('albumSub').textContent = album.sub;
+      albumGrid.hidden = true;
+      albumHead.hidden = false;
+      hexGrid.hidden = false;
+    }
+    function showAlbums() {
+      albumGrid.hidden = false;
+      albumHead.hidden = true;
+      hexGrid.hidden = true;
+    }
+    function buildAlbums() {
+      albumGrid.innerHTML = '';
+      ALBUMS.forEach(album => {
+        const cells = cellsOf(album);
+        if (!cells.length) return;
+        const cover = cells[0].querySelector('img');
+        const card = document.createElement('a');
+        card.className = 'album-card';
+        card.href = '#' + album.key;
+        const n = cells.filter(c => c.tagName !== 'A' || c.querySelector('img')).length;
+        card.innerHTML = '<img alt="" loading="lazy"><span class="album-card-body"><span class="album-card-title"></span><span class="album-card-sub"></span><span class="album-card-count"></span></span>';
+        card.querySelector('img').src = album.cover || cover.currentSrc || cover.src;
+        card.querySelector('.album-card-title').textContent = album.title;
+        card.querySelector('.album-card-sub').textContent = album.sub;
+        card.querySelector('.album-card-count').textContent = n + ' photos';
+        albumGrid.appendChild(card);
+      });
+    }
+    function route() {
+      const key = location.hash.replace('#', '');
+      if (key) showAlbum(key); else showAlbums();
+    }
+    document.getElementById('albumBack').addEventListener('click', () => {
+      history.pushState(null, '', location.pathname);
+      showAlbums();
+      albumGrid.scrollIntoView({ block: 'start' });
+    });
+    albumGrid.addEventListener('click', e => {
+      const card = e.target.closest('.album-card');
+      if (!card) return;
+      e.preventDefault();
+      history.pushState(null, '', card.getAttribute('href'));
+      showAlbum(card.getAttribute('href').slice(1));
+      albumHead.scrollIntoView({ block: 'start' });
+    });
+    window.addEventListener('popstate', route);
+    window.addEventListener('hashchange', route);
+    buildAlbums();
+    route();
+    // The photo list is re-rendered from data/gallery.json after load; rebuild covers/counts then.
+    new MutationObserver(() => { buildAlbums(); route(); }).observe(hexGrid, { childList: true });
   }
 
   // --- Videos (videos.html) ---

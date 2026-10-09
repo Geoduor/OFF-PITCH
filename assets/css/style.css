@@ -985,3 +985,23 @@ a.gallery-item{cursor:pointer;}
 .opa-lb .lb-next{right:12px;top:50%;transform:translateY(-50%);}
 .opa-lb .lb-pos{position:absolute;top:22px;left:20px;font-family:'Space Mono',monospace;font-size:0.72rem;color:#9aa0ad;letter-spacing:0.1em;}
 @media (max-width:640px){.opa-lb{padding:60px 8px 70px;}.opa-lb .lb-prev,.opa-lb .lb-next{top:auto;bottom:14px;transform:none;}.opa-lb .lb-prev{left:calc(50% - 54px);}.opa-lb .lb-next{right:calc(50% - 54px);}}
+
+/* ---------- Gallery albums ---------- */
+.album-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.album-grid[hidden],.album-head[hidden],.gallery-grid[hidden]{display:none;}
+.album-card{position:relative;display:block;overflow:hidden;border-radius:6px;aspect-ratio:4/3;background:var(--navy);border:1px solid var(--line);}
+.album-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .6s ease;}
+.album-card:hover img{transform:scale(1.05);}
+.album-card::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(11,11,13,0) 35%,rgba(11,11,13,0.92) 100%);}
+.album-card-body{position:absolute;left:0;right:0;bottom:0;z-index:2;padding:18px 20px;display:flex;flex-direction:column;gap:4px;}
+.album-card-title{font-family:'Anton',sans-serif;text-transform:uppercase;font-size:1.35rem;letter-spacing:0.01em;color:#fff;line-height:1.05;}
+.album-card-sub{font-size:0.78rem;color:#d6d2c9;line-height:1.4;}
+.album-card-count{font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.1em;color:var(--signal-teal);text-transform:uppercase;margin-top:4px;}
+.album-card:hover{border-color:rgba(79,209,217,0.48);}
+.album-head{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-bottom:22px;padding-bottom:18px;border-bottom:1px solid var(--line);}
+.album-back{font-family:'Space Mono',monospace;font-size:0.74rem;letter-spacing:0.05em;color:#fff;background:transparent;border:1px solid var(--line);padding:9px 16px;border-radius:20px;cursor:pointer;transition:all .2s ease;}
+.album-back:hover{border-color:var(--pitch-red);background:rgba(200,16,46,0.12);}
+.album-head h3{font-family:'Anton',sans-serif;text-transform:uppercase;font-size:1.5rem;color:#fff;margin:0;}
+.album-head p{font-size:0.82rem;color:#9aa0ad;margin-top:4px;}
+@media (max-width:900px){.album-grid{grid-template-columns:repeat(2,1fr);}}
+@media (max-width:560px){.album-grid{grid-template-columns:1fr;}.album-card{aspect-ratio:16/10;}}
