@@ -1005,3 +1005,17 @@ a.gallery-item{cursor:pointer;}
 .album-head p{font-size:0.82rem;color:#9aa0ad;margin-top:4px;}
 @media (max-width:900px){.album-grid{grid-template-columns:repeat(2,1fr);}}
 @media (max-width:560px){.album-grid{grid-template-columns:1fr;}.album-card{aspect-ratio:16/10;}}
+
+/* ---------- Live scores link card (Events page) ---------- */
+.live-scores-card{
+  display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;
+  background:linear-gradient(135deg,var(--navy) 0%,#0f1114 100%);
+  border:1px solid var(--line);border-left:4px solid var(--pitch-red);border-radius:8px;
+  padding:26px 30px;transition:border-color .2s ease,transform .2s ease,box-shadow .2s ease;
+}
+.live-scores-card:hover{border-color:var(--signal-teal);transform:translateY(-2px);box-shadow:0 14px 32px rgba(0,0,0,0.3);}
+.live-scores-eyebrow{font-family:'Space Mono',monospace;font-size:0.72rem;letter-spacing:0.18em;color:var(--signal-teal);}
+.live-scores-url{font-family:'Anton',sans-serif;font-size:clamp(1.3rem,3.6vw,2rem);letter-spacing:0.01em;color:#fff;display:inline-flex;align-items:center;gap:12px;word-break:break-all;}
+.live-scores-arrow{color:var(--pitch-red);font-family:'Inter',sans-serif;font-size:1.4em;line-height:1;transition:transform .2s ease;}
+.live-scores-card:hover .live-scores-arrow{transform:translate(3px,-3px);}
+@media (max-width:520px){.live-scores-card{padding:22px 20px;flex-direction:column;align-items:flex-start;gap:10px;}}
