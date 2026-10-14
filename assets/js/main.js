@@ -342,6 +342,7 @@ function parseEventDate(str) {
           return;
         }
         eventsList.innerHTML = '';
+        if (section) section.style.display = ''; // shown only when there is an upcoming event
         events.forEach(ev => {
           const card = document.createElement('div');
           card.className = 'events-card';
@@ -775,7 +776,7 @@ function parseEventDate(str) {
   // --- Gallery albums (gallery.html): one album per event, built from the photo cells ---
   if (hexGrid) {
     const ALBUMS = [
-      { key: 'mombasa', cats: ['mombasa'], title: 'Mombasa Edition', sub: 'Off The Pitch, On The Record · 8 October 2026 · Mombasa Sports Club' },
+      { key: 'mombasa', cats: ['mombasa'], title: 'Mombasa Edition', extra: { label: 'More photos on Google Drive ↗', href: 'https://drive.google.com/drive/folders/1w5fR2CB62VYtM1HTYlCbhIm6-tmety7m' }, sub: 'Off The Pitch, On The Record · 8 October 2026 · Mombasa Sports Club' },
       { key: 'nairobi', cats: ['event'], cover: 'assets/img/events/off-the-pitch-on-the-record.webp', title: 'Nairobi Forum', sub: 'Off The Pitch, On The Record · 29 August 2026 · Baraza Media Lab, Nairobi' },
       { key: 'moments', cats: ['hockey', 'community', 'celebration'], title: 'Off Pitch Moments', sub: 'Hockey, community and celebrations' }
     ];
@@ -792,6 +793,8 @@ function parseEventDate(str) {
       });
       document.getElementById('albumTitle').textContent = album.title;
       document.getElementById('albumSub').textContent = album.sub;
+      const extra = document.getElementById('albumExtra');
+      if (album.extra) { extra.textContent = album.extra.label; extra.href = album.extra.href; extra.hidden = false; } else { extra.hidden = true; }
       albumGrid.hidden = true;
       albumHead.hidden = false;
       hexGrid.hidden = false;

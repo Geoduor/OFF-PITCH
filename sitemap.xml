@@ -6,32 +6,32 @@
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://offpitchafrica.com/events.html</loc>
+    <loc>https://offpitchafrica.com/events</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://offpitchafrica.com/about.html</loc>
+    <loc>https://offpitchafrica.com/about</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://offpitchafrica.com/gallery.html</loc>
+    <loc>https://offpitchafrica.com/gallery</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://offpitchafrica.com/merch.html</loc>
+    <loc>https://offpitchafrica.com/merch</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://offpitchafrica.com/blog.html</loc>
+    <loc>https://offpitchafrica.com/blog</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://offpitchafrica.com/contact.html</loc>
+    <loc>https://offpitchafrica.com/contact</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
