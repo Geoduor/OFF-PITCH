@@ -246,7 +246,7 @@ function initPanel(type) {
   }
 
   function renderItems() {
-    itemsList.innerHTML = '';
+    itemsList.replaceChildren();
     if (schema.singleton) {
       if (type === 'live') {
         const note = document.createElement('p');
@@ -496,7 +496,7 @@ function buildField(field, item) {
     item[field.key] = links;
 
     function renderLinkRows() {
-      list.innerHTML = '';
+      list.replaceChildren();
       links.forEach(link => {
         const row = document.createElement('div');
         row.className = 'admin-link-row';

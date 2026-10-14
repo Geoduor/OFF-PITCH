@@ -240,33 +240,42 @@ document.addEventListener('DOMContentLoaded', () => {
     const LIVE_POLL_MS = 120000; // safe to poll often client-side — the API response itself is edge-cached
 
     function renderYouTubeLive(videoId, title) {
-      liveBanner.innerHTML = `
-        <div class="live-banner-inner">
-          <div class="live-badge"><span class="dot"></span>Live Now</div>
-          <p class="live-title">${escapeHtml(title || 'Watch our live broadcast')}</p>
-          <div class="live-embed-wrap">
-            <iframe src="https://www.youtube.com/embed/${encodeURIComponent(videoId)}?autoplay=0" title="Live stream" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
-          </div>
-        </div>`;
+      const iframe = h('iframe', {
+        src: `https://www.youtube.com/embed/${encodeURIComponent(videoId)}?autoplay=0`,
+        title: 'Live stream',
+        allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture',
+        allowfullscreen: true,
+        loading: 'lazy'
+      });
+      liveBanner.replaceChildren(
+        h('div', { className: 'live-banner-inner' },
+          h('div', { className: 'live-badge' }, h('span', { className: 'dot' }), 'Live Now'),
+          h('p', { className: 'live-title', text: title || 'Watch our live broadcast' }),
+          h('div', { className: 'live-embed-wrap' }, iframe)
+        )
+      );
       liveBanner.hidden = false;
     }
 
     function renderManualLive(manual) {
-      const platformLabel = manual.platform ? escapeHtml(manual.platform) : 'social media';
-      liveBanner.innerHTML = `
-        <div class="live-banner-inner">
-          <div class="live-badge"><span class="dot"></span>Live Now on ${platformLabel}</div>
-          <div class="live-link-row">
-            <p class="live-title" style="margin-bottom:0;">${escapeHtml(manual.label || `We're streaming live on ${platformLabel} right now.`)}</p>
-            <a href="${escapeHtml(manual.url)}" target="_blank" rel="noopener" class="btn btn-primary">Watch Live →</a>
-          </div>
-        </div>`;
+      const platformLabel = manual.platform ? String(manual.platform) : 'social media';
+      const title = h('p', { className: 'live-title', text: manual.label || `We're streaming live on ${platformLabel} right now.` });
+      title.style.marginBottom = '0';
+      liveBanner.replaceChildren(
+        h('div', { className: 'live-banner-inner' },
+          h('div', { className: 'live-badge' }, h('span', { className: 'dot' }), `Live Now on ${platformLabel}`),
+          h('div', { className: 'live-link-row' },
+            title,
+            h('a', { href: manual.url, target: '_blank', rel: 'noopener', className: 'btn btn-primary', text: 'Watch Live →' })
+          )
+        )
+      );
       liveBanner.hidden = false;
     }
 
     function hideLiveBanner() {
       liveBanner.hidden = true;
-      liveBanner.innerHTML = '';
+      liveBanner.replaceChildren();
     }
 
     function checkLiveStatus() {
@@ -295,10 +304,22 @@ document.addEventListener('DOMContentLoaded', () => {
      already in the page (marked data-fallback="true") stays untouched —
      same fail-safe pattern already used for the social feed above. */
 
-  function escapeHtml(str) {
-    const div = document.createElement('div');
-    div.textContent = str == null ? '' : String(str);
-    return div.innerHTML;
+  // Builds an element with textContent / setAttribute only — never parses HTML,
+  // so data from the JSON files can't inject markup. props: className, text,
+  // and any other key is set as an attribute. Children may be nodes or strings.
+  function h(tag, props, ...children) {
+    const node = document.createElement(tag);
+    Object.entries(props || {}).forEach(([k, v]) => {
+      if (v == null || v === false) return;
+      if (k === 'className') node.className = v;
+      else if (k === 'text') node.textContent = v;
+      else node.setAttribute(k, v === true ? '' : String(v));
+    });
+    children.flat().forEach(c => {
+      if (c == null || c === false) return;
+      node.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+    });
+    return node;
   }
 
 // Parses event date strings like "Saturday, 29th August 2026" or "Wednesday, 8th October 2026"
@@ -341,38 +362,42 @@ function parseEventDate(str) {
           if (section) section.style.display = 'none';
           return;
         }
-        eventsList.innerHTML = '';
+        eventsList.replaceChildren();
         if (section) section.style.display = ''; // shown only when there is an upcoming event
         events.forEach(ev => {
           const card = document.createElement('div');
           card.className = 'events-card';
-          const imgSrc = ev.image ? escapeHtml(ev.image) : 'assets/img/logo.webp';
-          const tel = ev.phone ? `<a href="tel:${escapeHtml(ev.phone)}" class="btn btn-primary">Call To Register →</a>` : '';
-          const mail = ev.email ? `<a href="mailto:${escapeHtml(ev.email)}" class="btn btn-ghost">Email Us</a>` : '';
+          const li = (label, value) => h('li', null, h('strong', { text: label }), ' ' + value);
+          const tel = ev.phone ? h('a', { href: `tel:${ev.phone}`, className: 'btn btn-primary', text: 'Call To Register →' }) : null;
+          const mail = ev.email ? h('a', { href: `mailto:${ev.email}`, className: 'btn btn-ghost', text: 'Email Us' }) : null;
           const registerBtn = ev.registerLink
-            ? `<a href="${escapeHtml(ev.registerLink)}" target="_blank" rel="noopener" class="btn btn-primary">Register →</a>`
+            ? h('a', { href: ev.registerLink, target: '_blank', rel: 'noopener', className: 'btn btn-primary', text: 'Register →' })
             : tel;
-          const videoBlock = ev.video
-            ? `<video class="ev-video" controls autoplay muted loop preload="auto" playsinline${ev.videoPoster ? ` poster="${escapeHtml(ev.videoPoster)}"` : ''}><source src="${escapeHtml(ev.video)}" type="video/mp4">Your browser doesn't support video playback.</video>`
-            : '';
-          card.innerHTML = `
-            <img src="${imgSrc}" alt="${escapeHtml(ev.title)} event poster" loading="lazy">
-            ${videoBlock}
-            <div class="ev-body">
-              <h3 class="ev-title">${escapeHtml(ev.title)}</h3>
-              ${ev.theme ? `<p class="ev-theme">${escapeHtml(ev.theme)}</p>` : ''}
-              <ul class="ev-list">
-                <li><strong>Date:</strong> ${escapeHtml(ev.date)}</li>
-                ${ev.time ? `<li><strong>Time:</strong> ${escapeHtml(ev.time)}</li>` : ''}
-                ${ev.venue ? `<li><strong>Venue:</strong> ${escapeHtml(ev.venue)}</li>` : ''}
-              </ul>
-              <div class="ev-ctas">${registerBtn}${ev.registerLink ? '' : mail}</div>
-            </div>`;
+          let videoBlock = null;
+          if (ev.video) {
+            videoBlock = h('video', { className: 'ev-video', controls: true, autoplay: true, muted: true, loop: true, preload: 'auto', playsinline: true, poster: ev.videoPoster },
+              h('source', { src: ev.video, type: 'video/mp4' }),
+              "Your browser doesn't support video playback.");
+            videoBlock.muted = true; // the muted attribute alone doesn't always register; autoplay needs it
+          }
+          card.append(
+            h('img', { src: ev.image || 'assets/img/logo.webp', alt: `${ev.title} event poster`, loading: 'lazy' }),
+            ...(videoBlock ? [videoBlock] : []),
+            h('div', { className: 'ev-body' },
+              h('h3', { className: 'ev-title', text: ev.title }),
+              ev.theme ? h('p', { className: 'ev-theme', text: ev.theme }) : null,
+              h('ul', { className: 'ev-list' },
+                li('Date:', ev.date),
+                ev.time ? li('Time:', ev.time) : null,
+                ev.venue ? li('Venue:', ev.venue) : null
+              ),
+              h('div', { className: 'ev-ctas' }, registerBtn, ev.registerLink ? null : mail)
+            )
+          );
           eventsList.appendChild(card);
-          // Browsers only autoplay muted video; set the property explicitly since
-          // markup injected via innerHTML doesn't always register the attribute.
+          // Browsers only autoplay muted video; kick it off explicitly.
           const vid = card.querySelector('video.ev-video');
-          if (vid) { vid.muted = true; const p = vid.play(); if (p && p.catch) p.catch(() => {}); }
+          if (vid) { const p = vid.play(); if (p && p.catch) p.catch(() => {}); }
         });
       })
       .catch(() => { /* keep static fallback */ });
@@ -384,7 +409,7 @@ function parseEventDate(str) {
     const COUNTRY_FLAGS = {
       Kenya: '🇰🇪', Ghana: '🇬🇭', Nigeria: '🇳🇬', 'South Africa': '🇿🇦', Uganda: '🇺🇬'
     };
-    const teamLabel = t => `${COUNTRY_FLAGS[t] ? COUNTRY_FLAGS[t] + ' ' : ''}${escapeHtml(t || 'TBD')}`;
+    const teamLabel = t => `${COUNTRY_FLAGS[t] ? COUNTRY_FLAGS[t] + ' ' : ''}${t || 'TBD'}`;
 
     let allFixtures = [];
     let activeFilter = 'All';
@@ -448,8 +473,10 @@ function parseEventDate(str) {
         const name = fx.competition || 'Fixtures';
         if (!seen.includes(name)) seen.push(name);
       });
-      competitionSelect.innerHTML = '<option value="All">All Competitions</option>' +
-        seen.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
+      competitionSelect.replaceChildren(
+        h('option', { value: 'All', text: 'All Competitions' }),
+        ...seen.map(name => h('option', { value: name, text: name }))
+      );
       competitionSelect.value = activeCompetition;
     }
 
@@ -463,9 +490,11 @@ function parseEventDate(str) {
         else hasTBA = true;
       });
       const keys = Array.from(seen.keys()).sort();
-      monthSelect.innerHTML = '<option value="All">All Months</option>' +
-        keys.map(k => `<option value="${k}">${escapeHtml(seen.get(k))}</option>`).join('') +
-        (hasTBA ? '<option value="TBA">Dates TBA</option>' : '');
+      monthSelect.replaceChildren(
+        h('option', { value: 'All', text: 'All Months' }),
+        ...keys.map(k => h('option', { value: k, text: seen.get(k) })),
+        ...(hasTBA ? [h('option', { value: 'TBA', text: 'Dates TBA' })] : [])
+      );
       monthSelect.value = keys.includes(activeMonth) || (activeMonth === 'TBA' && hasTBA) ? activeMonth : 'All';
       if (monthSelect.value !== activeMonth) activeMonth = monthSelect.value;
     }
@@ -483,8 +512,10 @@ function parseEventDate(str) {
         if (!pb) return -1;
         return (pa.year - pb.year) || (pa.monthIdx - pb.monthIdx) || (pa.day - pb.day);
       });
-      dateSelect.innerHTML = '<option value="All">All Dates</option>' +
-        entries.map(([date]) => `<option value="${escapeHtml(date)}">${escapeHtml(date)}</option>`).join('');
+      dateSelect.replaceChildren(
+        h('option', { value: 'All', text: 'All Dates' }),
+        ...entries.map(([date]) => h('option', { value: date, text: date }))
+      );
       dateSelect.value = entries.some(([d]) => d === activeDate) ? activeDate : 'All';
       if (dateSelect.value !== activeDate) activeDate = dateSelect.value;
     }
@@ -516,7 +547,7 @@ function parseEventDate(str) {
     };
 
     function renderFixtures() {
-      fixturesList.innerHTML = '';
+      fixturesList.replaceChildren();
       let note = '';
       let filtered = activeFilter === 'All' ? modeBase() : modeBase().filter(f => f.category === activeFilter);
       if (activeCompetition !== 'All') {
@@ -548,7 +579,7 @@ function parseEventDate(str) {
         filtered = filtered.slice().sort((a, b) => key(b) - key(a));
       }
       if (filtered.length === 0) {
-        fixturesList.innerHTML = `<p class="admin-image-note">${mode === 'results' ? 'No results to show yet.' : 'No upcoming fixtures match this filter.'}</p>`;
+        fixturesList.replaceChildren(h('p', { className: 'admin-image-note', text: mode === 'results' ? 'No results to show yet.' : 'No upcoming fixtures match this filter.' }));
         return;
       }
       if (note) {
@@ -590,15 +621,16 @@ function parseEventDate(str) {
 
             const hasScore = fx.status !== 'upcoming' && Boolean(fx.score1 || fx.score2);
             const scoreOrTime = fx.status === 'upcoming' || !hasScore
-              ? `<span class="fx-time">${escapeHtml(fx.time || '')}</span>`
-              : `<span class="fx-score">${escapeHtml(fx.score1)} – ${escapeHtml(fx.score2)}</span>`;
-            const liveBadge = fx.status === 'live' ? '<span class="fx-live-badge">LIVE</span>' : '';
+              ? h('span', { className: 'fx-time', text: fx.time || '' })
+              : h('span', { className: 'fx-score', text: `${fx.score1} – ${fx.score2}` });
+            const tag = `${fx.category || ''} · ${fx.stage || ''}${fx.venue ? ' · ' + fx.venue : ''}`;
 
-            row.innerHTML = `
-              ${scoreOrTime}
-              <span class="fx-teams">${teamLabel(fx.team1)} <em>vs</em> ${teamLabel(fx.team2)}</span>
-              <span class="fx-tag">${escapeHtml(fx.category || '')} · ${escapeHtml(fx.stage || '')}${fx.venue ? ' · ' + escapeHtml(fx.venue) : ''}</span>
-              ${liveBadge}`;
+            row.append(
+              scoreOrTime,
+              h('span', { className: 'fx-teams' }, teamLabel(fx.team1), ' ', h('em', { text: 'vs' }), ' ' + teamLabel(fx.team2)),
+              h('span', { className: 'fx-tag', text: tag }),
+              ...(fx.status === 'live' ? [h('span', { className: 'fx-live-badge', text: 'LIVE' })] : [])
+            );
             dayWrap.appendChild(row);
           });
           compWrap.appendChild(dayWrap);
@@ -699,14 +731,14 @@ function parseEventDate(str) {
       .then(res => res.ok ? res.json() : Promise.reject())
       .then(data => {
         allFixtures = Array.isArray(data) ? data.filter(f => f && f.team1 && f.team2 && f.date) : [];
-        if (allFixtures.length === 0) { fixturesList.innerHTML = '<p class="admin-image-note">No fixtures published yet.</p>'; return; }
+        if (allFixtures.length === 0) { fixturesList.replaceChildren(h('p', { className: 'admin-image-note', text: 'No fixtures published yet.' })); return; }
         populateCompetitionOptions();
         populateMonthOptions();
         populateDateOptions();
         syncToggleBtn();
         renderFixtures();
       })
-      .catch(() => { fixturesList.innerHTML = '<p class="admin-image-note">Fixtures are unavailable right now. Please try again shortly.</p>'; });
+      .catch(() => { fixturesList.replaceChildren(h('p', { className: 'admin-image-note', text: 'Fixtures are unavailable right now. Please try again shortly.' })); });
   }
 
   // --- Gallery (gallery.html) ---
@@ -717,7 +749,7 @@ function parseEventDate(str) {
       .then(data => {
         const photos = Array.isArray(data) ? data.filter(p => p && p.src) : [];
         if (photos.length === 0) return; // keep static fallback
-        hexGrid.innerHTML = '';
+        hexGrid.replaceChildren();
         photos.forEach((p, i) => {
           const cell = document.createElement(p.link ? 'a' : 'div');
           cell.className = 'gallery-item';
@@ -861,7 +893,7 @@ function parseEventDate(str) {
       hexGrid.hidden = true;
     }
     function buildAlbums() {
-      albumGrid.innerHTML = '';
+      albumGrid.replaceChildren();
       ALBUMS.forEach(album => {
         const cells = cellsOf(album);
         if (!cells.length) return;
@@ -904,6 +936,18 @@ function parseEventDate(str) {
   }
 
   // --- Videos (videos.html) ---
+  // Static play icon, built with the SVG namespace (no HTML parsing).
+  function playIcon() {
+    const ns = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('fill', '#fff');
+    const poly = document.createElementNS(ns, 'polygon');
+    poly.setAttribute('points', '6 3 20 12 6 21');
+    svg.appendChild(poly);
+    return svg;
+  }
+
   const videosGrid = document.getElementById('videosGrid');
   if (videosGrid) {
     fetch('/data/videos.json')
@@ -911,7 +955,7 @@ function parseEventDate(str) {
       .then(data => {
         const videos = Array.isArray(data) ? data.filter(v => v && v.youtubeId) : [];
         if (videos.length === 0) return; // keep static fallback
-        videosGrid.innerHTML = '';
+        videosGrid.replaceChildren();
         videos.forEach(v => {
           const a = document.createElement('a');
           a.href = `https://www.youtube.com/watch?v=${encodeURIComponent(v.youtubeId)}`;
@@ -919,10 +963,11 @@ function parseEventDate(str) {
           a.rel = 'noopener';
           a.className = 'media-card';
           a.style.aspectRatio = '16/9';
-          a.innerHTML = `
-            <img src="https://img.youtube.com/vi/${encodeURIComponent(v.youtubeId)}/hqdefault.jpg" alt="Watch on YouTube" loading="lazy">
-            <div class="play-badge"><svg viewBox="0 0 24 24" fill="#fff"><polygon points="6 3 20 12 6 21"/></svg></div>
-            ${v.title ? `<span class="media-label">${escapeHtml(v.title)}</span>` : ''}`;
+          a.append(
+            h('img', { src: `https://img.youtube.com/vi/${encodeURIComponent(v.youtubeId)}/hqdefault.jpg`, alt: 'Watch on YouTube', loading: 'lazy' }),
+            h('div', { className: 'play-badge' }, playIcon()),
+            v.title ? h('span', { className: 'media-label', text: v.title }) : null
+          );
           videosGrid.appendChild(a);
         });
       })
@@ -932,7 +977,7 @@ function parseEventDate(str) {
   // --- Blog posts (blog.html) ---
   // Cards are rendered from /data/blog.json (edited in the admin dashboard).
   // Each card opens a full-post reader overlay showing the cover image, body
-  // paragraphs and links. All content is escaped via textContent/escapeHtml,
+  // paragraphs and links. All content is written via textContent,
   // and link URLs must pass isSafeHttpsUrl before they are used.
   const blogPosts = document.getElementById('blogPosts');
   const postReader = document.getElementById('postReader');
@@ -953,7 +998,7 @@ function parseEventDate(str) {
 
   function openPostReader(p) {
     if (!postReader || !postReaderContent) return;
-    postReaderContent.innerHTML = '';
+    postReaderContent.replaceChildren();
 
     if (p.image && typeof p.image === 'string' && p.image.trim()) {
       const hero = document.createElement('img');
@@ -1043,24 +1088,24 @@ function parseEventDate(str) {
       .then(data => {
         const posts = Array.isArray(data) ? data.filter(hasReadablePost) : [];
         if (posts.length === 0) return; // no posts yet — Substack card below covers it
-        blogPosts.innerHTML = '';
+        blogPosts.replaceChildren();
         blogPosts.style.display = '';
         posts.forEach(p => {
           const card = document.createElement('button');
           card.type = 'button';
           card.className = 'article-card';
-          const img = p.image ? escapeHtml(p.image) : 'assets/img/logo.webp';
           const tagText = p.date && String(p.date).trim() ? p.date : 'Blog';
-          card.innerHTML = `
-            <div class="article-img">
-              <img src="${img}" alt="${escapeHtml(p.title)}" loading="lazy">
-              <span class="article-tag">${escapeHtml(tagText)}</span>
-            </div>
-            <div class="article-body">
-              <h3>${escapeHtml(p.title)}</h3>
-              ${p.excerpt ? `<p>${escapeHtml(p.excerpt)}</p>` : ''}
-              <span class="article-link">READ POST →</span>
-            </div>`;
+          card.append(
+            h('div', { className: 'article-img' },
+              h('img', { src: p.image || 'assets/img/logo.webp', alt: p.title, loading: 'lazy' }),
+              h('span', { className: 'article-tag', text: tagText })
+            ),
+            h('div', { className: 'article-body' },
+              h('h3', { text: p.title }),
+              p.excerpt ? h('p', { text: p.excerpt }) : null,
+              h('span', { className: 'article-link', text: 'READ POST →' })
+            )
+          );
           card.addEventListener('click', () => openPostReader(p));
           blogPosts.appendChild(card);
         });
