@@ -104,6 +104,22 @@
     "height": 1066
   },
   {
+    "id": "mombasa-2026-panel-state-of-hockey-mombasa",
+    "src": "assets/img/events/mombasa/panel-state-of-hockey-mombasa.webp",
+    "alt": "Panel flyer: the state of hockey in Mombasa, MCHA leadership, county plans, county league roadmap and governance",
+    "category": "mombasa",
+    "width": 900,
+    "height": 1273
+  },
+  {
+    "id": "mombasa-2026-panel-safe-sport-mental-wellness",
+    "src": "assets/img/events/mombasa/panel-safe-sport-mental-wellness.webp",
+    "alt": "Round table flyer: safe sport and mental wellness across Kenyan hockey, Mombasa Edition",
+    "category": "mombasa",
+    "width": 900,
+    "height": 1273
+  },
+  {
     "id": "forum-2026-program",
     "src": "assets/img/events/aug-29-client/event-program.jpeg",
     "alt": "Event program for Off The Pitch, On The Record on 29 August 2026",

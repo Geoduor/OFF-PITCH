@@ -1005,3 +1005,8 @@ a.gallery-item{cursor:pointer;}
 .album-head p{font-size:0.82rem;color:#9aa0ad;margin-top:4px;}
 @media (max-width:900px){.album-grid{grid-template-columns:repeat(2,1fr);}}
 @media (max-width:560px){.album-grid{grid-template-columns:1fr;}.album-card{aspect-ratio:16/10;}}
+
+/* Speaker card without a photo */
+.speaker-initials{width:76px;height:76px;border-radius:50%;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;background:var(--navy);border:2px solid var(--line);font-family:'Anton',sans-serif;font-size:1.4rem;color:var(--signal-teal);letter-spacing:0.04em;}
+.events-card .ev-speakers .speaker-card img{width:76px;height:76px;max-height:none;object-fit:cover;aspect-ratio:1/1;}
+.events-card .ev-speakers .ev-panel-photo{width:100%;max-width:420px;height:auto;max-height:none;object-fit:contain;background:transparent;}
