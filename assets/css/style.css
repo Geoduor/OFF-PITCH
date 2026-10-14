@@ -1015,3 +1015,7 @@ a.gallery-item{cursor:pointer;}
 .album-extra:hover{background:#e4122f;}
 .album-extra[hidden]{display:none;}
 @media (max-width:520px){.album-extra{margin-left:0;}}
+
+.fixtures-note{font-family:'Space Mono',monospace;font-size:0.74rem;color:var(--signal-teal);margin:0 0 22px;line-height:1.5;}
+#fixturesMode{margin-bottom:14px;}
+#fixturesToggleAll[hidden]{display:none;}

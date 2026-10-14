@@ -392,6 +392,19 @@ function parseEventDate(str) {
     let activeMonth = 'All';
     let activeDate = 'All';
     let showAll = false;
+    let mode = 'fixtures'; // 'fixtures' (upcoming only) | 'results' (completed matches only)
+
+    const startOfToday = () => { const t = new Date(); t.setHours(0, 0, 0, 0); return t; };
+    // Upcoming = not final, and either undated (TBA) or dated today or later.
+    // Matches that were scheduled in the past but never got a score are not shown as
+    // fixtures (they're over) or as results (no result has been published).
+    function isUpcoming(fx) {
+      if (fx.status === 'final') return false;
+      const p = parseFxDate(fx.date);
+      if (!p) return true;
+      return new Date(p.year, p.monthIdx, p.day) >= startOfToday();
+    }
+    const modeBase = () => mode === 'results' ? allFixtures.filter(f => f.status === 'final') : allFixtures.filter(isUpcoming);
 
     const MONTHS = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
     const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -414,7 +427,7 @@ function parseEventDate(str) {
 
     // Pool of fixtures matching everything EXCEPT the given filter level (for cascading options)
     function poolFor(level) {
-      let pool = activeFilter === 'All' ? allFixtures : allFixtures.filter(f => f.category === activeFilter);
+      let pool = activeFilter === 'All' ? modeBase() : modeBase().filter(f => f.category === activeFilter);
       if (level !== 'competition' && activeCompetition !== 'All') {
         pool = pool.filter(f => (f.competition || 'Fixtures') === activeCompetition);
       }
@@ -480,25 +493,32 @@ function parseEventDate(str) {
       return activeFilter === 'All' && activeCompetition === 'All' && activeMonth === 'All' && activeDate === 'All';
     }
 
-    // Finds the earliest upcoming date (today or later) among status:upcoming fixtures with a parseable date
-    function nearestUpcomingDate() {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      let best = null;
-      allFixtures.forEach(fx => {
-        if (fx.status !== 'upcoming') return;
+    // The upcoming weekend: starting from the earliest dated upcoming fixture, show everything
+    // up to and including the following Sunday (a Saturday-Sunday matchday pair for league play).
+    function upcomingWindow() {
+      let start = null;
+      modeBase().forEach(fx => {
         const p = parseFxDate(fx.date);
         if (!p) return;
         const d = new Date(p.year, p.monthIdx, p.day);
-        if (d < today) return;
-        if (!best || d < best.d) best = { d, dateStr: fx.date };
+        if (!start || d < start) start = d;
       });
-      return best ? best.dateStr : null;
+      if (!start) return null;
+      const end = new Date(start);
+      end.setDate(end.getDate() + ((7 - end.getDay()) % 7)); // forward to Sunday (0 = Sunday)
+      return { start, end };
     }
+    const sameWeekendAsToday = w => {
+      const today = startOfToday();
+      const sunday = new Date(today);
+      sunday.setDate(sunday.getDate() + ((7 - sunday.getDay()) % 7));
+      return w.end.getTime() === sunday.getTime();
+    };
 
     function renderFixtures() {
       fixturesList.innerHTML = '';
-      let filtered = activeFilter === 'All' ? allFixtures : allFixtures.filter(f => f.category === activeFilter);
+      let note = '';
+      let filtered = activeFilter === 'All' ? modeBase() : modeBase().filter(f => f.category === activeFilter);
       if (activeCompetition !== 'All') {
         filtered = filtered.filter(f => (f.competition || 'Fixtures') === activeCompetition);
       }
@@ -510,13 +530,32 @@ function parseEventDate(str) {
           const parsed = parseFxDate(f.date);
           return parsed && parsed.monthKey === activeMonth;
         });
-      } else if (!showAll && isNoFilterActive()) {
-        const nextDate = nearestUpcomingDate();
-        if (nextDate) filtered = filtered.filter(f => f.date === nextDate);
+      } else if (mode === 'fixtures' && !showAll && isNoFilterActive()) {
+        const w = upcomingWindow();
+        if (w) {
+          filtered = filtered.filter(f => {
+            const p = parseFxDate(f.date);
+            if (!p) return false;
+            const d = new Date(p.year, p.monthIdx, p.day);
+            return d >= w.start && d <= w.end;
+          });
+          if (!sameWeekendAsToday(w)) note = 'No fixtures are scheduled for this weekend — showing the next matchday.';
+        }
+      }
+      if (mode === 'results') {
+        // newest results first
+        const key = f => { const p = parseFxDate(f.date); return p ? new Date(p.year, p.monthIdx, p.day).getTime() : 0; };
+        filtered = filtered.slice().sort((a, b) => key(b) - key(a));
       }
       if (filtered.length === 0) {
-        fixturesList.innerHTML = '<p class="admin-image-note">No fixtures match this filter.</p>';
+        fixturesList.innerHTML = `<p class="admin-image-note">${mode === 'results' ? 'No results to show yet.' : 'No upcoming fixtures match this filter.'}</p>`;
         return;
+      }
+      if (note) {
+        const n = document.createElement('p');
+        n.className = 'fixtures-note';
+        n.textContent = note;
+        fixturesList.appendChild(n);
       }
       const competitions = [];
       filtered.forEach(fx => {
@@ -572,10 +611,27 @@ function parseEventDate(str) {
 
     function syncToggleBtn() {
       if (!toggleAllBtn) return;
+      toggleAllBtn.hidden = mode === 'results';
       const collapsed = !showAll && isNoFilterActive();
-      toggleAllBtn.textContent = collapsed ? 'View All Fixtures' : 'Back to Upcoming';
+      toggleAllBtn.textContent = collapsed ? 'View All Upcoming Fixtures' : 'Back to This Weekend';
       toggleAllBtn.classList.toggle('active', !collapsed);
     }
+
+    const modeBtns = document.querySelectorAll('#fixturesMode .fixtures-filter-btn');
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (btn.dataset.mode === mode) return;
+        mode = btn.dataset.mode;
+        modeBtns.forEach(b => { b.classList.toggle('active', b === btn); b.setAttribute('aria-pressed', b === btn ? 'true' : 'false'); });
+        activeFilter = 'All'; activeCompetition = 'All'; activeMonth = 'All'; activeDate = 'All'; showAll = false;
+        document.querySelectorAll('#fixturesFilter .fixtures-filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === 'All'));
+        populateCompetitionOptions();
+        populateMonthOptions();
+        populateDateOptions();
+        syncToggleBtn();
+        renderFixtures();
+      });
+    });
 
     const filterBtns = document.querySelectorAll('#fixturesFilter .fixtures-filter-btn');
     filterBtns.forEach(btn => {
@@ -643,14 +699,14 @@ function parseEventDate(str) {
       .then(res => res.ok ? res.json() : Promise.reject())
       .then(data => {
         allFixtures = Array.isArray(data) ? data.filter(f => f && f.team1 && f.team2 && f.date) : [];
-        if (allFixtures.length === 0) return; // keep static fallback
+        if (allFixtures.length === 0) { fixturesList.innerHTML = '<p class="admin-image-note">No fixtures published yet.</p>'; return; }
         populateCompetitionOptions();
         populateMonthOptions();
         populateDateOptions();
         syncToggleBtn();
         renderFixtures();
       })
-      .catch(() => { /* keep static fallback */ });
+      .catch(() => { fixturesList.innerHTML = '<p class="admin-image-note">Fixtures are unavailable right now. Please try again shortly.</p>'; });
   }
 
   // --- Gallery (gallery.html) ---
