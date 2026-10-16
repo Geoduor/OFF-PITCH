@@ -22,13 +22,37 @@ const MAX_MESSAGE_LENGTH = 1000;
 const MAX_HISTORY_ENTRIES = 10;
 const MAX_HISTORY_ENTRY_LENGTH = 1000;
 
-// Best-effort in-memory rate limit: N requests per IP per minute.
-// Resets on cold start / across instances — see SECURITY.md.
-const RATE_LIMIT = 12; // requests
+/* ---------------- Rate limiting ----------------
+   Uses Upstash Redis (REST) when UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN
+   are set, so the limit is shared across every serverless instance and survives
+   cold starts. Without them it falls back to a best-effort in-memory limit
+   (per instance only) — see SECURITY.md. */
+async function upstashHit(key, windowSec) {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return null;
+  try {
+    const r = await fetch(`${url.replace(/\/$/, '')}/pipeline`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify([['INCR', key], ['EXPIRE', key, String(windowSec), 'NX']])
+    });
+    if (!r.ok) return null;
+    const out = await r.json();
+    const n = Number(out && out[0] && out[0].result);
+    return Number.isFinite(n) ? n : null;
+  } catch {
+    return null; // fall back to the in-memory limit rather than failing the request
+  }
+}
+
+const RATE_LIMIT = 12; // requests per IP per minute
 const RATE_WINDOW_MS = 60 * 1000;
 const requestLog = new Map();
 
-function isRateLimited(ip) {
+async function isRateLimited(ip) {
+  const shared = await upstashHit(`opa:chat:${ip}`, RATE_WINDOW_MS / 1000);
+  if (shared !== null) return shared > RATE_LIMIT;
   const now = Date.now();
   const timestamps = (requestLog.get(ip) || []).filter(t => now - t < RATE_WINDOW_MS);
   timestamps.push(now);
@@ -135,10 +159,13 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // Reject cross-origin callers outright (defense in depth beyond CORS,
-  // which only stops browsers — this stops scripted/server-side abuse too).
+  // Only our own pages may call this. Browsers always send Origin on a
+  // same-site POST, so a missing or foreign Origin means a script or another
+  // site — reject both. (This raises the bar; the rate limit below is what
+  // actually bounds cost, since headers can be forged outside a browser.)
   const origin = req.headers.origin;
-  if (origin && !ALLOWED_ORIGINS.includes(origin)) {
+  const fetchSite = req.headers['sec-fetch-site'];
+  if (!origin || !ALLOWED_ORIGINS.includes(origin) || (fetchSite && fetchSite !== 'same-origin')) {
     return res.status(403).json({ error: 'Origin not allowed.' });
   }
 
@@ -146,7 +173,7 @@ export default async function handler(req, res) {
     .toString()
     .split(',')[0]
     .trim();
-  if (isRateLimited(ip)) {
+  if (await isRateLimited(ip)) {
     res.setHeader('Retry-After', '60');
     return res.status(429).json({ error: 'Too many requests — please wait a moment and try again.' });
   }
@@ -178,6 +205,8 @@ export default async function handler(req, res) {
         )
         .slice(-MAX_HISTORY_ENTRIES)
     : [];
+  // The API requires the conversation to start with a user turn.
+  while (safeHistory.length && safeHistory[0].role !== 'user') safeHistory.shift();
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {

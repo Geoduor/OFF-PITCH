@@ -30,11 +30,37 @@ const MODEL = 'claude-haiku-4-5-20251001';
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // Anthropic's own per-image cap
 const GALLERY_CATEGORIES = ['hockey', 'community', 'celebration'];
 
+/* ---------------- Rate limiting ----------------
+   Uses Upstash Redis (REST) when UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN
+   are set, so the limit is shared across every serverless instance and survives
+   cold starts. Without them it falls back to a best-effort in-memory limit
+   (per instance only) — see SECURITY.md. */
+async function upstashHit(key, windowSec) {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return null;
+  try {
+    const r = await fetch(`${url.replace(/\/$/, '')}/pipeline`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify([['INCR', key], ['EXPIRE', key, String(windowSec), 'NX']])
+    });
+    if (!r.ok) return null;
+    const out = await r.json();
+    const n = Number(out && out[0] && out[0].result);
+    return Number.isFinite(n) ? n : null;
+  } catch {
+    return null; // fall back to the in-memory limit rather than failing the request
+  }
+}
+
 const RATE_LIMIT = 20;
 const RATE_WINDOW_MS = 60 * 1000;
 const requestLog = new Map();
 
-function isRateLimited(ip) {
+async function isRateLimited(ip) {
+  const shared = await upstashHit(`opa:assist:${ip}`, RATE_WINDOW_MS / 1000);
+  if (shared !== null) return shared > RATE_LIMIT;
   const now = Date.now();
   const timestamps = (requestLog.get(ip) || []).filter(t => now - t < RATE_WINDOW_MS);
   timestamps.push(now);
@@ -42,6 +68,12 @@ function isRateLimited(ip) {
   if (requestLog.size > 5000) requestLog.clear();
   return timestamps.length > RATE_LIMIT;
 }
+
+// Errors whose message is safe to show the admin; anything else becomes a generic message.
+const safeError = msg => Object.assign(new Error(msg), { safe: true });
+const ALLOWED_MEDIA_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const ASSET_PATH = /^\/?assets\/[A-Za-z0-9_\-./ %]+$/;
+const BASE64_RE = /^[A-Za-z0-9+/]+={0,2}$/;
 
 function applyCors(req, res) {
   const origin = req.headers.origin;
@@ -60,6 +92,9 @@ function base64urlDecode(input) {
   while (input.length % 4) input += '=';
   return Buffer.from(input, 'base64').toString('utf8');
 }
+function passwordFingerprint() {
+  return crypto.createHash('sha256').update(process.env.ADMIN_PASSWORD || '').digest('hex').slice(0, 16);
+}
 function sign(payload) {
   const secret = process.env.ADMIN_SESSION_SECRET || '';
   return crypto.createHmac('sha256', secret).update(payload).digest('hex');
@@ -76,7 +111,7 @@ function verifySessionToken(token) {
   if (!crypto.timingSafeEqual(sigBuf, expBuf)) return false;
   try {
     const data = JSON.parse(base64urlDecode(payload));
-    return typeof data.exp === 'number' && data.exp > Date.now();
+    return typeof data.exp === 'number' && data.exp > Date.now() && data.pw === passwordFingerprint();
   } catch {
     return false;
   }
@@ -97,13 +132,17 @@ function requireSession(req) {
 
 /* ---- Fetch an already-saved image from the live site and base64-encode it ---- */
 async function fetchImageAsBase64(relativePath) {
+  if (typeof relativePath !== 'string' || !ASSET_PATH.test(relativePath) || relativePath.split('/').includes('..')) {
+    throw safeError('Invalid image path.');
+  }
   const cleanPath = relativePath.replace(/^\/+/, '');
   const url = `${SITE_ORIGIN}/${cleanPath}`;
   const res = await fetch(url);
-  if (!res.ok) throw new Error(`Could not fetch existing image (${res.status}).`);
-  const contentType = res.headers.get('content-type') || 'image/jpeg';
+  if (!res.ok) throw safeError(`Could not fetch existing image (${res.status}).`);
+  const contentType = (res.headers.get('content-type') || '').split(';')[0].trim().toLowerCase();
+  if (!ALLOWED_MEDIA_TYPES.includes(contentType)) throw safeError('That file is not a supported image type.');
   const buf = Buffer.from(await res.arrayBuffer());
-  if (buf.length > MAX_IMAGE_BYTES) throw new Error('Existing image is too large to analyze.');
+  if (buf.length > MAX_IMAGE_BYTES) throw safeError('Existing image is too large to analyze.');
   return { base64: buf.toString('base64'), mediaType: contentType };
 }
 
@@ -126,7 +165,7 @@ async function askClaude({ system, content, maxTokens }) {
   if (!response.ok) {
     const errText = await response.text().catch(() => '');
     console.error('Anthropic API error (ai-assist):', response.status, errText);
-    throw new Error('The AI assistant is temporarily unavailable. Please try again shortly.');
+    throw safeError('The AI assistant is temporarily unavailable. Please try again shortly.');
   }
   const data = await response.json();
   const textBlock = (data.content || []).find(b => b.type === 'text');
@@ -153,7 +192,7 @@ export default async function handler(req, res) {
 
   const ip = (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown')
     .toString().split(',')[0].trim();
-  if (isRateLimited(ip)) {
+  if (await isRateLimited(ip)) {
     res.setHeader('Retry-After', '60');
     return res.status(429).json({ error: 'Too many requests — please wait a moment and try again.' });
   }
@@ -170,7 +209,10 @@ export default async function handler(req, res) {
     if (action === 'altText') {
       const { imageBase64, imageMediaType, imagePath } = req.body;
       let base64 = imageBase64;
-      let mediaType = imageMediaType || 'image/jpeg';
+      let mediaType = ALLOWED_MEDIA_TYPES.includes(imageMediaType) ? imageMediaType : 'image/jpeg';
+      if (base64 && (typeof base64 !== 'string' || !BASE64_RE.test(base64) || base64.length * 0.75 > MAX_IMAGE_BYTES)) {
+        return res.status(400).json({ error: 'Invalid image data.' });
+      }
       if (!base64 && imagePath) {
         const fetched = await fetchImageAsBase64(imagePath);
         base64 = fetched.base64;
@@ -193,7 +235,10 @@ export default async function handler(req, res) {
     if (action === 'category') {
       const { imageBase64, imageMediaType, imagePath } = req.body;
       let base64 = imageBase64;
-      let mediaType = imageMediaType || 'image/jpeg';
+      let mediaType = ALLOWED_MEDIA_TYPES.includes(imageMediaType) ? imageMediaType : 'image/jpeg';
+      if (base64 && (typeof base64 !== 'string' || !BASE64_RE.test(base64) || base64.length * 0.75 > MAX_IMAGE_BYTES)) {
+        return res.status(400).json({ error: 'Invalid image data.' });
+      }
       if (!base64 && imagePath) {
         const fetched = await fetchImageAsBase64(imagePath);
         base64 = fetched.base64;
@@ -237,6 +282,6 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Unknown action.' });
   } catch (err) {
     console.error('ai-assist error:', err);
-    return res.status(500).json({ error: err.message || 'Something went wrong.' });
+    return res.status(500).json({ error: err && err.safe ? err.message : 'Something went wrong. Please try again.' });
   }
 }

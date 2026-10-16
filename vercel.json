@@ -10,7 +10,7 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://formspree.io https://www.google-analytics.com https://region1.google-analytics.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com; form-action 'self' https://formspree.io; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; upgrade-insecure-requests"
+          "value": "default-src 'self'; script-src 'self' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://img.youtube.com https://i.ytimg.com https://substackcdn.com https://*.cdninstagram.com https://*.fbcdn.net https://www.google-analytics.com https://region1.google-analytics.com https://www.googletagmanager.com; connect-src 'self' https://formspree.io https://www.google-analytics.com https://region1.google-analytics.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com; form-action 'self' https://formspree.io; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; upgrade-insecure-requests"
         },
         {
           "key": "X-Frame-Options",

@@ -38,7 +38,7 @@ const GITHUB_REPO = 'OFF-PITCH';
 const GITHUB_BRANCH = 'main';
 const GITHUB_API = 'https://api.github.com';
 
-const SESSION_TTL_MS = 12 * 60 * 60 * 1000; // 12 hours
+const SESSION_TTL_MS = 4 * 60 * 60 * 1000; // 4 hours
 const MAX_CONTENT_BYTES = 200 * 1000; // 200 KB cap on any single JSON data file
 const MAX_IMAGE_BYTES = 950 * 1000; // ~950 KB cap on uploaded images (base64 decoded)
 
@@ -51,12 +51,37 @@ const DATA_FILES = {
   live: 'data/live.json'
 };
 
-/* ---------------- Rate limiting (login attempts only) ---------------- */
-const RATE_LIMIT = 8;
-const RATE_WINDOW_MS = 60 * 1000;
+/* ---------------- Rate limiting ----------------
+   Uses Upstash Redis (REST) when UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN
+   are set, so the limit is shared across every serverless instance and survives
+   cold starts. Without them it falls back to a best-effort in-memory limit
+   (per instance only) — see SECURITY.md. */
+async function upstashHit(key, windowSec) {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return null;
+  try {
+    const r = await fetch(`${url.replace(/\/$/, '')}/pipeline`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify([['INCR', key], ['EXPIRE', key, String(windowSec), 'NX']])
+    });
+    if (!r.ok) return null;
+    const out = await r.json();
+    const n = Number(out && out[0] && out[0].result);
+    return Number.isFinite(n) ? n : null;
+  } catch {
+    return null; // fall back to the in-memory limit rather than failing the request
+  }
+}
+
+const RATE_LIMIT = 5;                       // login attempts…
+const RATE_WINDOW_MS = 10 * 60 * 1000;      // …per IP per 10 minutes
 const loginAttempts = new Map();
 
-function isRateLimited(ip) {
+async function isRateLimited(ip) {
+  const shared = await upstashHit(`opa:login:${ip}`, RATE_WINDOW_MS / 1000);
+  if (shared !== null) return shared > RATE_LIMIT;
   const now = Date.now();
   const timestamps = (loginAttempts.get(ip) || []).filter(t => now - t < RATE_WINDOW_MS);
   timestamps.push(now);
@@ -92,8 +117,14 @@ function sign(payload) {
   return crypto.createHmac('sha256', secret).update(payload).digest('hex');
 }
 
+// Fingerprint of the current admin password. Stored in the signed session, so
+// changing ADMIN_PASSWORD immediately invalidates every existing session.
+function passwordFingerprint() {
+  return crypto.createHash('sha256').update(process.env.ADMIN_PASSWORD || '').digest('hex').slice(0, 16);
+}
+
 function createSessionToken() {
-  const payload = base64url(JSON.stringify({ exp: Date.now() + SESSION_TTL_MS }));
+  const payload = base64url(JSON.stringify({ exp: Date.now() + SESSION_TTL_MS, pw: passwordFingerprint() }));
   const signature = sign(payload);
   return `${payload}.${signature}`;
 }
@@ -112,7 +143,7 @@ function verifySessionToken(token) {
   if (!crypto.timingSafeEqual(sigBuf, expBuf)) return false;
   try {
     const data = JSON.parse(base64urlDecode(payload));
-    return typeof data.exp === 'number' && data.exp > Date.now();
+    return typeof data.exp === 'number' && data.exp > Date.now() && data.pw === passwordFingerprint();
   } catch {
     return false;
   }
@@ -195,6 +226,20 @@ function isNonEmptyString(v, maxLen) {
 function isOptionalString(v, maxLen) {
   return v === undefined || v === '' || (typeof v === 'string' && v.length <= maxLen);
 }
+// Links must be https:// (external) or a plain site-relative path. Anything
+// else — javascript:, data:, protocol-relative //host, path traversal — is rejected.
+function isSafeLink(v, maxLen, { allowRelative = false } = {}) {
+  if (v === undefined || v === '') return true;
+  if (typeof v !== 'string' || v.length > maxLen || /[\u0000-\u001f\\]/.test(v)) return false;
+  if (allowRelative && !/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(v) && !v.startsWith('//') && !v.split('/').includes('..')) return true;
+  try { return new URL(v).protocol === 'https:'; } catch { return false; }
+}
+// Image/video paths: a site-relative asset path or an https:// URL.
+const isSafeAsset = (v, maxLen) => isSafeLink(v, maxLen, { allowRelative: true });
+function isOptionalNumber(v, max) {
+  return v === undefined || v === null || (typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= max);
+}
+
 // Blog post body: an optional list of plain-text paragraphs.
 function isOptionalBody(v) {
   if (v === undefined || v === null) return true;
@@ -206,7 +251,7 @@ function isOptionalLinks(v) {
   if (v === undefined || v === null) return true;
   return Array.isArray(v) && v.length <= 12 && v.every(l =>
     l && typeof l === 'object' && !Array.isArray(l) &&
-    isNonEmptyString(l.label, 80) && isNonEmptyString(l.url, 500)
+    isNonEmptyString(l.label, 80) && isNonEmptyString(l.url, 500) && isSafeLink(l.url, 500)
   );
 }
 
@@ -219,7 +264,7 @@ function validateContent(type, content) {
     if (!content || typeof content !== 'object' || Array.isArray(content)) return 'Live status must be an object.';
     const okActive = typeof content.active === 'boolean';
     const okPlatform = isOptionalString(content.platform, 40);
-    const okUrl = isOptionalString(content.url, 500);
+    const okUrl = isSafeLink(content.url, 500);
     const okLabel = isOptionalString(content.label, 200);
     if (!okActive || !okPlatform || !okUrl || !okLabel) return 'Live status has invalid fields.';
     if (content.active && !content.url) return 'A URL is required when Live is turned on.';
@@ -237,26 +282,30 @@ function validateContent(type, content) {
       isOptionalString(item.theme, 200) &&
       isOptionalString(item.time, 80) &&
       isOptionalString(item.venue, 200) &&
-      isOptionalString(item.image, 300) &&
-      isOptionalString(item.video, 300) &&
-      isOptionalString(item.videoPoster, 300) &&
-      isOptionalString(item.registerLink, 500) &&
+      isSafeAsset(item.image, 300) &&
+      isSafeAsset(item.video, 300) &&
+      isSafeAsset(item.videoPoster, 300) &&
+      isSafeLink(item.registerLink, 500) &&
       isOptionalString(item.phone, 40) &&
       isOptionalString(item.email, 120) &&
       (item.spotlight === undefined || typeof item.spotlight === 'boolean') &&
       typeof item.active === 'boolean',
     gallery: item =>
       isNonEmptyString(item.id, 100) &&
-      isNonEmptyString(item.src, 300) &&
+      isNonEmptyString(item.src, 300) && isSafeAsset(item.src, 300) &&
       isOptionalString(item.alt, 200) &&
-      isOptionalString(item.category, 40),
+      isOptionalString(item.category, 40) &&
+      isOptionalNumber(item.width, 20000) &&
+      isOptionalNumber(item.height, 20000) &&
+      isOptionalString(item.caption, 300) &&
+      isSafeLink(item.link, 500),
     blog: item =>
       isNonEmptyString(item.id, 100) &&
       isNonEmptyString(item.title, 200) &&
-      isOptionalString(item.url, 500) &&
+      isSafeLink(item.url, 500) &&
       isOptionalString(item.date, 100) &&
       isOptionalString(item.excerpt, 600) &&
-      isOptionalString(item.image, 300) &&
+      isSafeAsset(item.image, 300) &&
       isOptionalBody(item.body) &&
       isOptionalLinks(item.links) &&
       // A post must be readable somewhere: either in full on the site (body)
@@ -265,7 +314,8 @@ function validateContent(type, content) {
         (Array.isArray(item.body) && item.body.some(p => typeof p === 'string' && p.trim().length > 0))),
     videos: item =>
       isNonEmptyString(item.id, 100) &&
-      isNonEmptyString(item.youtubeId, 30),
+      isNonEmptyString(item.youtubeId, 30) && /^[A-Za-z0-9_-]{6,30}$/.test(item.youtubeId) &&
+      isOptionalString(item.title, 200),
     fixtures: item =>
       isNonEmptyString(item.id, 100) &&
       isOptionalString(item.competition, 160) &&
@@ -289,6 +339,28 @@ function validateContent(type, content) {
     }
   }
   return null;
+}
+
+/* ---------------- Field allowlists ----------------
+   validateContent() checks the fields it knows about; this strips everything
+   else so unexpected keys can never be written into the data files. */
+const ALLOWED_FIELDS = {
+  events: ['id', 'title', 'theme', 'date', 'time', 'venue', 'image', 'video', 'videoPoster', 'registerLink', 'phone', 'email', 'spotlight', 'active'],
+  gallery: ['id', 'src', 'alt', 'category', 'width', 'height', 'caption', 'link'],
+  blog: ['id', 'title', 'url', 'date', 'excerpt', 'image', 'body', 'links'],
+  videos: ['id', 'youtubeId', 'title'],
+  fixtures: ['id', 'competition', 'category', 'stage', 'date', 'time', 'team1', 'team2', 'score1', 'score2', 'venue', 'status'],
+  live: ['active', 'platform', 'url', 'label']
+};
+function pickAllowed(type, content) {
+  const keys = ALLOWED_FIELDS[type];
+  const pick = obj => Object.fromEntries(Object.entries(obj).filter(([k]) => keys.includes(k)));
+  if (type === 'live') return pick(content);
+  const out = content.map(pick);
+  if (type === 'blog') {
+    out.forEach(p => { if (Array.isArray(p.links)) p.links = p.links.map(l => ({ label: l.label, url: l.url })); });
+  }
+  return out;
 }
 
 /* ---------------- Handler ---------------- */
@@ -321,7 +393,7 @@ export default async function handler(req, res) {
   try {
     /* ---- LOGIN ---- */
     if (action === 'login' && req.method === 'POST') {
-      if (isRateLimited(ip)) {
+      if (await isRateLimited(ip)) {
         res.status(429).json({ error: 'Too many attempts. Please wait a minute and try again.' });
         return;
       }
@@ -337,6 +409,7 @@ export default async function handler(req, res) {
         password.length === expected.length &&
         crypto.timingSafeEqual(Buffer.from(password), Buffer.from(expected));
       if (!ok) {
+        await new Promise(r => setTimeout(r, 500)); // slow down guessing
         res.status(401).json({ error: 'Incorrect password.' });
         return;
       }
@@ -392,7 +465,7 @@ export default async function handler(req, res) {
         return;
       }
       const { sha } = await githubGetFile(path); // fetch latest sha right before writing
-      const pretty = JSON.stringify(content, null, 2) + '\n';
+      const pretty = JSON.stringify(pickAllowed(type, content), null, 2) + '\n';
       await githubPutFile(path, pretty, sha, `admin: update ${type}`);
       res.status(200).json({ ok: true });
       return;
@@ -407,6 +480,18 @@ export default async function handler(req, res) {
       }
       if (typeof base64 !== 'string' || base64.length === 0) {
         res.status(400).json({ error: 'Missing image data.' });
+        return;
+      }
+      if (!/^[A-Za-z0-9+/]+={0,2}$/.test(base64)) {
+        res.status(400).json({ error: 'Image data is not valid base64.' });
+        return;
+      }
+      const head = Buffer.from(base64.slice(0, 32), 'base64');
+      const isPng = head.length >= 4 && head.subarray(0, 4).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47]));
+      const isJpg = head.length >= 3 && head[0] === 0xff && head[1] === 0xd8 && head[2] === 0xff;
+      const isWebp = head.length >= 12 && head.subarray(0, 4).toString('latin1') === 'RIFF' && head.subarray(8, 12).toString('latin1') === 'WEBP';
+      if (!isPng && !isJpg && !isWebp) {
+        res.status(400).json({ error: 'That file is not a valid PNG, JPG or WebP image.' });
         return;
       }
       const decodedSize = Math.floor(base64.length * 0.75);

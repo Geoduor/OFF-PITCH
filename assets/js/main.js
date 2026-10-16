@@ -1152,7 +1152,7 @@ function parseEventDate(str) {
           images.forEach((img, i) => {
             const div = document.createElement('div');
             div.className = 'hero-slide' + (i === 0 ? ' active' : '');
-            div.style.backgroundImage = `url('${img.src}')`;
+            div.style.backgroundImage = `url("${encodeURI(img.src).replace(/["()]/g, c => '%' + c.charCodeAt(0).toString(16).toUpperCase())}")`;
             div.setAttribute('role', 'img');
             div.setAttribute('aria-label', img.alt || 'Off Pitch Africa');
             heroLayers.appendChild(div);

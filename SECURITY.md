@@ -272,3 +272,16 @@ exploited to execute disguised scripts.
 - `assets/css/style.css` — trust note styling
 - `contact.html` — field length limits, honeypot spam trap, bot-speed trap field, visible trust/security note citing Formspree's verified compliance
 - `index.html`, `about.html`, `services.html`, `gallery.html`, `contact.html` — `maxlength` on chat input
+
+
+---
+
+## Security hardening pass (October 2026)
+
+- **Rate limits** for `/api/chat`, admin login and `/api/ai-assist` use Upstash Redis when `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` are set (shared across instances); otherwise they fall back to the old per-instance in-memory limit. Admin login: 5 attempts per IP per 10 minutes, plus a 500 ms delay on a wrong password. Also set a monthly spend limit in the Anthropic console.
+- **Chat endpoint** now rejects requests with a missing/foreign `Origin` or a cross-site `Sec-Fetch-Site`.
+- **Admin sessions** last 4 hours and are bound to a fingerprint of `ADMIN_PASSWORD`: changing the password signs everyone out.
+- **Admin saves** only accept `https://` links (or site-relative asset paths for images/video); unknown fields are stripped before anything is committed; uploaded images must really be PNG/JPEG/WebP (magic-byte check).
+- **Admin AI helper** validates image paths/types and no longer returns raw error text.
+- **CSP**: `img-src` is limited to this site, YouTube/Substack/Instagram/Facebook CDNs and Google Analytics instead of any `https:` host. `style-src 'unsafe-inline'` remains because the pages still use inline `style=""` attributes.
+- **Not changed (by design):** the dashboard still commits straight to `main`. A pull-request flow would add review but changes how the client publishes.
