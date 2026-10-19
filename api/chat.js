@@ -93,7 +93,8 @@ FACTS ABOUT OFF PITCH AFRICA:
 - Core values: Authenticity (real, unfiltered stories told by us, on the
   pitch and off it), Excellence (high quality production through training and
   skills development), Community (sports personalities, media gurus, fans,
-  data analysts, events organizers, strategic marketers, business people),
+  data analysts, events organizers, strategic marketers, business people,
+  mental wellness advocates),
   Innovation (sustainable digital solutions for sports, events production,
   coverage and marketing).
 - Services:
